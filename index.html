@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -42,6 +43,7 @@ body{
   margin:0 auto;
   padding:20px 24px 20px;
   height:100vh;
+  height:100dvh;
   display:flex;
   flex-direction:column;
 }
@@ -51,7 +53,7 @@ body{
   display:flex;justify-content:space-between;align-items:flex-end;
   margin-bottom:22px;flex-wrap:wrap;gap:16px;
 }
-.brand{display:flex;align-items:center;gap:16px;}
+.brand{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
 .logo-img{
   height:58px;width:auto;border-radius:14px;flex-shrink:0;
   box-shadow:0 1px 3px rgba(0,0,0,.15);
@@ -85,7 +87,7 @@ body{
 .btn-icon.danger:hover{background:#f5e3dd;border-color:var(--rust);}
 
 /* ---- Stats ---- */
-.stats{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-left:8px;padding-left:16px;border-left:1px solid var(--line);}
 
 /* ---- View tabs ---- */
 .view-tabs{display:flex;gap:8px;margin-bottom:14px;}
@@ -98,10 +100,10 @@ body{
 .view-tab.active{background:var(--blueprint);color:#fff;border-color:var(--blueprint);}
 .stat-card{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-  padding:10px 16px;min-width:110px;
+  padding:6px 12px;min-width:90px;
 }
-.stat-card .num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;}
-.stat-card .lbl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+.stat-card .num{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;}
+.stat-card .lbl{font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
 
 /* ---- Toolbar ---- */
 .toolbar{
@@ -300,6 +302,70 @@ body{
   padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;
 }
 .hint{font-size:11.5px;color:var(--ink-soft);margin-top:-8px;margin-bottom:14px;}
+
+/* ============================================================
+   RESPONSIVE / MOBILE
+   ============================================================ */
+@media (max-width: 768px){
+  :root{ --sidebar-w:220px; }
+
+  .app{ padding:12px 12px 10px; }
+
+  .topbar{ align-items:flex-start; gap:10px; }
+  .brand{ gap:10px; }
+  .logo-img{ height:40px; }
+  .title-block h1{ font-size:18px; }
+  .title-block p{ font-size:11px; }
+  .title-block p span{ display:block; margin-top:2px; }
+
+  #btnNewOrder span.label{ display:none; }
+  .btn{ padding:9px 12px; font-size:12.5px; }
+
+  .user-badge{ font-size:11px; gap:6px; }
+  .user-badge .role-pill{ font-size:9px; padding:2px 6px; }
+
+  .stats{ gap:6px; margin:2px 0 0; padding-left:0; border-left:none; flex-basis:100%; }
+  .stat-card{ flex:1 1 auto; min-width:86px; padding:8px 10px; }
+  .stat-card .num{ font-size:16px; }
+  .stat-card .lbl{ font-size:10px; }
+
+  .view-tabs{ gap:6px; margin-bottom:10px; }
+  .view-tab{ flex:1; text-align:center; padding:8px 6px; font-size:11.5px; }
+
+  .toolbar{ flex-direction:column; align-items:stretch; gap:8px; }
+  .search-box{ min-width:0; width:100%; }
+  .toolbar > div:last-child{ width:100%; justify-content:space-between; }
+
+  .side{ padding:0 6px; gap:5px; }
+  .task-row .side{ padding-left:22px; }
+  .name-block .nm{ font-size:12px; }
+  .name-block .sub{ font-size:10px; }
+  .badge{ font-size:8.5px; padding:2px 5px; }
+  .btn-icon{ width:30px; height:30px; }
+  .row-actions{ gap:2px; }
+
+  .modal{ max-width:100%; }
+  .overlay{ padding:0; align-items:flex-end; }
+  .modal{ border-radius:14px 14px 0 0; max-height:92vh; max-height:92dvh; }
+  .row2{ flex-direction:column; gap:0; }
+  .modal-body{ padding:16px 16px; }
+  .modal-head{ padding:14px 16px; }
+  .modal-foot{ padding:12px 16px; }
+
+  .login-card{ padding:24px 20px; }
+}
+
+@media (max-width: 480px){
+  :root{ --sidebar-w:170px; }
+  .order-row .side{ height:58px; }
+  .task-row .side{ height:46px; }
+  .order-row .bar{ height:38px; }
+  .task-row .bar{ height:26px; }
+  .name-block .sub{ display:none; }
+  .title-block p{ font-size:10px; }
+  .stat-card{ min-width:70px; padding:7px 8px; }
+  .stat-card .num{ font-size:14px; }
+}
 </style>
 </head>
 <body>
@@ -334,20 +400,19 @@ body{
         <h1>მიმდინარე პროექტები</h1>
         <p>შეკვეთების მართვის ცხრილი · <span style="font-family:'JetBrains Mono',monospace;font-size:11px;">ონლაინ ვერსია — Supabase</span></p>
       </div>
+      <div class="stats" id="stats"></div>
     </div>
     <div style="display:flex;align-items:center;gap:16px;">
       <div class="user-badge" id="userBadge"></div>
       <button class="btn btn-primary" id="btnNewOrder">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        ახალი შეკვეთა
+        <span class="label">ახალი შეკვეთა</span>
       </button>
       <button class="btn btn-ghost" id="btnLogout" title="გამოსვლა">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
     </div>
   </div>
-
-  <div class="stats" id="stats"></div>
 
   <div class="view-tabs">
     <button class="view-tab active" id="tabActive" data-view="active">მიმდინარე პროექტები</button>
@@ -422,6 +487,17 @@ function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; 
 function diffDays(a,b){ return Math.round((b-a)/86400000); }
 function uid(){ return 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8); }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function getSidebarWidth(){
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w');
+  return parseFloat(v) || 440;
+}
+function getDayWidth(){
+  const w = window.innerWidth;
+  if(w <= 480) return 22;
+  if(w <= 768) return 26;
+  return 30;
+}
 
 /* ============================================================================
    SUPABASE — ავტორიზაცია, საერთო მონაცემთა ბაზა, წვდომის დონეები, realtime
@@ -583,7 +659,7 @@ async function loadData(){
     orders = orderRows.map(o=>{ const ord = rowToOrder(o); byId[ord.id] = ord; return ord; });
     taskRows.forEach(t=>{ const ord = byId[t.order_id]; if(ord) ord.tasks.push(rowToTask(t)); });
 
-    orders.forEach(o=>{ if(expanded[o.id] === undefined) expanded[o.id] = true; });
+    orders.forEach(o=>{ if(expanded[o.id] === undefined) expanded[o.id] = false; });
     updateStatusText(`დაკავშირებულია (${orders.length} შეკვეთა)`);
     render();
   }catch(e){
@@ -697,7 +773,7 @@ function render(){
   });
 
   const range = computeRange();
-  const dayW = 30;
+  const dayW = getDayWidth();
   const totalW = range.days * dayW;
   const t = todayLocal();
 
@@ -746,19 +822,20 @@ function render(){
 
   // today line + tag, appended once, positioned across full content
   const todayX = diffDays(range.start, t) * dayW;
+  const sideW = getSidebarWidth();
   inner.innerHTML = html;
   inner.style.position = 'relative';
 
   const line = document.createElement('div');
   line.className = 'today-line';
-  line.style.left = (440 + todayX) + 'px';
+  line.style.left = (sideW + todayX) + 'px';
   line.style.height = inner.scrollHeight + 'px';
   inner.appendChild(line);
 
   const tag = document.createElement('div');
   tag.className='today-tag';
   tag.textContent='დღეს';
-  tag.style.left = (440 + todayX) + 'px';
+  tag.style.left = (sideW + todayX) + 'px';
   inner.appendChild(tag);
 
   attachRowEvents();
@@ -1207,6 +1284,12 @@ function populateStageFilter(){
     render();
   };
 }
+
+let _resizeT;
+window.addEventListener('resize', ()=>{
+  clearTimeout(_resizeT);
+  _resizeT = setTimeout(()=>{ if(currentProfile) render(); }, 200);
+});
 
 initAuth();
 </script>
