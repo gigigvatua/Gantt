@@ -429,8 +429,8 @@ function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':
 
 /* !!! შეავსეთ ეს ორი მნიშვნელობა თქვენი Supabase პროექტის მონაცემებით !!!
    Supabase Dashboard → Project Settings → API */
-const SUPABASE_URL = 'https://fkfjzyuifitbvnnfectn.supabase.co/rest/v1/;
-const SUPABASE_ANON_KEY = 'sb_publishable_CJGvDQcGLinfXYN0Fjb5sQ_NFfaurEH;
+const SUPABASE_URL = 'https://fkfjzyuifitbvnnfectn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_CJGvDQcGLinfXYN0Fjb5sQ_NFfaurEH';
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
