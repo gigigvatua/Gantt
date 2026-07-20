@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ავეჯის საწარმოს Gantt ცხრილი (ონლაინ, Supabase)</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:#EDEAE0;
+  --panel:#FFFFFF;
+  --ink:#211E1A;
+  --ink-soft:#6B665C;
+  --line:#DCD6C8;
+  --line-soft:#EAE6DA;
+  --blueprint:#2E4A5C;
+  --mdf:#C99B5E;
+  --mdf-dark:#A87D45;
+  --rust:#B5502F;
+  --sage:#5C7A6B;
+  --stone:#9B968C;
+  --danger:#B5502F;
+  --radius:8px;
+  --sidebar-w:440px;
+  --day-w:30px;
+}
+html{height:100%;}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.app{
+  max-width:100%;
+  margin:0 auto;
+  padding:20px 24px 20px;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ---- Header ---- */
+.topbar{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  margin-bottom:22px;flex-wrap:wrap;gap:16px;
+}
+.brand{display:flex;align-items:center;gap:16px;}
+.logo-img{
+  height:58px;width:auto;border-radius:14px;flex-shrink:0;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.title-block h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:26px;font-weight:700;margin:0 0 4px;
+  letter-spacing:-.01em;
+}
+.title-block p{margin:0;color:var(--ink-soft);font-size:13.5px;}
+.title-block .tag{
+  display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:var(--blueprint);color:#fff;padding:2px 8px;border-radius:3px;
+  letter-spacing:.03em;margin-bottom:8px;
+}
+.btn{
+  font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;
+  border:none;border-radius:6px;padding:10px 16px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:transform .1s, box-shadow .15s;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--blueprint);color:#fff;}
+.btn-primary:hover{box-shadow:0 3px 10px rgba(46,74,92,.35);}
+.btn-ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line);}
+.btn-ghost:hover{border-color:var(--ink-soft);}
+.btn-icon{
+  width:28px;height:28px;padding:0;border-radius:5px;border:1px solid var(--line);
+  background:var(--panel);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.btn-icon:hover{background:var(--line-soft);}
+.btn-icon.danger:hover{background:#f5e3dd;border-color:var(--rust);}
+
+/* ---- Stats ---- */
+.stats{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+
+/* ---- View tabs ---- */
+.view-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.view-tab{
+  font-family:'Inter',sans-serif;font-weight:600;font-size:13px;
+  padding:9px 18px;border-radius:7px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink-soft);cursor:pointer;transition:all .12s;
+}
+.view-tab:hover{border-color:var(--ink-soft);color:var(--ink);}
+.view-tab.active{background:var(--blueprint);color:#fff;border-color:var(--blueprint);}
+.stat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:10px 16px;min-width:110px;
+}
+.stat-card .num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;}
+.stat-card .lbl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+
+/* ---- Toolbar ---- */
+.toolbar{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  margin-bottom:12px;flex-wrap:wrap;
+}
+.search-box{
+  display:flex;align-items:center;gap:8px;background:var(--panel);
+  border:1px solid var(--line);border-radius:6px;padding:7px 12px;min-width:240px;
+}
+.search-box input{
+  border:none;outline:none;font-family:'Inter',sans-serif;font-size:13.5px;
+  width:100%;background:transparent;color:var(--ink);
+}
+.search-box svg{flex-shrink:0;opacity:.5;}
+
+/* ---- Gantt wrap ---- */
+.gantt-wrap{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:auto;position:relative;
+  flex:1 1 auto;min-height:0;
+}
+.gantt-inner{position:relative;width:max-content;min-width:100%;}
+
+.row{display:flex;border-bottom:1px solid var(--line-soft);}
+.row:last-child{border-bottom:none;}
+
+.side{
+  position:sticky;left:0;z-index:3;width:var(--sidebar-w);flex-shrink:0;
+  background:var(--panel);border-right:1px solid var(--line);
+  display:flex;align-items:center;gap:8px;padding:0 10px;
+}
+.side.head{z-index:6;}
+
+.timeline{position:relative;flex-shrink:0;}
+
+/* header */
+.head-row{position:sticky;top:0;z-index:4;background:var(--panel);}
+.ruler{position:relative;}
+.ruler-months{display:flex;height:24px;border-bottom:1px solid var(--line);}
+.ruler-month{
+  flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);
+  display:flex;align-items:center;padding-left:6px;border-right:1px dashed var(--line);
+  letter-spacing:.02em;
+}
+.ruler-days{display:flex;height:26px;}
+.ruler-day{
+  flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line-soft);
+  position:relative;
+}
+.ruler-day::before{
+  content:"";position:absolute;top:0;left:50%;width:1px;height:4px;background:var(--line);
+}
+.ruler-day.weekend{background:var(--line-soft);}
+.ruler-day.today{background:#f2ded3;color:var(--rust);font-weight:700;}
+
+/* order / task rows */
+.order-row .side{height:52px;background:#fbfaf6;}
+.task-row .side{height:40px;}
+.order-row .timeline{height:52px;}
+.task-row .timeline{height:40px;}
+
+.chev{
+  width:20px;height:20px;flex-shrink:0;border:none;background:transparent;cursor:pointer;
+  color:var(--ink-soft);display:flex;align-items:center;justify-content:center;transition:transform .15s;
+}
+.chev.collapsed{transform:rotate(-90deg);}
+.chev svg{width:14px;height:14px;}
+
+.name-block{flex:1;min-width:0;}
+.name-block .nm{
+  font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.name-block .sub{
+  font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.task-row .name-block .nm{font-weight:500;font-size:12.5px;}
+
+.name-block .nm .note-dot{font-size:10.5px;cursor:help;}
+.badge{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
+  padding:3px 9px;border-radius:4px;color:#fff;white-space:nowrap;letter-spacing:.02em;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+.row-actions{display:flex;gap:4px;flex-shrink:0;}
+
+/* bars */
+.bar{
+  position:absolute;top:9px;border-radius:5px;overflow:hidden;cursor:pointer;
+  box-shadow:0 2px 4px rgba(0,0,0,.28);border:1px solid rgba(0,0,0,.22);
+  min-width:6px;transition:filter .1s;
+}
+.order-row .bar{height:34px;}
+.task-row .bar{height:22px;top:9px;}
+.bar:hover{filter:brightness(1.06);}
+.bar .edge{position:absolute;top:0;left:0;right:0;height:5px;}
+.bar .lbl{
+  position:absolute;inset:5px 6px 0;font-size:11.5px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 1px 3px rgba(0,0,0,.8), 0 0 6px rgba(0,0,0,.4);
+  letter-spacing:.01em;
+}
+.task-row .bar .lbl{font-size:10.5px;inset:4px 5px 0;}
+
+.today-line{
+  position:absolute;top:0;width:0;border-left:2px dashed var(--rust);z-index:2;pointer-events:none;
+}
+.today-tag{
+  position:absolute;font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;
+  background:var(--rust);padding:1px 5px;border-radius:3px;top:52px;transform:translateX(-50%);white-space:nowrap;
+}
+
+.empty-state{padding:40px 20px;text-align:center;color:var(--ink-soft);}
+.empty-state svg{opacity:.35;margin-bottom:10px;}
+
+/* ---- Login screen ---- */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);z-index:100;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#loginScreen.hidden{display:none;}
+.login-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  width:100%;max-width:380px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.12);
+}
+.login-card h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0 0 6px;}
+.login-card p{color:var(--ink-soft);font-size:13px;margin:0 0 22px;}
+.login-card .field{margin-bottom:14px;}
+.login-card .field label{
+  display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;
+  text-transform:uppercase;letter-spacing:.03em;
+}
+.login-card input{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:#fff;
+}
+.login-card input:focus{outline:none;border-color:var(--blueprint);}
+.login-card .btn{width:100%;justify-content:center;padding:11px;margin-top:6px;}
+.login-err{color:var(--rust);font-size:12.5px;margin-top:10px;display:none;}
+.login-toggle{
+  text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:16px;
+}
+.login-toggle a{color:var(--blueprint);cursor:pointer;font-weight:600;text-decoration:none;}
+
+/* ---- User / role badge in topbar ---- */
+.user-badge{
+  display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft);
+}
+.user-badge .role-pill{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:3px 8px;
+  border-radius:4px;color:#fff;letter-spacing:.02em;
+}
+
+/* ---- Modal ---- */
+.overlay{
+  position:fixed;inset:0;background:rgba(33,30,26,.5);display:none;
+  align-items:center;justify-content:center;z-index:50;padding:20px;
+}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--panel);border-radius:10px;width:100%;max-width:480px;
+  max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal-head{
+  padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;
+}
+.modal-head h3{margin:0;font-family:'Space Grotesk',sans-serif;font-size:17px;}
+.modal-body{padding:20px 22px;}
+.field{margin-bottom:15px;}
+.field label{
+  display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;
+  text-transform:uppercase;letter-spacing:.03em;
+}
+.field input[type=text],.field select,.field input[type=date],.field textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);background:#fff;
+}
+.field textarea{resize:vertical;min-height:60px;font-family:'Inter',sans-serif;}
+.field input[type=text]:focus,.field select:focus,.field input[type=date]:focus,.field textarea:focus{
+  outline:none;border-color:var(--blueprint);
+}
+.row2{display:flex;gap:12px;}
+.row2 .field{flex:1;}
+.color-row{display:flex;align-items:flex-start;gap:10px;}
+.color-row input[type=color]{
+  width:44px;height:34px;border:1px solid var(--line);border-radius:6px;padding:2px;cursor:pointer;background:#fff;
+}
+.swatches{display:flex;gap:6px;flex-wrap:wrap;max-width:230px;}
+.swatch{
+  width:22px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;
+}
+.swatch.active{border-color:var(--ink);}
+.err{color:var(--rust);font-size:12px;margin-top:4px;display:none;}
+.modal-foot{
+  padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.hint{font-size:11.5px;color:var(--ink-soft);margin-top:-8px;margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>ავეჯის Gantt ცხრილი</h1>
+    <p id="loginSubtitle">გაიარეთ ავტორიზაცია სამუშაოდ გასაგრძელებლად</p>
+    <div class="field">
+      <label>ელფოსტა</label>
+      <input type="text" id="loginEmail" placeholder="name@company.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>პაროლი</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="btnLoginSubmit">შესვლა</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-toggle">
+      ანგარიში არ გაქვთ? <a id="toggleSignup">დარეგისტრირდით</a>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+
+  <div class="topbar">
+    <div class="brand">
+      <img class="logo-img" src="data:image/png;base64,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" alt="კაბინეტი">
+      <div class="title-block">
+        <h1>მიმდინარე პროექტები</h1>
+        <p>შეკვეთების მართვის ცხრილი · <span style="font-family:'JetBrains Mono',monospace;font-size:11px;">ონლაინ ვერსია — Supabase</span></p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="user-badge" id="userBadge"></div>
+      <button class="btn btn-primary" id="btnNewOrder">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        ახალი შეკვეთა
+      </button>
+      <button class="btn btn-ghost" id="btnLogout" title="გამოსვლა">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" id="tabActive" data-view="active">მიმდინარე პროექტები</button>
+    <button class="view-tab" id="tabCompleted" data-view="completed">დასრულებული პროექტები</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="ძებნა შეკვეთის ან დამკვეთის მიხედვით...">
+    </div>
+    <div class="search-box" style="min-width:220px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <select id="stageFilterSelect" style="border:none;outline:none;background:transparent;font-family:'Inter',sans-serif;font-size:13.5px;width:100%;color:var(--ink);cursor:pointer;"></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" id="btnExport" title="მონაცემების სარეზერვო ასლის გადმოწერა JSON ფაილად" style="display:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+        სარეზერვო ასლი
+      </button>
+      <div style="font-size:12px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;" id="loadStatus">დაკავშირება...</div>
+    </div>
+  </div>
+
+
+  <div class="gantt-wrap"><div class="gantt-inner" id="ganttInner"></div></div>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modalContent"></div></div>
+
+<script>
+const STAGES = [
+  "სივრცის აზომვა",
+  "ავეჯის დიზაინის შეთანხმება",
+  "განფასების მომზადება",
+  "ავეჯის კონსტრუქციული პროექტირება",
+  "მასალების დაჭრა",
+  "კონსტრუქციების აწყობა",
+  "კონსტრუქციების ტრანსპორტირება",
+  "ავეჯის მონტაჟი",
+  "ფოტოების გადაღება",
+  "პროექტის დასრულება, დაარქივება"
+];
+const STAGE_DEFAULT_EMPLOYEE = [
+  "დიზაინერი 1","დიზაინერი 1","პროექტის ხელმძღვანელი","კონსტრუქტორი 1","კონსტრუქტორი 1",
+  "ამწყობი-მემონტაჟე","ამწყობი-მემონტაჟე","ამწყობი-მემონტაჟე","მარკეტინგის სპეციალისტი","პროექტის ხელმძღვანელი"
+];
+const EMPLOYEES = [
+  "პროექტის ხელმძღვანელი","დიზაინერი 1","დიზაინერი 2","კონსტრუქტორი 1","კონსტრუქტორი 2",
+  "კონსტრუქტორი 3","კონსტრუქტორი 4","ამწყობი-მემონტაჟე","მარკეტინგის სპეციალისტი"
+];
+const ORDER_STATUSES = ["დაწყებული","მიმდინარეობს","შეჩერებული","დასრულებული"];
+const TASK_STATUSES  = ["დაგეგმილი","მიმდინარეობს","დასრულებული"];
+const STATUS_COLOR = {
+  "დაწყებული":"#2563EB","დაგეგმილი":"#2563EB",
+  "მიმდინარეობს":"#E11D2E",
+  "შეჩერებული":"#6B7280",
+  "დასრულებული":"#16A34A"
+};
+const SWATCHES = ["#E63946","#F4A300","#FFD60A","#2EC4B6","#118AB2","#3A86FF","#7B2CBF","#D62828","#06A77D","#EF476F","#8338EC","#FB5607","#00B4D8","#4CC9F0","#495057"];
+const MONTHS_KA = ["იან","თებ","მარ","აპრ","მაი","ივნ","ივლ","აგვ","სექ","ოქტ","ნოე","დეკ"];
+
+let orders = [];
+let expanded = {};
+let currentView = 'active'; /* 'active' | 'completed' */
+let stageFilter = 'all'; /* 'all' or one of STAGES */
+
+function todayLocal(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
+function toISO(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function diffDays(a,b){ return Math.round((b-a)/86400000); }
+function uid(){ return 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============================================================================
+   SUPABASE — ავტორიზაცია, საერთო მონაცემთა ბაზა, წვდომის დონეები, realtime
+   ============================================================================ */
+
+/* !!! შეავსეთ ეს ორი მნიშვნელობა თქვენი Supabase პროექტის მონაცემებით !!!
+   Supabase Dashboard → Project Settings → API */
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const ROLE_LABEL = { admin:'ადმინი', manager:'მენეჯერი', employee:'თანამშრომელი' };
+const ROLE_COLOR = { admin:'#B5502F', manager:'#2E4A5C', employee:'#6B7280' };
+
+let currentUser = null;
+let currentProfile = null; /* { role, employee_name, display_name, email } */
+let isSignupMode = false;
+let realtimeChannel = null;
+
+function canEdit(){
+  return currentProfile && (currentProfile.role === 'admin' || currentProfile.role === 'manager');
+}
+function isAdmin(){
+  return currentProfile && currentProfile.role === 'admin';
+}
+function isMyTask(task){
+  return currentProfile && currentProfile.role === 'employee' &&
+         currentProfile.employee_name && task.employee === currentProfile.employee_name;
+}
+
+function updateStatusText(text){
+  const el = document.getElementById('loadStatus');
+  if(el) el.textContent = text;
+}
+
+function renderUserBadge(){
+  const el = document.getElementById('userBadge');
+  if(!el || !currentProfile) return;
+  const role = currentProfile.role || 'employee';
+  el.innerHTML = `
+    <span>${escapeHtml(currentProfile.display_name || currentProfile.email || '')}</span>
+    <span class="role-pill" style="background:${ROLE_COLOR[role]}">${ROLE_LABEL[role]}</span>
+  `;
+}
+
+function applyRoleUI(){
+  document.getElementById('btnNewOrder').style.display = canEdit() ? '' : 'none';
+  document.getElementById('btnExport').style.display = isAdmin() ? '' : 'none';
+  renderUserBadge();
+}
+
+/* ---------- Auth screen wiring ---------- */
+function showLoginScreen(){
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+function hideLoginScreen(){
+  document.getElementById('loginScreen').classList.add('hidden');
+}
+
+async function handleAuthSubmit(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display = 'none';
+  if(!email || !password){
+    errEl.textContent = 'შეავსეთ ელფოსტა და პაროლი';
+    errEl.style.display = 'block';
+    return;
+  }
+  try{
+    if(isSignupMode){
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) throw error;
+      errEl.style.color = 'var(--sage)';
+      errEl.textContent = 'რეგისტრაცია დასრულებულია. თუ ელფოსტის დადასტურებაა საჭირო, გადაამოწმეთ თქვენი ფოსტა, შემდეგ შედით სისტემაში. ახალი ანგარიშისთვის საწყისი როლია "თანამშრომელი" — ადმინმა უნდა შეცვალოს საჭიროებისამებრ.';
+      errEl.style.display = 'block';
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+    }
+  }catch(e){
+    errEl.style.color = 'var(--rust)';
+    errEl.textContent = e.message || 'შეცდომა ავტორიზაციისას';
+    errEl.style.display = 'block';
+  }
+}
+
+function wireAuthUI(){
+  document.getElementById('btnLoginSubmit').onclick = handleAuthSubmit;
+  document.getElementById('loginPassword').addEventListener('keydown', e=>{ if(e.key==='Enter') handleAuthSubmit(); });
+  document.getElementById('toggleSignup').onclick = ()=>{
+    isSignupMode = !isSignupMode;
+    document.getElementById('btnLoginSubmit').textContent = isSignupMode ? 'რეგისტრაცია' : 'შესვლა';
+    document.getElementById('loginSubtitle').textContent = isSignupMode
+      ? 'შექმენით ანგარიში — ადმინი შემდეგ დაგანიშნავთ როლს'
+      : 'გაიარეთ ავტორიზაცია სამუშაოდ გასაგრძელებლად';
+    document.getElementById('toggleSignup').textContent = isSignupMode ? 'უკვე გაქვთ ანგარიში? შედით' : 'დარეგისტრირდით';
+    document.getElementById('loginErr').style.display = 'none';
+  };
+  document.getElementById('btnLogout').onclick = async ()=>{
+    if(realtimeChannel) sb.removeChannel(realtimeChannel);
+    await sb.auth.signOut();
+  };
+}
+
+async function initAuth(){
+  wireAuthUI();
+  const { data: { session } } = await sb.auth.getSession();
+  if(session) await onSignedIn(session);
+  else showLoginScreen();
+
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === 'SIGNED_IN' && (!currentUser || currentUser.id !== session.user.id)) onSignedIn(session);
+    if(event === 'SIGNED_OUT'){ currentUser = null; currentProfile = null; showLoginScreen(); }
+  });
+}
+
+async function onSignedIn(session){
+  currentUser = session.user;
+  const { data: profile, error } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if(error || !profile){
+    updateStatusText('პროფილის ჩატვირთვა ვერ მოხერხდა — სცადეთ თავიდან შესვლა');
+    return;
+  }
+  currentProfile = profile;
+  hideLoginScreen();
+  applyRoleUI();
+  populateStageFilter();
+  await loadData();
+  subscribeRealtime();
+}
+
+/* ---------- Data layer (shared Postgres tables via Supabase) ---------- */
+function rowToOrder(o){
+  return {
+    id:o.id, name:o.name, client:o.client||'', start:o.start_date, end:o.end_date,
+    color:o.color, status:o.status, responsible:o.responsible||'', notes:o.notes||'', tasks:[]
+  };
+}
+function rowToTask(t){
+  return {
+    id:t.id, title:t.title||'', stage:t.stage, start:t.start_date, end:t.end_date,
+    color:t.color, status:t.status, employee:t.employee||'', notes:t.notes||''
+  };
+}
+
+async function loadData(){
+  updateStatusText('იტვირთება...');
+  try{
+    const [{ data: orderRows, error: oErr }, { data: taskRows, error: tErr }] = await Promise.all([
+      sb.from('orders').select('*').order('created_at', { ascending:true }),
+      sb.from('tasks').select('*').order('created_at', { ascending:true })
+    ]);
+    if(oErr) throw oErr;
+    if(tErr) throw tErr;
+
+    const byId = {};
+    orders = orderRows.map(o=>{ const ord = rowToOrder(o); byId[ord.id] = ord; return ord; });
+    taskRows.forEach(t=>{ const ord = byId[t.order_id]; if(ord) ord.tasks.push(rowToTask(t)); });
+
+    orders.forEach(o=>{ if(expanded[o.id] === undefined) expanded[o.id] = true; });
+    updateStatusText(`დაკავშირებულია (${orders.length} შეკვეთა)`);
+    render();
+  }catch(e){
+    console.error(e);
+    updateStatusText('მონაცემების ჩატვირთვა ვერ მოხერხდა: ' + (e.message||''));
+  }
+}
+
+function subscribeRealtime(){
+  if(realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb.channel('gantt-live')
+    .on('postgres_changes', { event:'*', schema:'public', table:'orders' }, ()=> loadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'tasks' }, ()=> loadData())
+    .subscribe();
+}
+
+async function saveOrder(payload, existingId){
+  const row = {
+    name: payload.name, client: payload.client, start_date: payload.start, end_date: payload.end,
+    color: payload.color, status: payload.status, responsible: payload.responsible, notes: payload.notes,
+    updated_at: new Date().toISOString()
+  };
+  if(existingId){
+    const { error } = await sb.from('orders').update(row).eq('id', existingId);
+    if(error) throw error;
+    return existingId;
+  } else {
+    row.created_by = currentUser.id;
+    const { data, error } = await sb.from('orders').insert(row).select().single();
+    if(error) throw error;
+    return data.id;
+  }
+}
+async function deleteOrderRemote(id){
+  const { error } = await sb.from('orders').delete().eq('id', id);
+  if(error) throw error;
+}
+async function saveTask(orderId, payload, existingId){
+  const row = {
+    order_id: orderId, title: payload.title, stage: payload.stage,
+    start_date: payload.start, end_date: payload.end, color: payload.color,
+    status: payload.status, employee: payload.employee, notes: payload.notes,
+    updated_at: new Date().toISOString()
+  };
+  if(existingId){
+    const { error } = await sb.from('tasks').update(row).eq('id', existingId);
+    if(error) throw error;
+  } else {
+    const { error } = await sb.from('tasks').insert(row);
+    if(error) throw error;
+  }
+}
+async function deleteTaskRemote(id){
+  const { error } = await sb.from('tasks').delete().eq('id', id);
+  if(error) throw error;
+}
+async function updateOwnTaskStatus(taskId, newStatus){
+  const { error } = await sb.rpc('update_own_task_status', { p_task_id: taskId, p_new_status: newStatus });
+  if(error) throw error;
+}
+
+function seedData(){
+  const t = todayLocal();
+  const oId = uid();
+  return [{
+    id:oId, name:"სამზარეულო - ბათუმი", client:"ნ. კვარაცხელია",
+    start: toISO(addDays(t,-6)), end: toISO(addDays(t,24)),
+    color:"#C99B5E", status:"მიმდინარეობს", responsible:"პროექტის ხელმძღვანელი",
+    tasks:[
+      {id:uid(), stage:STAGES[0], start:toISO(addDays(t,-6)), end:toISO(addDays(t,-5)), color:"#2E4A5C", status:"დასრულებული", employee:"დიზაინერი 1"},
+      {id:uid(), stage:STAGES[1], start:toISO(addDays(t,-4)), end:toISO(addDays(t,-1)), color:"#2E4A5C", status:"დასრულებული", employee:"დიზაინერი 1"},
+      {id:uid(), stage:STAGES[3], start:toISO(addDays(t,0)),  end:toISO(addDays(t,4)),  color:"#B5502F", status:"მიმდინარეობს", employee:"კონსტრუქტორი 2"},
+      {id:uid(), stage:STAGES[4], start:toISO(addDays(t,5)),  end:toISO(addDays(t,8)),  color:"#9B968C", status:"დაგეგმილი", employee:"კონსტრუქტორი 2"},
+    ]
+  }];
+}
+
+/* ---------- computed range ---------- */
+function computeRange(){
+  const t = todayLocal();
+  let dataMin=null, dataMax=null;
+  orders.forEach(o=>{
+    [o, ...o.tasks].forEach(item=>{
+      const s = parseISO(item.start), e = parseISO(item.end);
+      if(!dataMin || s<dataMin) dataMin=s;
+      if(!dataMax || e>dataMax) dataMax=e;
+    });
+  });
+  const paddedDataMin = dataMin ? addDays(dataMin,-3) : null;
+  const paddedDataMax = dataMax ? addDays(dataMax,7) : null;
+  const defaultMin = addDays(t,-30); /* always allow scrolling ~1 month into the past */
+  const defaultMax = addDays(t,45);  /* always allow scrolling well into the future */
+  const min = (paddedDataMin && paddedDataMin < defaultMin) ? paddedDataMin : defaultMin;
+  const max = (paddedDataMax && paddedDataMax > defaultMax) ? paddedDataMax : defaultMax;
+  return {start:min, end:max, days:diffDays(min,max)+1};
+}
+
+/* ---------- render ---------- */
+let _isFirstRender = true;
+function render(){
+  renderStats();
+  const inner = document.getElementById('ganttInner');
+  const wrap = document.querySelector('.gantt-wrap');
+  const prevScrollLeft = wrap ? wrap.scrollLeft : null;
+  const prevScrollTop = wrap ? wrap.scrollTop : null;
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = orders.filter(o=>{
+    const matchesQuery = !query || o.name.toLowerCase().includes(query) || o.client.toLowerCase().includes(query);
+    const matchesView = currentView === 'completed' ? o.status === 'დასრულებული' : o.status !== 'დასრულებული';
+    return matchesQuery && matchesView;
+  });
+
+  const range = computeRange();
+  const dayW = 30;
+  const totalW = range.days * dayW;
+  const t = todayLocal();
+
+  let html = '';
+
+  // header
+  const headerLabel = stageFilter === 'all' ? 'შეკვეთის ჩამონათვალი' : `ეტაპი: ${escapeHtml(stageFilter)}`;
+  html += `<div class="row head-row"><div class="side head">
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;">${headerLabel}</div>
+    </div><div class="timeline ruler" style="width:${totalW}px">
+      ${renderMonths(range, dayW)}
+      ${renderDays(range, dayW, t)}
+    </div></div>`;
+
+  let rowsHtml = '';
+  let rowCount = 0;
+  if(stageFilter === 'all'){
+    filtered.forEach(o=>{
+      rowsHtml += renderOrderRow(o, range, dayW);
+      rowCount++;
+      if(expanded[o.id]){
+        o.tasks.forEach(task=>{ rowsHtml += renderTaskRow(o, task, range, dayW); rowCount++; });
+      }
+    });
+  } else {
+    filtered.forEach(o=>{
+      o.tasks.filter(task=> task.stage === stageFilter).forEach(task=>{
+        rowsHtml += renderFlatTaskRow(o, task, range, dayW);
+        rowCount++;
+      });
+    });
+  }
+
+  if(rowCount === 0){
+    let emptyMsg;
+    if(query) emptyMsg = 'შედეგი ვერ მოიძებნა';
+    else if(stageFilter !== 'all') emptyMsg = `"${stageFilter}" ეტაპი ჯერ არცერთ შეკვეთაში არ არის დამატებული`;
+    else emptyMsg = (currentView === 'completed' ? 'დასრულებული პროექტი ჯერ არ არის' : 'მიმდინარე შეკვეთა არ არის');
+    html += `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v3M16 4v3"/></svg>
+      <div>${emptyMsg}</div>
+    </div>`;
+  } else {
+    html += rowsHtml;
+  }
+
+  // today line + tag, appended once, positioned across full content
+  const todayX = diffDays(range.start, t) * dayW;
+  inner.innerHTML = html;
+  inner.style.position = 'relative';
+
+  const line = document.createElement('div');
+  line.className = 'today-line';
+  line.style.left = (440 + todayX) + 'px';
+  line.style.height = inner.scrollHeight + 'px';
+  inner.appendChild(line);
+
+  const tag = document.createElement('div');
+  tag.className='today-tag';
+  tag.textContent='დღეს';
+  tag.style.left = (440 + todayX) + 'px';
+  inner.appendChild(tag);
+
+  attachRowEvents();
+
+  if(wrap){
+    if(_isFirstRender){
+      /* open the view centered near today, leaving room to scroll back into the past */
+      wrap.scrollLeft = Math.max(0, todayX - 220);
+      _isFirstRender = false;
+    } else if(prevScrollLeft !== null){
+      /* keep the user's current scroll position after edits, instead of jumping back */
+      wrap.scrollLeft = prevScrollLeft;
+      wrap.scrollTop = prevScrollTop;
+    }
+  }
+}
+
+function renderMonths(range, dayW){
+  let html='', cursor=new Date(range.start), remaining=range.days;
+  while(remaining>0){
+    const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+    const daysInSpan = Math.min(diffDays(cursor, monthEnd), remaining);
+    html += `<div class="ruler-month" style="width:${daysInSpan*dayW}px">${MONTHS_KA[cursor.getMonth()]} ${cursor.getFullYear()}</div>`;
+    cursor = monthEnd; remaining -= daysInSpan;
+  }
+  return `<div class="ruler-months">${html}</div>`;
+}
+function renderDays(range, dayW, t){
+  let html='';
+  for(let i=0;i<range.days;i++){
+    const d = addDays(range.start, i);
+    const isWeekend = d.getDay()===0 || d.getDay()===6;
+    const isToday = diffDays(d,t)===0;
+    html += `<div class="ruler-day ${isWeekend?'weekend':''} ${isToday?'today':''}" style="width:${dayW}px">${d.getDate()}</div>`;
+  }
+  return `<div class="ruler-days">${html}</div>`;
+}
+
+function barPos(item, range, dayW){
+  const s = parseISO(item.start), e = parseISO(item.end);
+  const left = diffDays(range.start, s) * dayW;
+  const width = Math.max((diffDays(s,e)+1) * dayW - 4, 8);
+  return {left, width};
+}
+
+function renderOrderRow(o, range, dayW){
+  const {left, width} = barPos(o, range, dayW);
+  const statusColor = STATUS_COLOR[o.status] || '#9B968C';
+  const isOpen = !!expanded[o.id];
+  const actionsHtml = canEdit() ? `
+        <button class="btn-icon" data-add-task="${o.id}" title="ეტაპის დამატება">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="btn-icon" data-edit-order="${o.id}" title="რედაქტირება">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        ${isAdmin() ? `<button class="btn-icon danger" data-del-order="${o.id}" title="წაშლა">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>` : ''}` : '';
+  return `<div class="row order-row" data-order="${o.id}">
+    <div class="side">
+      <button class="chev ${isOpen?'':'collapsed'}" data-toggle="${o.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="name-block">
+        <div class="nm" title="${escapeHtml(o.name)}">${escapeHtml(o.name)}${o.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(o.notes)+'\">📝</span>' : ''}</div>
+        <div class="sub">${escapeHtml(o.client)} · ${escapeHtml(o.responsible)}</div>
+      </div>
+      <span class="badge" style="background:${statusColor}">${o.status}</span>
+      <div class="row-actions">${actionsHtml}</div>
+    </div>
+    <div class="timeline" style="width:${range.days*dayW}px">
+      <div class="bar" data-edit-order="${o.id}" style="left:${left}px;width:${width}px;background:${o.color}">
+        <div class="edge" style="background:${statusColor}"></div>
+        <div class="lbl">${escapeHtml(o.name)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTaskRow(o, task, range, dayW){
+  const {left, width} = barPos(task, range, dayW);
+  const statusColor = STATUS_COLOR[task.status] || '#9B968C';
+  const displayName = task.title || task.stage;
+  const actionsHtml = canEdit() ? `
+        <button class="btn-icon" data-edit-task="${o.id}|${task.id}" title="რედაქტირება">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="btn-icon danger" data-del-task="${o.id}|${task.id}" title="წაშლა">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>` : (isMyTask(task) ? `
+        <select class="own-status-select" data-own-status="${task.id}" title="ჩემი დავალების სტატუსის განახლება" style="font-size:11px;padding:4px 6px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--ink);">
+          ${TASK_STATUSES.map(s=>`<option value="${escapeHtml(s)}" ${s===task.status?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+        </select>` : '');
+  return `<div class="row task-row" data-order="${o.id}" data-task="${task.id}">
+    <div class="side" style="padding-left:34px;">
+      <div class="name-block">
+        <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}</div>
+        <div class="sub">${escapeHtml(task.stage)} · ${escapeHtml(task.employee)}</div>
+      </div>
+      <span class="badge" style="background:${statusColor}">${task.status}</span>
+      <div class="row-actions">${actionsHtml}</div>
+    </div>
+    <div class="timeline" style="width:${range.days*dayW}px">
+      <div class="bar" data-edit-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${task.color}">
+        <div class="edge" style="background:${statusColor};height:3px;"></div>
+        <div class="lbl">${escapeHtml(displayName)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Used only when a specific stage/category filter is active (e.g. "მასალების დაჭრა" view).
+   Shows the task as a top-level row with its parent order/client for context. */
+function renderFlatTaskRow(o, task, range, dayW){
+  const {left, width} = barPos(task, range, dayW);
+  const statusColor = STATUS_COLOR[task.status] || '#9B968C';
+  const displayName = task.title || task.stage;
+  const actionsHtml = canEdit() ? `
+        <button class="btn-icon" data-edit-task="${o.id}|${task.id}" title="რედაქტირება">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="btn-icon danger" data-del-task="${o.id}|${task.id}" title="წაშლა">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>` : (isMyTask(task) ? `
+        <select class="own-status-select" data-own-status="${task.id}" title="ჩემი დავალების სტატუსის განახლება" style="font-size:11px;padding:4px 6px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--ink);">
+          ${TASK_STATUSES.map(s=>`<option value="${escapeHtml(s)}" ${s===task.status?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+        </select>` : '');
+  return `<div class="row order-row" data-order="${o.id}" data-task="${task.id}">
+    <div class="side">
+      <div class="name-block">
+        <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}</div>
+        <div class="sub">${escapeHtml(o.name)} · ${escapeHtml(o.client)} · ${escapeHtml(task.employee)}</div>
+      </div>
+      <span class="badge" style="background:${statusColor}">${task.status}</span>
+      <div class="row-actions">${actionsHtml}</div>
+    </div>
+    <div class="timeline" style="width:${range.days*dayW}px">
+      <div class="bar" data-edit-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${task.color}">
+        <div class="edge" style="background:${statusColor}"></div>
+        <div class="lbl">${escapeHtml(displayName)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderStats(){
+  const total = orders.length;
+  const active = orders.filter(o=>o.status==="მიმდინარეობს").length;
+  const done = orders.filter(o=>o.status==="დასრულებული").length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">სულ შეკვეთა</div></div>
+    <div class="stat-card"><div class="num">${active}</div><div class="lbl">მიმდინარე</div></div>
+    <div class="stat-card"><div class="num">${done}</div><div class="lbl">დასრულებული</div></div>
+  `;
+}
+
+function attachRowEvents(){
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.onclick = ()=>{ const id=el.getAttribute('data-toggle'); expanded[id]=!expanded[id]; render(); };
+  });
+  document.querySelectorAll('[data-add-task]').forEach(el=>{
+    el.onclick = ()=> openTaskModal(el.getAttribute('data-add-task'), null);
+  });
+  document.querySelectorAll('[data-edit-order]').forEach(el=>{
+    el.onclick = ()=>{ if(canEdit()) openOrderModal(el.getAttribute('data-edit-order')); };
+  });
+  document.querySelectorAll('[data-del-order]').forEach(el=>{
+    el.onclick = (e)=>{ e.stopPropagation(); deleteOrder(el.getAttribute('data-del-order')); };
+  });
+  document.querySelectorAll('[data-edit-task]').forEach(el=>{
+    el.onclick = ()=>{ if(!canEdit()) return; const [oId,tId]=el.getAttribute('data-edit-task').split('|'); openTaskModal(oId, tId); };
+  });
+  document.querySelectorAll('[data-del-task]').forEach(el=>{
+    el.onclick = (e)=>{ e.stopPropagation(); const [oId,tId]=el.getAttribute('data-del-task').split('|'); deleteTask(oId,tId); };
+  });
+  document.querySelectorAll('[data-own-status]').forEach(el=>{
+    el.onclick = (e)=> e.stopPropagation();
+    el.onchange = (e)=>{ e.stopPropagation(); submitOwnStatus(el.getAttribute('data-own-status'), el.value); };
+  });
+}
+
+/* ---------- mutations ---------- */
+async function deleteOrder(id){
+  if(!isAdmin()){ alert('შეკვეთის წაშლის უფლება მხოლოდ ადმინს აქვს.'); return; }
+  if(!confirm('წავშალო შეკვეთა და მისი ყველა ეტაპი?')) return;
+  try{
+    await deleteOrderRemote(id);
+    await loadData();
+  }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+}
+async function deleteTask(oId,tId){
+  if(!canEdit()){ alert('ეტაპის წაშლის უფლება არ გაქვთ.'); return; }
+  if(!confirm('წავშალო ეს ეტაპი?')) return;
+  try{
+    await deleteTaskRemote(tId);
+    await loadData();
+  }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+}
+
+async function submitOwnStatus(taskId, newStatus){
+  try{
+    await updateOwnTaskStatus(taskId, newStatus);
+    await loadData();
+  }catch(e){ alert('სტატუსის განახლება ვერ მოხერხდა: ' + (e.message||'')); }
+}
+
+/* ---------- modals ---------- */
+const overlay = document.getElementById('overlay');
+const modalContent = document.getElementById('modalContent');
+function closeModal(){ overlay.classList.remove('open'); modalContent.innerHTML=''; }
+overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+
+function opt(list, selected){
+  return list.map(v=>`<option value="${escapeHtml(v)}" ${v===selected?'selected':''}>${escapeHtml(v)}</option>`).join('');
+}
+
+function openOrderModal(existingId){
+  if(!canEdit()) return;
+  const existing = existingId ? orders.find(o=>o.id===existingId) : null;
+  const t = todayLocal();
+  const data = existing || {
+    id:null, name:'', client:'', start:toISO(t), end:toISO(addDays(t,14)),
+    color:'#C99B5E', status:ORDER_STATUSES[0], responsible:EMPLOYEES[0], notes:''
+  };
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>${existing?'შეკვეთის რედაქტირება':'ახალი შეკვეთა'}</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>შეკვეთის დასახელება</label>
+        <input type="text" id="fName" value="${escapeHtml(data.name)}" placeholder="მაგ. სამზარეულო - საბურთალო">
+        <div class="err" id="errName">გთხოვთ მიუთითოთ დასახელება</div>
+      </div>
+      <div class="field"><label>დამკვეთი</label>
+        <input type="text" id="fClient" value="${escapeHtml(data.client)}" placeholder="დამკვეთის სახელი">
+      </div>
+      <div class="row2">
+        <div class="field"><label>დაწყების თარიღი</label><input type="date" id="fStart" value="${data.start}"></div>
+        <div class="field"><label>დასრულების თარიღი</label><input type="date" id="fEnd" value="${data.end}"></div>
+      </div>
+      <div class="err" id="errDate">დასრულების თარიღი უნდა იყოს დაწყების შემდეგ</div>
+      <div class="row2">
+        <div class="field"><label>სტატუსი</label><select id="fStatus">${opt(ORDER_STATUSES, data.status)}</select></div>
+        <div class="field"><label>პასუხისმგებელი</label><select id="fResp">${opt(EMPLOYEES, data.responsible)}</select></div>
+      </div>
+      <div class="field"><label>ფერი</label>
+        <div class="color-row">
+          <input type="color" id="fColor" value="${data.color}">
+          <div class="swatches" id="swatches"></div>
+        </div>
+      </div>
+      <div class="field"><label>შენიშვნა</label>
+        <textarea id="fNotes" placeholder="დამატებითი დეტალები, სპეციალური მოთხოვნები და ა.შ.">${escapeHtml(data.notes||'')}</textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">გაუქმება</button>
+      <button class="btn btn-primary" id="mSave">${existing?'შენახვა':'დამატება'}</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+  buildSwatches(document.getElementById('fColor'));
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('mCancel').onclick = closeModal;
+  document.getElementById('mSave').onclick = async ()=>{
+    const name = document.getElementById('fName').value.trim();
+    const start = document.getElementById('fStart').value;
+    const end = document.getElementById('fEnd').value;
+    let ok = true;
+    if(!name){ document.getElementById('errName').style.display='block'; ok=false; } else document.getElementById('errName').style.display='none';
+    if(!start || !end || parseISO(end) < parseISO(start)){ document.getElementById('errDate').style.display='block'; ok=false; } else document.getElementById('errDate').style.display='none';
+    if(!ok) return;
+    const payload = {
+      name, client: document.getElementById('fClient').value.trim(),
+      start, end,
+      color: document.getElementById('fColor').value,
+      status: document.getElementById('fStatus').value,
+      responsible: document.getElementById('fResp').value,
+      notes: document.getElementById('fNotes').value.trim()
+    };
+    const btn = document.getElementById('mSave');
+    btn.disabled = true; btn.textContent = 'ინახება...';
+    try{
+      await saveOrder(payload, existing ? existing.id : null);
+      await loadData();
+      closeModal();
+    }catch(e){
+      alert('შენახვა ვერ მოხერხდა: ' + (e.message||''));
+      btn.disabled = false; btn.textContent = existing?'შენახვა':'დამატება';
+    }
+  };
+}
+
+function openTaskModal(orderId, existingTaskId){
+  if(!canEdit()) return;
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  const existing = existingTaskId ? order.tasks.find(t=>t.id===existingTaskId) : null;
+  const t = todayLocal();
+  const data = existing || {
+    title:'', stage: STAGES[0], start: toISO(t), end: toISO(addDays(t,3)),
+    color:'#C99B5E', status:TASK_STATUSES[0], employee: STAGE_DEFAULT_EMPLOYEE[0], notes:''
+  };
+  const stageOptions = STAGES.map(s=>s).concat(['სხვა (ხელით შეყვანა)']);
+  const isCustomStage = existing && !STAGES.includes(existing.stage);
+
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>${existing?'ეტაპის რედაქტირება':'ახალი ეტაპი'}</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="hint">შეკვეთა: ${escapeHtml(order.name)}</div>
+      <div class="field"><label>ეტაპის დასახელება</label>
+        <input type="text" id="fTitle" value="${escapeHtml(data.title||'')}" placeholder="მაგ. სამზარეულოს კარადების აწყობა">
+        <div class="hint" style="margin-top:6px;margin-bottom:0;">თუ ცარიელი დარჩება, ჩამონათვალში აჩვენებს ქვემოთ არჩეულ ეტაპის კატეგორიას</div>
+      </div>
+      <div class="field"><label>ეტაპის კატეგორია</label>
+        <select id="fStage">${opt(stageOptions, isCustomStage ? 'სხვა (ხელით შეყვანა)' : data.stage)}</select>
+      </div>
+      <div class="field" id="customStageWrap" style="display:${isCustomStage?'block':'none'}">
+        <label>კატეგორიის სახელი (ხელით)</label>
+        <input type="text" id="fStageCustom" value="${escapeHtml(isCustomStage?existing.stage:'')}" placeholder="კატეგორიის სახელი">
+      </div>
+      <div class="row2">
+        <div class="field"><label>დაწყების თარიღი</label><input type="date" id="fStart" value="${data.start}"></div>
+        <div class="field"><label>დასრულების თარიღი</label><input type="date" id="fEnd" value="${data.end}"></div>
+      </div>
+      <div class="err" id="errDate">დასრულების თარიღი უნდა იყოს დაწყების შემდეგ</div>
+      <div class="row2">
+        <div class="field"><label>სტატუსი</label><select id="fStatus">${opt(TASK_STATUSES, data.status)}</select></div>
+        <div class="field"><label>პასუხისმგებელი</label><select id="fEmployee">${opt(EMPLOYEES, data.employee)}</select></div>
+      </div>
+      <div class="field"><label>ფერი</label>
+        <div class="color-row">
+          <input type="color" id="fColor" value="${data.color}">
+          <div class="swatches" id="swatches"></div>
+        </div>
+      </div>
+      <div class="field"><label>შენიშვნა</label>
+        <textarea id="fNotes" placeholder="დამატებითი დეტალები ამ ეტაპთან დაკავშირებით">${escapeHtml(data.notes||'')}</textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">გაუქმება</button>
+      <button class="btn btn-primary" id="mSave">${existing?'შენახვა':'დამატება'}</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+  buildSwatches(document.getElementById('fColor'));
+
+  const stageSel = document.getElementById('fStage');
+  stageSel.onchange = ()=>{
+    const val = stageSel.value;
+    document.getElementById('customStageWrap').style.display = (val==='სხვა (ხელით შეყვანა)') ? 'block' : 'none';
+    if(!existing){
+      const idx = STAGES.indexOf(val);
+      if(idx>-1) document.getElementById('fEmployee').value = STAGE_DEFAULT_EMPLOYEE[idx];
+    }
+  };
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('mCancel').onclick = closeModal;
+  document.getElementById('mSave').onclick = async ()=>{
+    const start = document.getElementById('fStart').value;
+    const end = document.getElementById('fEnd').value;
+    let ok = true;
+    if(!start || !end || parseISO(end) < parseISO(start)){ document.getElementById('errDate').style.display='block'; ok=false; } else document.getElementById('errDate').style.display='none';
+    if(!ok) return;
+    let stageVal = stageSel.value;
+    if(stageVal === 'სხვა (ხელით შეყვანა)'){
+      stageVal = document.getElementById('fStageCustom').value.trim() || 'ეტაპი';
+    }
+    const titleVal = document.getElementById('fTitle').value.trim() || stageVal;
+    const payload = {
+      title: titleVal, stage: stageVal, start, end,
+      color: document.getElementById('fColor').value,
+      status: document.getElementById('fStatus').value,
+      employee: document.getElementById('fEmployee').value,
+      notes: document.getElementById('fNotes').value.trim()
+    };
+    const btn = document.getElementById('mSave');
+    btn.disabled = true; btn.textContent = 'ინახება...';
+    try{
+      await saveTask(order.id, payload, existing ? existing.id : null);
+      expanded[order.id] = true;
+      await loadData();
+      closeModal();
+    }catch(e){
+      alert('შენახვა ვერ მოხერხდა: ' + (e.message||''));
+      btn.disabled = false; btn.textContent = existing?'შენახვა':'დამატება';
+    }
+  };
+}
+
+function buildSwatches(colorInput){
+  const wrap = document.getElementById('swatches');
+  wrap.innerHTML = SWATCHES.map(c=>`<div class="swatch ${c.toLowerCase()===colorInput.value.toLowerCase()?'active':''}" style="background:${c}" data-c="${c}"></div>`).join('');
+  wrap.querySelectorAll('.swatch').forEach(sw=>{
+    sw.onclick = ()=>{
+      colorInput.value = sw.getAttribute('data-c');
+      wrap.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+      sw.classList.add('active');
+    };
+  });
+}
+
+document.getElementById('btnNewOrder').onclick = ()=> openOrderModal(null);
+document.getElementById('searchInput').addEventListener('input', render);
+
+document.getElementById('tabActive').onclick = ()=>{
+  currentView = 'active';
+  document.getElementById('tabActive').classList.add('active');
+  document.getElementById('tabCompleted').classList.remove('active');
+  _isFirstRender = true; /* re-center the view on today when switching tabs */
+  render();
+};
+document.getElementById('tabCompleted').onclick = ()=>{
+  currentView = 'completed';
+  document.getElementById('tabCompleted').classList.add('active');
+  document.getElementById('tabActive').classList.remove('active');
+  _isFirstRender = true;
+  render();
+};
+
+/* ---------- admin-only backup export ---------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify(orders, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gantt-shekvetebi-${toISO(todayLocal())}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('btnExport').onclick = exportData;
+
+function populateStageFilter(){
+  const sel = document.getElementById('stageFilterSelect');
+  sel.innerHTML = '<option value="all">ყველა ეტაპი</option>' +
+    STAGES.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  sel.onchange = ()=>{
+    stageFilter = sel.value;
+    _isFirstRender = true;
+    render();
+  };
+}
+
+initAuth();
+</script>
+</body>
+</html>
