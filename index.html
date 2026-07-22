@@ -303,6 +303,19 @@ body{
 }
 .hint{font-size:11.5px;color:var(--ink-soft);margin-top:-8px;margin-bottom:14px;}
 
+/* ---- Attachments ---- */
+.attachments-list{display:flex;flex-direction:column;gap:6px;}
+.attachment-row{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border:1px solid var(--line);border-radius:6px;background:#fbfaf6;
+}
+.attachment-row .att-name{
+  flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;
+}
+.attachment-row .att-name:hover{color:var(--blueprint);text-decoration:underline;}
+.attachment-row .att-size{font-size:11px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;flex-shrink:0;}
+
 /* ============================================================
    RESPONSIVE / MOBILE
    ============================================================ */
@@ -694,8 +707,9 @@ async function saveOrder(payload, existingId){
   }
 }
 async function deleteOrderRemote(id){
-  const { error } = await sb.from('orders').delete().eq('id', id);
+  const { data, error } = await sb.from('orders').delete().eq('id', id).select();
   if(error) throw error;
+  if(!data || data.length === 0) throw new Error('წაშლა არ განხორციელდა — შესაძლოა არ გქონდეთ საკმარისი უფლება (მხოლოდ ადმინს შეუძლია შეკვეთის წაშლა)');
 }
 async function saveTask(orderId, payload, existingId){
   const row = {
@@ -713,12 +727,96 @@ async function saveTask(orderId, payload, existingId){
   }
 }
 async function deleteTaskRemote(id){
-  const { error } = await sb.from('tasks').delete().eq('id', id);
+  const { data, error } = await sb.from('tasks').delete().eq('id', id).select();
   if(error) throw error;
+  if(!data || data.length === 0) throw new Error('წაშლა არ განხორციელდა — შესაძლოა არ გქონდეთ საკმარისი უფლება');
 }
 async function updateOwnTaskStatus(taskId, newStatus){
   const { error } = await sb.rpc('update_own_task_status', { p_task_id: taskId, p_new_status: newStatus });
   if(error) throw error;
+}
+
+/* ---------- attachments (Supabase Storage + task_attachments table) ---------- */
+const ATTACHMENTS_BUCKET = 'task-attachments';
+
+function formatFileSize(bytes){
+  if(!bytes && bytes !== 0) return '';
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+async function loadAttachmentsList(taskId){
+  const listEl = document.getElementById('attachmentsList');
+  if(!listEl) return;
+  try{
+    const { data, error } = await sb.from('task_attachments')
+      .select('*').eq('task_id', taskId).order('created_at', { ascending:true });
+    if(error) throw error;
+    if(!data || data.length === 0){
+      listEl.innerHTML = `<div class="hint" style="margin:0;">დანართები არ არის</div>`;
+      return;
+    }
+    listEl.innerHTML = data.map(a => `
+      <div class="attachment-row" data-att-id="${a.id}" data-att-path="${escapeHtml(a.file_path)}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--ink-soft);"><path d="M14 3v4a1 1 0 0 0 1 1h4M6 3h8l6 6v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/></svg>
+        <span class="att-name" data-att-download="${a.id}" title="${escapeHtml(a.file_name)}">${escapeHtml(a.file_name)}</span>
+        <span class="att-size">${formatFileSize(a.file_size)}</span>
+        ${canEdit() ? `<button type="button" class="btn-icon danger" data-att-delete="${a.id}" title="წაშლა">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>` : ''}
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-att-download]').forEach(el=>{
+      el.onclick = async ()=>{
+        const row = el.closest('.attachment-row');
+        const path = row.getAttribute('data-att-path');
+        try{
+          const { data: signed, error } = await sb.storage.from(ATTACHMENTS_BUCKET).createSignedUrl(path, 3600);
+          if(error) throw error;
+          window.open(signed.signedUrl, '_blank');
+        }catch(e){ alert('ფაილის გახსნა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+    listEl.querySelectorAll('[data-att-delete]').forEach(el=>{
+      el.onclick = async ()=>{
+        if(!confirm('წავშალო ეს დანართი?')) return;
+        const row = el.closest('.attachment-row');
+        const path = row.getAttribute('data-att-path');
+        const attId = el.getAttribute('data-att-delete');
+        try{
+          await sb.storage.from(ATTACHMENTS_BUCKET).remove([path]);
+          const { error } = await sb.from('task_attachments').delete().eq('id', attId);
+          if(error) throw error;
+          loadAttachmentsList(taskId);
+        }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+  }catch(e){
+    listEl.innerHTML = `<div class="hint" style="margin:0;color:var(--rust);">ჩატვირთვის შეცდომა: ${escapeHtml(e.message||'')}</div>`;
+  }
+}
+
+async function uploadAttachments(taskId, files){
+  const listEl = document.getElementById('attachmentsList');
+  if(listEl) listEl.innerHTML = `<div class="hint" style="margin:0;">იტვირთება (${files.length})...</div>`;
+  for(const file of files){
+    try{
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, '_');
+      const path = `${taskId}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await sb.storage.from(ATTACHMENTS_BUCKET).upload(path, file);
+      if(upErr) throw upErr;
+      const { error: dbErr } = await sb.from('task_attachments').insert({
+        task_id: taskId, file_path: path, file_name: file.name,
+        file_size: file.size, uploaded_by: currentUser.id
+      });
+      if(dbErr) throw dbErr;
+    }catch(e){
+      alert(`"${file.name}" ატვირთვა ვერ მოხერხდა: ` + (e.message||''));
+    }
+  }
+  loadAttachmentsList(taskId);
 }
 
 function seedData(){
@@ -1178,6 +1276,18 @@ function openTaskModal(orderId, existingTaskId){
       <div class="field"><label>შენიშვნა</label>
         <textarea id="fNotes" placeholder="დამატებითი დეტალები ამ ეტაპთან დაკავშირებით">${escapeHtml(data.notes||'')}</textarea>
       </div>
+      ${existing ? `
+      <div class="field">
+        <label>დანართები</label>
+        <div id="attachmentsList" class="attachments-list"><div class="hint" style="margin:0;">იტვირთება...</div></div>
+        ${canEdit() ? `
+        <input type="file" id="attachmentInput" multiple style="display:none">
+        <button type="button" class="btn btn-ghost" id="btnAddAttachment" style="margin-top:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          ფაილის დამატება
+        </button>` : ''}
+      </div>` : `
+      <div class="hint">ფაილების დამატება შესაძლებელია მას შემდეგ, რაც ეტაპს შეინახავთ.</div>`}
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" id="mCancel">გაუქმება</button>
@@ -1186,6 +1296,18 @@ function openTaskModal(orderId, existingTaskId){
   `;
   overlay.classList.add('open');
   buildSwatches(document.getElementById('fColor'));
+  if(existing){
+    loadAttachmentsList(existing.id);
+    const attBtn = document.getElementById('btnAddAttachment');
+    if(attBtn){
+      attBtn.onclick = ()=> document.getElementById('attachmentInput').click();
+      document.getElementById('attachmentInput').addEventListener('change', async (e)=>{
+        const files = Array.from(e.target.files || []);
+        if(files.length) await uploadAttachments(existing.id, files);
+        e.target.value = '';
+      });
+    }
+  }
 
   const stageSel = document.getElementById('fStage');
   stageSel.onchange = ()=>{
