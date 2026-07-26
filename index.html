@@ -653,7 +653,7 @@ function renderUserBadge(){
 function applyRoleUI(){
   document.getElementById('btnNewOrder').style.display = canEdit() ? '' : 'none';
   document.getElementById('btnExport').style.display = isAdmin() ? '' : 'none';
-  document.getElementById('btnFinance').style.display = canEdit() ? '' : 'none';
+  document.getElementById('btnFinance').style.display = isAdmin() ? '' : 'none';
   renderUserBadge();
 }
 
@@ -793,7 +793,7 @@ function subscribeRealtime(){
     .subscribe();
 }
 async function refreshFinanceIfVisible(){
-  if(currentPageView === 'finance' && canEdit()){
+  if(currentPageView === 'finance' && isAdmin()){
     await loadFinanceData();
     renderFinancePage();
   }
@@ -1021,7 +1021,7 @@ function renderFinancePage(){
 }
 
 async function togglePageView(){
-  if(!canEdit()) return;
+  if(!isAdmin()) return;
   if(currentPageView === 'gantt'){
     currentPageView = 'finance';
     document.getElementById('ganttPage').style.display = 'none';
