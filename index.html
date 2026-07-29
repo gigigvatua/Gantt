@@ -154,6 +154,10 @@ body{
 .finance-table .num-cell{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;}
 .finance-table th.num-cell{text-align:right;}
 .finance-profit-positive{color:var(--sage);font-weight:700;}
+.pay-check{color:var(--sage);font-weight:700;margin-left:3px;}
+.payment-checkbox-row{display:flex;align-items:center;gap:8px;margin:8px 0 14px;}
+.payment-checkbox-row label{font-size:13px;color:var(--ink);display:flex;align-items:center;gap:6px;cursor:pointer;}
+.payment-checkbox-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;}
 .finance-profit-negative{color:var(--rust);font-weight:700;}
 .finance-order-name{font-weight:600;}
 .finance-order-client{font-size:11.5px;color:var(--ink-soft);}
@@ -518,6 +522,8 @@ body{
             <th>სტატუსი</th>
             <th class="num-cell">ზომა (მ²)</th>
             <th class="num-cell">ბიუჯეტი</th>
+            <th class="num-cell">ავანსი</th>
+            <th class="num-cell">დარჩენილი</th>
             <th class="num-cell">ხარჯი</th>
             <th class="num-cell">მოგება</th>
             <th class="num-cell">ფასი/მ²</th>
@@ -950,15 +956,18 @@ async function loadFinanceData(){
 
     financeData = {};
     orders.forEach(o=>{
-      financeData[o.id] = { budget_total: null, furniture_size: null, expenses: [] };
+      financeData[o.id] = { budget_total: null, furniture_size: null, advance_payment: 0, advance_received: false, final_received: false, expenses: [] };
     });
     (financeRows||[]).forEach(r=>{
-      if(!financeData[r.order_id]) financeData[r.order_id] = { budget_total:null, furniture_size:null, expenses:[] };
+      if(!financeData[r.order_id]) financeData[r.order_id] = { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
       financeData[r.order_id].budget_total = r.budget_total;
       financeData[r.order_id].furniture_size = r.furniture_size;
+      financeData[r.order_id].advance_payment = r.advance_payment || 0;
+      financeData[r.order_id].advance_received = !!r.advance_received;
+      financeData[r.order_id].final_received = !!r.final_received;
     });
     (expenseRows||[]).forEach(e=>{
-      if(!financeData[e.order_id]) financeData[e.order_id] = { budget_total:null, furniture_size:null, expenses:[] };
+      if(!financeData[e.order_id]) financeData[e.order_id] = { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
       financeData[e.order_id].expenses.push({ id:e.id, description:e.description, amount:e.amount });
     });
   }catch(e){
@@ -978,16 +987,20 @@ function renderFinancePage(){
   const bodyEl = document.getElementById('financeTableBody');
   if(!summaryEl || !bodyEl) return;
 
-  let totalBudget = 0, totalExpenses = 0;
+  let totalBudget = 0, totalExpenses = 0, totalRemaining = 0;
   const rowsHtml = orders.map((o, idx)=>{
-    const fd = financeData[o.id] || { budget_total:null, furniture_size:null, expenses:[] };
+    const fd = financeData[o.id] || { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
     const expTotal = calcExpensesTotal(o.id);
     const budget = Number(fd.budget_total) || 0;
+    const advance = Number(fd.advance_payment) || 0;
+    const remaining = budget - advance;
     const profit = budget - expTotal;
     const size = Number(fd.furniture_size) || 0;
     const pricePerM2 = size > 0 ? budget / size : null;
-    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; }
+    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; }
     const profitClass = profit > 0 ? 'finance-profit-positive' : (profit < 0 ? 'finance-profit-negative' : '');
+    const advanceIcon = fd.advance_received ? '✓' : '';
+    const finalIcon = fd.final_received ? '✓' : '';
     return `<tr>
       <td>${idx+1}</td>
       <td>
@@ -997,6 +1010,8 @@ function renderFinancePage(){
       <td><span class="badge" style="background:${STATUS_COLOR[o.status]||'#9B968C'}">${o.status}</span></td>
       <td class="num-cell">${fd.furniture_size ? formatNumber(fd.furniture_size) : '—'}</td>
       <td class="num-cell">${fd.budget_total !== null ? formatMoney(fd.budget_total) : '—'}</td>
+      <td class="num-cell">${advance > 0 ? formatMoney(advance) : '—'} ${advanceIcon ? '<span class="pay-check" title="ავანსი მიღებულია">'+advanceIcon+'</span>' : ''}</td>
+      <td class="num-cell">${budget > 0 ? formatMoney(remaining) : '—'} ${finalIcon ? '<span class="pay-check" title="საბოლოო გადახდა მიღებულია">'+finalIcon+'</span>' : ''}</td>
       <td class="num-cell">${expTotal > 0 ? formatMoney(expTotal) : '—'}</td>
       <td class="num-cell ${profitClass}">${(fd.budget_total !== null || expTotal>0) ? formatMoney(profit) : '—'}</td>
       <td class="num-cell">${pricePerM2 !== null ? formatMoney(pricePerM2) : '—'}</td>
@@ -1011,9 +1026,10 @@ function renderFinancePage(){
     <div class="finance-stat"><div class="fs-lbl">სულ ბიუჯეტი (მიმდინარე)</div><div class="fs-val">${formatMoney(totalBudget)}</div></div>
     <div class="finance-stat"><div class="fs-lbl">სულ ხარჯი (მიმდინარე)</div><div class="fs-val">${formatMoney(totalExpenses)}</div></div>
     <div class="finance-stat profit"><div class="fs-lbl">სულ მოგება (მიმდინარე)</div><div class="fs-val ${totalProfit>=0?'positive':'negative'}">${formatMoney(totalProfit)}</div></div>
+    <div class="finance-stat"><div class="fs-lbl">მისაღები დარჩენილი თანხა</div><div class="fs-val">${formatMoney(totalRemaining)}</div></div>
   `;
 
-  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
+  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="11" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
 
   bodyEl.querySelectorAll('[data-finance-edit]').forEach(el=>{
     el.onclick = ()=> openFinanceModal(el.getAttribute('data-finance-edit'));
@@ -1039,11 +1055,14 @@ async function togglePageView(){
   }
 }
 
-async function saveOrderFinance(orderId, budgetTotal, furnitureSize){
+async function saveOrderFinance(orderId, budgetTotal, furnitureSize, advancePayment, advanceReceived, finalReceived){
   const row = {
     order_id: orderId,
     budget_total: budgetTotal === '' ? null : Number(budgetTotal),
     furniture_size: furnitureSize === '' ? null : Number(furnitureSize),
+    advance_payment: advancePayment === '' ? 0 : Number(advancePayment),
+    advance_received: !!advanceReceived,
+    final_received: !!finalReceived,
     updated_at: new Date().toISOString()
   };
   const { error } = await sb.from('order_finance').upsert(row, { onConflict:'order_id' });
@@ -1065,7 +1084,10 @@ async function deleteExpenseEntry(expenseId){
 function openFinanceModal(orderId){
   const order = orders.find(o=>o.id===orderId);
   if(!order) return;
-  const fd = financeData[orderId] || { budget_total:null, furniture_size:null, expenses:[] };
+  const fd = financeData[orderId] || { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
+  const budgetNow = Number(fd.budget_total) || 0;
+  const advanceNow = Number(fd.advance_payment) || 0;
+  const remainingNow = budgetNow - advanceNow;
 
   modalContent.innerHTML = `
     <div class="modal-head"><h3>ფინანსები — ${escapeHtml(order.name)}</h3>
@@ -1079,6 +1101,16 @@ function openFinanceModal(orderId){
         <div class="field"><label>ავეჯის ზომა (მ²)</label>
           <input type="number" step="0.01" id="fSize" value="${fd.furniture_size !== null ? fd.furniture_size : ''}" placeholder="მაგ. 12.5">
         </div>
+      </div>
+      <div class="field"><label>ავანსი / პირველი გადახდა (₾)</label>
+        <input type="number" step="0.01" id="fAdvance" value="${fd.advance_payment ? fd.advance_payment : ''}" placeholder="მაგ. 1750">
+        <div class="hint" id="remainingHint" style="margin-top:6px;margin-bottom:0;">დარჩენილი მისაღები: <strong>${formatMoney(remainingNow)}</strong></div>
+      </div>
+      <div class="payment-checkbox-row">
+        <label><input type="checkbox" id="fAdvanceReceived" ${fd.advance_received?'checked':''}> ავანსი მიღებულია</label>
+      </div>
+      <div class="payment-checkbox-row" style="margin-top:-8px;">
+        <label><input type="checkbox" id="fFinalReceived" ${fd.final_received?'checked':''}> საბოლოო გადახდა მიღებულია</label>
       </div>
       <button class="btn btn-primary" id="btnSaveFinance" style="width:100%;margin-bottom:18px;">ბიუჯეტის შენახვა</button>
 
@@ -1097,6 +1129,15 @@ function openFinanceModal(orderId){
     </div>
   `;
   overlay.classList.add('open');
+
+  function refreshRemainingHint(){
+    const b = Number(document.getElementById('fBudget').value) || 0;
+    const a = Number(document.getElementById('fAdvance').value) || 0;
+    document.getElementById('remainingHint').innerHTML = `დარჩენილი მისაღები: <strong>${formatMoney(b - a)}</strong>`;
+  }
+  document.getElementById('fBudget').addEventListener('input', refreshRemainingHint);
+  document.getElementById('fAdvance').addEventListener('input', refreshRemainingHint);
+
   document.getElementById('mClose').onclick = closeModal;
   document.getElementById('mCancel').onclick = closeModal;
 
@@ -1134,7 +1175,14 @@ function openFinanceModal(orderId){
     const btn = document.getElementById('btnSaveFinance');
     btn.disabled = true; btn.textContent = 'ინახება...';
     try{
-      await saveOrderFinance(orderId, document.getElementById('fBudget').value, document.getElementById('fSize').value);
+      await saveOrderFinance(
+        orderId,
+        document.getElementById('fBudget').value,
+        document.getElementById('fSize').value,
+        document.getElementById('fAdvance').value,
+        document.getElementById('fAdvanceReceived').checked,
+        document.getElementById('fFinalReceived').checked
+      );
       await loadFinanceData();
       renderFinancePage();
       btn.textContent = 'შენახულია ✓';
