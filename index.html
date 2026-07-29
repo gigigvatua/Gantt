@@ -525,6 +525,7 @@ body{
             <th class="num-cell">ავანსი</th>
             <th class="num-cell">დარჩენილი</th>
             <th class="num-cell">ხარჯი</th>
+            <th class="num-cell">ავანსიდან ნაღდი</th>
             <th class="num-cell">მოგება</th>
             <th class="num-cell">ფასი/მ²</th>
             <th></th>
@@ -987,18 +988,20 @@ function renderFinancePage(){
   const bodyEl = document.getElementById('financeTableBody');
   if(!summaryEl || !bodyEl) return;
 
-  let totalBudget = 0, totalExpenses = 0, totalRemaining = 0;
+  let totalBudget = 0, totalExpenses = 0, totalRemaining = 0, totalAdvanceCash = 0;
   const rowsHtml = orders.map((o, idx)=>{
     const fd = financeData[o.id] || { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
     const expTotal = calcExpensesTotal(o.id);
     const budget = Number(fd.budget_total) || 0;
     const advance = Number(fd.advance_payment) || 0;
     const remaining = budget - advance;
+    const advanceCash = advance - expTotal;
     const profit = budget - expTotal;
     const size = Number(fd.furniture_size) || 0;
     const pricePerM2 = size > 0 ? budget / size : null;
-    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; }
+    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; totalAdvanceCash += advanceCash; }
     const profitClass = profit > 0 ? 'finance-profit-positive' : (profit < 0 ? 'finance-profit-negative' : '');
+    const advanceCashClass = advanceCash > 0 ? 'finance-profit-positive' : (advanceCash < 0 ? 'finance-profit-negative' : '');
     const advanceIcon = fd.advance_received ? '✓' : '';
     const finalIcon = fd.final_received ? '✓' : '';
     return `<tr>
@@ -1013,6 +1016,7 @@ function renderFinancePage(){
       <td class="num-cell">${advance > 0 ? formatMoney(advance) : '—'} ${advanceIcon ? '<span class="pay-check" title="ავანსი მიღებულია">'+advanceIcon+'</span>' : ''}</td>
       <td class="num-cell">${budget > 0 ? formatMoney(remaining) : '—'} ${finalIcon ? '<span class="pay-check" title="საბოლოო გადახდა მიღებულია">'+finalIcon+'</span>' : ''}</td>
       <td class="num-cell">${expTotal > 0 ? formatMoney(expTotal) : '—'}</td>
+      <td class="num-cell ${advanceCashClass}">${advance > 0 ? formatMoney(advanceCash) : '—'}</td>
       <td class="num-cell ${profitClass}">${(fd.budget_total !== null || expTotal>0) ? formatMoney(profit) : '—'}</td>
       <td class="num-cell">${pricePerM2 !== null ? formatMoney(pricePerM2) : '—'}</td>
       <td><button class="btn-icon" data-finance-edit="${o.id}" title="რედაქტირება">
@@ -1027,9 +1031,10 @@ function renderFinancePage(){
     <div class="finance-stat"><div class="fs-lbl">სულ ხარჯი (მიმდინარე)</div><div class="fs-val">${formatMoney(totalExpenses)}</div></div>
     <div class="finance-stat profit"><div class="fs-lbl">სულ მოგება (მიმდინარე)</div><div class="fs-val ${totalProfit>=0?'positive':'negative'}">${formatMoney(totalProfit)}</div></div>
     <div class="finance-stat"><div class="fs-lbl">მისაღები დარჩენილი თანხა</div><div class="fs-val">${formatMoney(totalRemaining)}</div></div>
+    <div class="finance-stat profit"><div class="fs-lbl">ავანსიდან დარჩენილი ნაღდი</div><div class="fs-val ${totalAdvanceCash>=0?'positive':'negative'}">${formatMoney(totalAdvanceCash)}</div></div>
   `;
 
-  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="11" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
+  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="12" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
 
   bodyEl.querySelectorAll('[data-finance-edit]').forEach(el=>{
     el.onclick = ()=> openFinanceModal(el.getAttribute('data-finance-edit'));
@@ -1105,6 +1110,7 @@ function openFinanceModal(orderId){
       <div class="field"><label>ავანსი / პირველი გადახდა (₾)</label>
         <input type="number" step="0.01" id="fAdvance" value="${fd.advance_payment ? fd.advance_payment : ''}" placeholder="მაგ. 1750">
         <div class="hint" id="remainingHint" style="margin-top:6px;margin-bottom:0;">დარჩენილი მისაღები: <strong>${formatMoney(remainingNow)}</strong></div>
+        <div class="hint" id="advanceCashHint" style="margin-top:2px;margin-bottom:0;">ავანსიდან დარჩენილი ნაღდი (ხარჯების შემდეგ): <strong>${formatMoney(advanceNow - calcExpensesTotal(orderId))}</strong></div>
       </div>
       <div class="payment-checkbox-row">
         <label><input type="checkbox" id="fAdvanceReceived" ${fd.advance_received?'checked':''}> ავანსი მიღებულია</label>
@@ -1134,6 +1140,7 @@ function openFinanceModal(orderId){
     const b = Number(document.getElementById('fBudget').value) || 0;
     const a = Number(document.getElementById('fAdvance').value) || 0;
     document.getElementById('remainingHint').innerHTML = `დარჩენილი მისაღები: <strong>${formatMoney(b - a)}</strong>`;
+    document.getElementById('advanceCashHint').innerHTML = `ავანსიდან დარჩენილი ნაღდი (ხარჯების შემდეგ): <strong>${formatMoney(a - calcExpensesTotal(orderId))}</strong>`;
   }
   document.getElementById('fBudget').addEventListener('input', refreshRemainingHint);
   document.getElementById('fAdvance').addEventListener('input', refreshRemainingHint);
@@ -1146,6 +1153,7 @@ function openFinanceModal(orderId){
     const current = financeData[orderId] || { expenses:[] };
     if(!current.expenses.length){
       listEl.innerHTML = `<div class="hint" style="margin:0;">ხარჯი ჯერ არ არის დამატებული</div>`;
+      refreshRemainingHint();
       return;
     }
     listEl.innerHTML = current.expenses.map(e=>`
@@ -1157,6 +1165,7 @@ function openFinanceModal(orderId){
         </button>
       </div>
     `).join('');
+    refreshRemainingHint();
     listEl.querySelectorAll('[data-exp-delete]').forEach(el=>{
       el.onclick = async ()=>{
         if(!confirm('წავშალო ეს ხარჯი?')) return;
