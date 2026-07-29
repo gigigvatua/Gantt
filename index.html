@@ -873,8 +873,8 @@ async function loadData(){
   updateStatusText('იტვირთება...');
   try{
     const [{ data: orderRows, error: oErr }, { data: taskRows, error: tErr }, { data: attRows, error: aErr }] = await Promise.all([
-      sb.from('orders').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
-      sb.from('tasks').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
+      sb.from('orders').select('*').order('seq', { ascending:true }),
+      sb.from('tasks').select('*').order('seq', { ascending:true }),
       sb.from('task_attachments').select('task_id')
     ]);
     if(oErr) throw oErr;
