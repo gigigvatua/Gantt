@@ -520,14 +520,12 @@ body{
             <th>#</th>
             <th>შეკვეთა</th>
             <th>სტატუსი</th>
-            <th class="num-cell">ზომა (მ²)</th>
             <th class="num-cell">ბიუჯეტი</th>
             <th class="num-cell">ავანსი</th>
-            <th class="num-cell">დარჩენილი</th>
             <th class="num-cell">ხარჯი</th>
             <th class="num-cell">ავანსიდან ნაღდი</th>
+            <th class="num-cell">ბიუჯეტიდან დარჩენილი</th>
             <th class="num-cell">მოგება</th>
-            <th class="num-cell">ფასი/მ²</th>
             <th></th>
           </tr>
         </thead>
@@ -997,8 +995,6 @@ function renderFinancePage(){
     const remaining = budget - advance;
     const advanceCash = advance - expTotal;
     const profit = budget - expTotal;
-    const size = Number(fd.furniture_size) || 0;
-    const pricePerM2 = size > 0 ? budget / size : null;
     if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; totalAdvanceCash += advanceCash; }
     const profitClass = profit > 0 ? 'finance-profit-positive' : (profit < 0 ? 'finance-profit-negative' : '');
     const advanceCashClass = advanceCash > 0 ? 'finance-profit-positive' : (advanceCash < 0 ? 'finance-profit-negative' : '');
@@ -1011,14 +1007,12 @@ function renderFinancePage(){
         <div class="finance-order-client">${escapeHtml(o.client)}</div>
       </td>
       <td><span class="badge" style="background:${STATUS_COLOR[o.status]||'#9B968C'}">${o.status}</span></td>
-      <td class="num-cell">${fd.furniture_size ? formatNumber(fd.furniture_size) : '—'}</td>
       <td class="num-cell">${fd.budget_total !== null ? formatMoney(fd.budget_total) : '—'}</td>
       <td class="num-cell">${advance > 0 ? formatMoney(advance) : '—'} ${advanceIcon ? '<span class="pay-check" title="ავანსი მიღებულია">'+advanceIcon+'</span>' : ''}</td>
-      <td class="num-cell">${budget > 0 ? formatMoney(remaining) : '—'} ${finalIcon ? '<span class="pay-check" title="საბოლოო გადახდა მიღებულია">'+finalIcon+'</span>' : ''}</td>
       <td class="num-cell">${expTotal > 0 ? formatMoney(expTotal) : '—'}</td>
       <td class="num-cell ${advanceCashClass}">${advance > 0 ? formatMoney(advanceCash) : '—'}</td>
+      <td class="num-cell">${budget > 0 ? formatMoney(remaining) : '—'} ${finalIcon ? '<span class="pay-check" title="საბოლოო გადახდა მიღებულია">'+finalIcon+'</span>' : ''}</td>
       <td class="num-cell ${profitClass}">${(fd.budget_total !== null || expTotal>0) ? formatMoney(profit) : '—'}</td>
-      <td class="num-cell">${pricePerM2 !== null ? formatMoney(pricePerM2) : '—'}</td>
       <td><button class="btn-icon" data-finance-edit="${o.id}" title="რედაქტირება">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
       </button></td>
@@ -1034,7 +1028,7 @@ function renderFinancePage(){
     <div class="finance-stat profit"><div class="fs-lbl">ავანსიდან დარჩენილი ნაღდი</div><div class="fs-val ${totalAdvanceCash>=0?'positive':'negative'}">${formatMoney(totalAdvanceCash)}</div></div>
   `;
 
-  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="12" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
+  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="10" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
 
   bodyEl.querySelectorAll('[data-finance-edit]').forEach(el=>{
     el.onclick = ()=> openFinanceModal(el.getAttribute('data-finance-edit'));
