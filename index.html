@@ -873,8 +873,8 @@ async function loadData(){
   updateStatusText('იტვირთება...');
   try{
     const [{ data: orderRows, error: oErr }, { data: taskRows, error: tErr }, { data: attRows, error: aErr }] = await Promise.all([
-      sb.from('orders').select('*').order('created_at', { ascending:true }),
-      sb.from('tasks').select('*').order('created_at', { ascending:true }),
+      sb.from('orders').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
+      sb.from('tasks').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
       sb.from('task_attachments').select('task_id')
     ]);
     if(oErr) throw oErr;
@@ -985,7 +985,7 @@ async function loadAttachmentsList(taskId){
   if(!listEl) return;
   try{
     const { data, error } = await sb.from('task_attachments')
-      .select('*').eq('task_id', taskId).order('created_at', { ascending:true });
+      .select('*').eq('task_id', taskId).order('created_at', { ascending:true }).order('id', { ascending:true });
     if(error) throw error;
     if(!data || data.length === 0){
       listEl.innerHTML = `<div class="hint" style="margin:0;">დანართები არ არის</div>`;
@@ -1067,7 +1067,7 @@ async function loadFinanceData(){
   try{
     const [{ data: financeRows, error: fErr }, { data: expenseRows, error: eErr }] = await Promise.all([
       sb.from('order_finance').select('*'),
-      sb.from('order_expenses').select('*').order('created_at', { ascending:true })
+      sb.from('order_expenses').select('*').order('created_at', { ascending:true }).order('id', { ascending:true })
     ]);
     if(fErr) throw fErr;
     if(eErr) throw eErr;
@@ -1352,9 +1352,9 @@ function canEditWorkTask(task){
 async function loadWorkTasks(){
   try{
     const [{ data: taskRows, error: tErr }, { data: commentRows, error: cErr }, { data: attRows, error: aErr }, { data: profileRows, error: pErr }] = await Promise.all([
-      sb.from('work_tasks').select('*').order('due_date', { ascending:true, nullsFirst:false }),
-      sb.from('work_task_comments').select('*').order('created_at', { ascending:true }),
-      sb.from('work_task_attachments').select('*').order('created_at', { ascending:true }),
+      sb.from('work_tasks').select('*').order('due_date', { ascending:true, nullsFirst:false }).order('id', { ascending:true }),
+      sb.from('work_task_comments').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
+      sb.from('work_task_attachments').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
       sb.from('profiles').select('id, display_name, email')
     ]);
     if(tErr) throw tErr;
