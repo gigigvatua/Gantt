@@ -370,6 +370,17 @@ body{
 
 /* ---- Tasks & Assignments page ---- */
 .wt-list-wrap{display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1 1 auto;min-height:0;padding-right:2px;}
+.wt-employee-group{
+  background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:14px;margin-bottom:4px;
+}
+.wt-employee-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--line);
+}
+.wt-employee-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--ink);}
+.wt-employee-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);}
+.wt-employee-tasks{display:flex;flex-direction:column;gap:8px;}
 .wt-card{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
   padding:14px 16px;display:flex;align-items:flex-start;gap:14px;
@@ -1338,19 +1349,25 @@ function canEditWorkTask(task){
 
 async function loadWorkTasks(){
   try{
-    const [{ data: taskRows, error: tErr }, { data: commentRows, error: cErr }, { data: attRows, error: aErr }] = await Promise.all([
+    const [{ data: taskRows, error: tErr }, { data: commentRows, error: cErr }, { data: attRows, error: aErr }, { data: profileRows, error: pErr }] = await Promise.all([
       sb.from('work_tasks').select('*').order('due_date', { ascending:true, nullsFirst:false }),
       sb.from('work_task_comments').select('*').order('created_at', { ascending:true }),
-      sb.from('work_task_attachments').select('*').order('created_at', { ascending:true })
+      sb.from('work_task_attachments').select('*').order('created_at', { ascending:true }),
+      sb.from('profiles').select('id, display_name, email')
     ]);
     if(tErr) throw tErr;
     if(cErr) throw cErr;
     if(aErr) throw aErr;
+    if(pErr) throw pErr;
+
+    const nameById = {};
+    (profileRows||[]).forEach(p=>{ nameById[p.id] = p.display_name || p.email || 'უცნობი'; });
 
     workTasks = (taskRows||[]).map(t=>({
       id:t.id, title:t.title, task_type:t.task_type, employee:t.employee||'',
       priority:t.priority, due_date:t.due_date, status:t.status, progress:t.progress||0,
-      notes:t.notes||'', comments:[], attachments:[]
+      notes:t.notes||'', comments:[], attachments:[],
+      created_by_name: t.created_by ? (nameById[t.created_by] || 'უცნობი') : 'უცნობი'
     }));
     const byId = {};
     workTasks.forEach(t=> byId[t.id] = t);
@@ -1408,7 +1425,21 @@ function renderTasksPage(){
     return;
   }
 
-  wrap.innerHTML = filtered.map(t=>{
+  /* Group tasks by assigned employee, in EMPLOYEES order, unassigned last */
+  const groups = [];
+  const groupIndex = {};
+  EMPLOYEES.forEach(name=>{ groupIndex[name] = { name, tasks: [] }; });
+  const unassigned = { name: 'დაუნიშნავი', tasks: [] };
+  filtered.forEach(t=>{
+    if(t.employee && groupIndex[t.employee]) groupIndex[t.employee].tasks.push(t);
+    else if(t.employee){ if(!groupIndex[t.employee]) groupIndex[t.employee] = { name:t.employee, tasks:[] }; groupIndex[t.employee].tasks.push(t); }
+    else unassigned.tasks.push(t);
+  });
+  EMPLOYEES.forEach(name=>{ if(groupIndex[name].tasks.length) groups.push(groupIndex[name]); });
+  Object.keys(groupIndex).forEach(name=>{ if(!EMPLOYEES.includes(name) && groupIndex[name].tasks.length) groups.push(groupIndex[name]); });
+  if(unassigned.tasks.length) groups.push(unassigned);
+
+  function renderTaskCard(t){
     const done = t.status === 'დასრულებული';
     const overdue = isOverdue(t);
     const canEditThis = canEditWorkTask(t);
@@ -1421,7 +1452,7 @@ function renderTasksPage(){
           <span class="wt-priority-badge" style="background:${PRIORITY_COLOR[t.priority]||'#6B7280'}">${escapeHtml(t.priority)}</span>
           <span class="wt-status-badge" style="background:${WORK_STATUS_COLOR[t.status]||'#6B7280'}">${escapeHtml(t.status)}</span>
         </div>
-        <div class="wt-type">${escapeHtml(t.task_type)}${t.employee ? ' · '+escapeHtml(t.employee) : ''}</div>
+        <div class="wt-type">${escapeHtml(t.task_type)} · დანიშნა: ${escapeHtml(t.created_by_name)}</div>
         <div class="wt-meta-row">
           <span class="${overdue?'wt-due-overdue':''}">📅 ${dueLabel}${overdue?' (ვადაგადაცილებული)':''}</span>
           <span class="wt-progress-wrap"><div class="wt-progress-bar"><div class="wt-progress-fill" style="width:${t.progress}%"></div></div>${t.progress}%</span>
@@ -1438,7 +1469,19 @@ function renderTasksPage(){
         </button>` : ''}
       </div>
     </div>`;
-  }).join('');
+  }
+
+  wrap.innerHTML = groups.map(g=>`
+    <div class="wt-employee-group">
+      <div class="wt-employee-header">
+        <span class="wt-employee-name">👤 ${escapeHtml(g.name)}</span>
+        <span class="wt-employee-count">${g.tasks.length} დავალება</span>
+      </div>
+      <div class="wt-employee-tasks">
+        ${g.tasks.map(renderTaskCard).join('')}
+      </div>
+    </div>
+  `).join('');
 
   wrap.querySelectorAll('[data-wt-open]').forEach(el=>{
     el.onclick = ()=> openWorkTaskModal(el.getAttribute('data-wt-open'));
