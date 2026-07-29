@@ -149,13 +149,15 @@ body{
 .finance-stat.profit .fs-val.negative{color:var(--rust);}
 .finance-table-wrap{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-  overflow:auto;
+  overflow:visible;
 }
 .finance-table{width:100%;border-collapse:collapse;font-size:13.5px;}
 .finance-table th{
+  position:sticky;top:0;z-index:2;background:var(--panel);
   text-align:left;padding:11px 14px;border-bottom:2px solid var(--line);
   font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;
   color:var(--ink-soft);letter-spacing:.03em;white-space:nowrap;
+  box-shadow:0 1px 0 var(--line);
 }
 .finance-table td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
 .finance-table tbody tr:hover{background:var(--line-soft);}
