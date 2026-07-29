@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -98,6 +97,15 @@ body{
 }
 .view-tab:hover{border-color:var(--ink-soft);color:var(--ink);}
 .view-tab.active{background:var(--blueprint);color:#fff;border-color:var(--blueprint);}
+
+.page-nav{display:flex;gap:6px;}
+.page-nav-btn{
+  display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;
+  padding:9px 14px;border-radius:7px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink-soft);cursor:pointer;transition:all .12s;
+}
+.page-nav-btn:hover{border-color:var(--ink-soft);color:var(--ink);}
+.page-nav-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
 .stat-card{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
   padding:6px 12px;min-width:90px;
@@ -360,6 +368,36 @@ body{
 }
 .hint{font-size:11.5px;color:var(--ink-soft);margin-top:-8px;margin-bottom:14px;}
 
+/* ---- Tasks & Assignments page ---- */
+.wt-list-wrap{display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1 1 auto;min-height:0;padding-right:2px;}
+.wt-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;display:flex;align-items:flex-start;gap:14px;
+}
+.wt-card.done{opacity:.55;}
+.wt-check{width:22px;height:22px;flex-shrink:0;margin-top:2px;cursor:pointer;}
+.wt-main{flex:1;min-width:0;}
+.wt-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;}
+.wt-title{font-weight:700;font-size:14.5px;}
+.wt-type{font-size:11.5px;color:var(--ink-soft);}
+.wt-meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:8px;}
+.wt-priority-badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;color:#fff;}
+.wt-status-badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;color:#fff;}
+.wt-progress-wrap{display:flex;align-items:center;gap:6px;}
+.wt-progress-bar{width:110px;height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden;}
+.wt-progress-fill{height:100%;background:var(--blueprint);}
+.wt-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;}
+.wt-due-overdue{color:var(--rust);font-weight:700;}
+.wt-employee-select{
+  font-size:12px;padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--ink);
+}
+.wt-comment-row{padding:8px 0;border-bottom:1px solid var(--line-soft);}
+.wt-comment-row:last-child{border-bottom:none;}
+.wt-comment-author{font-weight:700;font-size:12px;}
+.wt-comment-date{font-size:10.5px;color:var(--ink-soft);margin-left:6px;}
+.wt-comment-text{font-size:13px;margin-top:2px;white-space:pre-wrap;}
+
+
 /* ---- Attachments ---- */
 .attachments-list{display:flex;flex-direction:column;gap:6px;}
 .attachment-row{
@@ -478,10 +516,20 @@ body{
     </div>
     <div style="display:flex;align-items:center;gap:16px;">
       <div class="user-badge" id="userBadge"></div>
-      <button class="btn btn-ghost" id="btnFinance" style="display:none;" title="ფინანსები">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <span id="btnFinanceLabel">ფინანსები</span>
-      </button>
+      <div class="page-nav">
+        <button class="page-nav-btn active" id="btnNavGantt" title="Gantt ცხრილი">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg>
+          <span>Gantt</span>
+        </button>
+        <button class="page-nav-btn" id="btnNavTasks" title="დავალებები">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>დავალებები</span>
+        </button>
+        <button class="page-nav-btn" id="btnNavFinance" style="display:none;" title="ფინანსები">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>ფინანსები</span>
+        </button>
+      </div>
       <button class="btn btn-ghost" id="btnLogout" title="გამოსვლა">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
@@ -533,6 +581,28 @@ body{
       </table>
     </div>
   </div>
+
+  <div id="tasksPage" style="display:none;flex:1 1 auto;min-height:0;flex-direction:column;">
+    <div class="toolbar" style="margin-bottom:12px;">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="wtSearchInput" type="text" placeholder="ძებნა დავალების მიხედვით...">
+      </div>
+      <div class="search-box" style="min-width:180px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg>
+        <select id="wtEmployeeFilter" style="border:none;outline:none;background:transparent;font-family:'Inter',sans-serif;font-size:13.5px;width:100%;color:var(--ink);cursor:pointer;"></select>
+      </div>
+      <div class="search-box" style="min-width:170px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <select id="wtStatusFilter" style="border:none;outline:none;background:transparent;font-family:'Inter',sans-serif;font-size:13.5px;width:100%;color:var(--ink);cursor:pointer;"></select>
+      </div>
+      <button class="btn btn-primary" id="btnNewWorkTask" style="display:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        ახალი დავალება
+      </button>
+    </div>
+    <div class="wt-list-wrap" id="wtListWrap"></div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay"><div class="modal" id="modalContent"></div></div>
@@ -551,12 +621,11 @@ const STAGES = [
   "პროექტის დასრულება, დაარქივება"
 ];
 const STAGE_DEFAULT_EMPLOYEE = [
-  "დიზაინერი 1","დიზაინერი 1","პროექტის ხელმძღვანელი","კონსტრუქტორი 1","კონსტრუქტორი 1",
-  "ამწყობი-მემონტაჟე","ამწყობი-მემონტაჟე","ამწყობი-მემონტაჟე","მარკეტინგის სპეციალისტი","პროექტის ხელმძღვანელი"
+  "Luka","Luka","Gigi","Giorgi D","Giorgi D",
+  "Gocha","Gocha","Gocha","Giorgi Ts","Gigi"
 ];
 const EMPLOYEES = [
-  "პროექტის ხელმძღვანელი","დიზაინერი 1","დიზაინერი 2","კონსტრუქტორი 1","კონსტრუქტორი 2",
-  "კონსტრუქტორი 3","კონსტრუქტორი 4","ამწყობი-მემონტაჟე","მარკეტინგის სპეციალისტი"
+  "Luka","Gigi","Giorgi D","Gocha","Giorgi Ts","Lasha"
 ];
 const ORDER_STATUSES = ["დაწყებული","მიმდინარეობს","შეჩერებული","დასრულებული"];
 const TASK_STATUSES  = ["დაგეგმილი","მიმდინარეობს","დასრულებული"];
@@ -569,12 +638,36 @@ const STATUS_COLOR = {
 const SWATCHES = ["#E63946","#F4A300","#FFD60A","#2EC4B6","#118AB2","#3A86FF","#7B2CBF","#D62828","#06A77D","#EF476F","#8338EC","#FB5607","#00B4D8","#4CC9F0","#495057"];
 const MONTHS_KA = ["იან","თებ","მარ","აპრ","მაი","ივნ","ივლ","აგვ","სექ","ოქტ","ნოე","დეკ"];
 
+/* ---- Tasks & Assignments ---- */
+const TASK_TYPES = [
+  "სივრცის აზომვის მომზადება",
+  "ღირებულების შეფასების მომზადება",
+  "ტექნიკური ნახაზის მომზადება",
+  "საჭრელი სქემის მომზადება",
+  "დეტალური საწარმოო ნახაზები",
+  "მონტაჟის ნახაზები",
+  "მასალების სიის მომზადება (BOM)",
+  "CNC საწარმოო ფაილები",
+  "ხარისხის კონტროლი",
+  "მიწოდება და მონტაჟი"
+];
+const PRIORITIES = ["დაბალი","საშუალო","მაღალი","გადაუდებელი"];
+const PRIORITY_COLOR = { "დაბალი":"#6B7280", "საშუალო":"#2563EB", "მაღალი":"#F59E0B", "გადაუდებელი":"#E11D2E" };
+const WORK_STATUSES = ["გასაკეთებელი","მიმდინარეობს","მოლოდინში","დასრულებული","გაუქმებული"];
+const WORK_STATUS_COLOR = {
+  "გასაკეთებელი":"#6B7280","მიმდინარეობს":"#2563EB","მოლოდინში":"#F59E0B",
+  "დასრულებული":"#16A34A","გაუქმებული":"#374151"
+};
+
 let orders = [];
 let expanded = {};
 let currentView = 'active'; /* 'active' | 'completed' */
 let stageFilter = 'all'; /* 'all' or one of STAGES */
 let currentPageView = 'gantt'; /* 'gantt' | 'finance' */
 let financeData = {}; /* order_id -> {budget_total, furniture_size, expenses:[{id,description,amount}]} */
+let workTasks = []; /* [{id,title,task_type,employee,priority,due_date,status,progress,notes,comments:[],attachments:[]}] */
+let wtEmployeeFilter = 'all';
+let wtStatusFilter = 'all';
 
 function todayLocal(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
 function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
@@ -658,7 +751,8 @@ function renderUserBadge(){
 function applyRoleUI(){
   document.getElementById('btnNewOrder').style.display = canEdit() ? '' : 'none';
   document.getElementById('btnExport').style.display = isAdmin() ? '' : 'none';
-  document.getElementById('btnFinance').style.display = isAdmin() ? '' : 'none';
+  document.getElementById('btnNavFinance').style.display = isAdmin() ? '' : 'none';
+  document.getElementById('btnNewWorkTask').style.display = canEdit() ? '' : 'none';
   renderUserBadge();
 }
 
@@ -714,7 +808,9 @@ function wireAuthUI(){
     if(realtimeChannel) sb.removeChannel(realtimeChannel);
     await sb.auth.signOut();
   };
-  document.getElementById('btnFinance').onclick = togglePageView;
+  document.getElementById('btnNavGantt').onclick = ()=> switchPage('gantt');
+  document.getElementById('btnNavTasks').onclick = ()=> switchPage('tasks');
+  document.getElementById('btnNavFinance').onclick = ()=> switchPage('finance');
 }
 
 async function initAuth(){
@@ -740,6 +836,7 @@ async function onSignedIn(session){
   hideLoginScreen();
   applyRoleUI();
   populateStageFilter();
+  populateWorkTaskFilters();
   await loadData();
   subscribeRealtime();
 }
@@ -795,7 +892,16 @@ function subscribeRealtime(){
     .on('postgres_changes', { event:'*', schema:'public', table:'task_attachments' }, ()=> loadData())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_finance' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_expenses' }, ()=> refreshFinanceIfVisible())
+    .on('postgres_changes', { event:'*', schema:'public', table:'work_tasks' }, ()=> refreshTasksIfVisible())
+    .on('postgres_changes', { event:'*', schema:'public', table:'work_task_comments' }, ()=> refreshTasksIfVisible())
+    .on('postgres_changes', { event:'*', schema:'public', table:'work_task_attachments' }, ()=> refreshTasksIfVisible())
     .subscribe();
+}
+async function refreshTasksIfVisible(){
+  if(currentPageView === 'tasks'){
+    await loadWorkTasks();
+    renderTasksPage();
+  }
 }
 async function refreshFinanceIfVisible(){
   if(currentPageView === 'finance' && isAdmin()){
@@ -1035,22 +1141,28 @@ function renderFinancePage(){
   });
 }
 
-async function togglePageView(){
-  if(!isAdmin()) return;
-  if(currentPageView === 'gantt'){
-    currentPageView = 'finance';
-    document.getElementById('ganttPage').style.display = 'none';
-    document.getElementById('financePage').style.display = 'block';
-    document.getElementById('btnFinanceLabel').textContent = 'Gantt ცხრილი';
+async function switchPage(page){
+  if(page === 'finance' && !isAdmin()) return;
+  currentPageView = page;
+
+  document.getElementById('ganttPage').style.display = page === 'gantt' ? 'flex' : 'none';
+  document.getElementById('financePage').style.display = page === 'finance' ? 'block' : 'none';
+  document.getElementById('tasksPage').style.display = page === 'tasks' ? 'flex' : 'none';
+
+  document.getElementById('btnNavGantt').classList.toggle('active', page === 'gantt');
+  document.getElementById('btnNavTasks').classList.toggle('active', page === 'tasks');
+  document.getElementById('btnNavFinance').classList.toggle('active', page === 'finance');
+
+  if(page === 'gantt'){
+    render();
+  } else if(page === 'finance'){
     updateStatusText('');
     await loadFinanceData();
     renderFinancePage();
-  } else {
-    currentPageView = 'gantt';
-    document.getElementById('financePage').style.display = 'none';
-    document.getElementById('ganttPage').style.display = 'flex';
-    document.getElementById('btnFinanceLabel').textContent = 'ფინანსები';
-    render();
+  } else if(page === 'tasks'){
+    updateStatusText('');
+    await loadWorkTasks();
+    renderTasksPage();
   }
 }
 
@@ -1209,6 +1321,428 @@ function openFinanceModal(orderId){
       renderFinancePage();
     }catch(e){ alert('ხარჯის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
   };
+}
+
+/* ============================================================================
+   TASKS & ASSIGNMENTS (independent of orders)
+   ============================================================================ */
+const WT_ATTACHMENTS_BUCKET = 'work-task-attachments';
+
+function isMyWorkTask(task){
+  return currentProfile && currentProfile.role === 'employee' &&
+         currentProfile.employee_name && task.employee === currentProfile.employee_name;
+}
+function canEditWorkTask(task){
+  return canEdit() || isMyWorkTask(task);
+}
+
+async function loadWorkTasks(){
+  try{
+    const [{ data: taskRows, error: tErr }, { data: commentRows, error: cErr }, { data: attRows, error: aErr }] = await Promise.all([
+      sb.from('work_tasks').select('*').order('due_date', { ascending:true, nullsFirst:false }),
+      sb.from('work_task_comments').select('*').order('created_at', { ascending:true }),
+      sb.from('work_task_attachments').select('*').order('created_at', { ascending:true })
+    ]);
+    if(tErr) throw tErr;
+    if(cErr) throw cErr;
+    if(aErr) throw aErr;
+
+    workTasks = (taskRows||[]).map(t=>({
+      id:t.id, title:t.title, task_type:t.task_type, employee:t.employee||'',
+      priority:t.priority, due_date:t.due_date, status:t.status, progress:t.progress||0,
+      notes:t.notes||'', comments:[], attachments:[]
+    }));
+    const byId = {};
+    workTasks.forEach(t=> byId[t.id] = t);
+    (commentRows||[]).forEach(c=>{
+      const t = byId[c.work_task_id];
+      if(t) t.comments.push({ id:c.id, author_name:c.author_name, text:c.comment_text, created_at:c.created_at });
+    });
+    (attRows||[]).forEach(a=>{
+      const t = byId[a.work_task_id];
+      if(t) t.attachments.push({ id:a.id, file_path:a.file_path, file_name:a.file_name, file_size:a.file_size });
+    });
+  }catch(e){
+    console.error('Work tasks load failed:', e);
+    updateStatusText('დავალებების ჩატვირთვა ვერ მოხერხდა: ' + (e.message||''));
+  }
+}
+
+function populateWorkTaskFilters(){
+  const empSel = document.getElementById('wtEmployeeFilter');
+  const statSel = document.getElementById('wtStatusFilter');
+  empSel.innerHTML = '<option value="all">ყველა თანამშრომელი</option>' +
+    EMPLOYEES.map(e=>`<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('');
+  statSel.innerHTML = '<option value="all">ყველა სტატუსი</option>' +
+    WORK_STATUSES.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  empSel.onchange = ()=>{ wtEmployeeFilter = empSel.value; renderTasksPage(); };
+  statSel.onchange = ()=>{ wtStatusFilter = statSel.value; renderTasksPage(); };
+  document.getElementById('wtSearchInput').addEventListener('input', renderTasksPage);
+}
+
+function isOverdue(task){
+  if(!task.due_date || task.status === 'დასრულებული' || task.status === 'გაუქმებული') return false;
+  return parseISO(task.due_date) < todayLocal();
+}
+
+function renderTasksPage(){
+  const wrap = document.getElementById('wtListWrap');
+  if(!wrap) return;
+  const query = (document.getElementById('wtSearchInput').value||'').trim().toLowerCase();
+
+  const filtered = workTasks.filter(t=>{
+    if(!canEdit() && !isMyWorkTask(t)) {
+      /* employees still see all tasks for team visibility, per Gantt pattern */
+    }
+    const matchesEmp = wtEmployeeFilter === 'all' || t.employee === wtEmployeeFilter;
+    const matchesStatus = wtStatusFilter === 'all' || t.status === wtStatusFilter;
+    const matchesQuery = !query || t.title.toLowerCase().includes(query) || t.task_type.toLowerCase().includes(query);
+    return matchesEmp && matchesStatus && matchesQuery;
+  });
+
+  if(filtered.length === 0){
+    wrap.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <div>დავალება ვერ მოიძებნა</div>
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = filtered.map(t=>{
+    const done = t.status === 'დასრულებული';
+    const overdue = isOverdue(t);
+    const canEditThis = canEditWorkTask(t);
+    const dueLabel = t.due_date ? formatGeorgianDate(t.due_date) : 'ვადა არ არის';
+    return `<div class="wt-card ${done?'done':''}" data-wt-id="${t.id}">
+      <input type="checkbox" class="wt-check" ${done?'checked':''} data-wt-done="${t.id}" ${canEditThis?'':'disabled'} title="დასრულებულია">
+      <div class="wt-main">
+        <div class="wt-title-row">
+          <span class="wt-title">${escapeHtml(t.title)}</span>
+          <span class="wt-priority-badge" style="background:${PRIORITY_COLOR[t.priority]||'#6B7280'}">${escapeHtml(t.priority)}</span>
+          <span class="wt-status-badge" style="background:${WORK_STATUS_COLOR[t.status]||'#6B7280'}">${escapeHtml(t.status)}</span>
+        </div>
+        <div class="wt-type">${escapeHtml(t.task_type)}${t.employee ? ' · '+escapeHtml(t.employee) : ''}</div>
+        <div class="wt-meta-row">
+          <span class="${overdue?'wt-due-overdue':''}">📅 ${dueLabel}${overdue?' (ვადაგადაცილებული)':''}</span>
+          <span class="wt-progress-wrap"><div class="wt-progress-bar"><div class="wt-progress-fill" style="width:${t.progress}%"></div></div>${t.progress}%</span>
+          ${t.comments.length ? `<span>💬 ${t.comments.length}</span>` : ''}
+          ${t.attachments.length ? `<span>📎 ${t.attachments.length}</span>` : ''}
+        </div>
+      </div>
+      <div class="wt-actions">
+        <button class="btn-icon" data-wt-open="${t.id}" title="გახსნა">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        ${isAdmin() ? `<button class="btn-icon danger" data-wt-delete="${t.id}" title="წაშლა">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-wt-open]').forEach(el=>{
+    el.onclick = ()=> openWorkTaskModal(el.getAttribute('data-wt-open'));
+  });
+  wrap.querySelectorAll('[data-wt-delete]').forEach(el=>{
+    el.onclick = async ()=>{
+      if(!confirm('წავშალო ეს დავალება?')) return;
+      try{ await deleteWorkTaskRemote(el.getAttribute('data-wt-delete')); await loadWorkTasks(); renderTasksPage(); }
+      catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  });
+  wrap.querySelectorAll('[data-wt-done]').forEach(el=>{
+    el.onclick = (e)=> e.stopPropagation();
+    el.onchange = async ()=>{
+      const taskId = el.getAttribute('data-wt-done');
+      const task = workTasks.find(x=>x.id===taskId);
+      if(!task) return;
+      const newStatus = el.checked ? 'დასრულებული' : 'გასაკეთებელი';
+      const newProgress = el.checked ? 100 : 0;
+      try{
+        await updateWorkTaskStatusProgress(task, newStatus, newProgress);
+        await loadWorkTasks();
+        renderTasksPage();
+      }catch(err){ alert('განახლება ვერ მოხერხდა: ' + (err.message||'')); el.checked = !el.checked; }
+    };
+  });
+}
+
+function formatGeorgianDate(iso){
+  if(!iso) return '';
+  const d = parseISO(iso);
+  return `${d.getDate()} ${MONTHS_KA[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+async function updateWorkTaskStatusProgress(task, status, progress){
+  if(canEdit()){
+    const { error } = await sb.from('work_tasks').update({ status, progress, updated_at:new Date().toISOString() }).eq('id', task.id);
+    if(error) throw error;
+  } else if(isMyWorkTask(task)){
+    const { error } = await sb.rpc('update_own_work_task', { p_task_id: task.id, p_status: status, p_progress: progress });
+    if(error) throw error;
+  } else {
+    throw new Error('ამ დავალების შეცვლის უფლება არ გაქვთ');
+  }
+}
+
+async function saveWorkTask(payload, existingId){
+  const row = {
+    title: payload.title, task_type: payload.task_type, employee: payload.employee,
+    priority: payload.priority, due_date: payload.due_date || null,
+    status: payload.status, progress: payload.progress, notes: payload.notes,
+    updated_at: new Date().toISOString()
+  };
+  if(existingId){
+    const { error } = await sb.from('work_tasks').update(row).eq('id', existingId);
+    if(error) throw error;
+    return existingId;
+  } else {
+    row.created_by = currentUser.id;
+    const { data, error } = await sb.from('work_tasks').insert(row).select().single();
+    if(error) throw error;
+    return data.id;
+  }
+}
+async function deleteWorkTaskRemote(id){
+  const { error } = await sb.from('work_tasks').delete().eq('id', id);
+  if(error) throw error;
+}
+async function addWorkTaskComment(taskId, text){
+  const authorName = currentProfile.display_name || currentProfile.email || 'მომხმარებელი';
+  const { error } = await sb.from('work_task_comments').insert({
+    work_task_id: taskId, author_id: currentUser.id, author_name: authorName, comment_text: text
+  });
+  if(error) throw error;
+}
+async function deleteWorkTaskComment(commentId){
+  const { error } = await sb.from('work_task_comments').delete().eq('id', commentId);
+  if(error) throw error;
+}
+async function uploadWorkTaskAttachments(taskId, files){
+  for(const file of files){
+    try{
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, '_');
+      const path = `${taskId}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await sb.storage.from(WT_ATTACHMENTS_BUCKET).upload(path, file);
+      if(upErr) throw upErr;
+      const { error: dbErr } = await sb.from('work_task_attachments').insert({
+        work_task_id: taskId, file_path: path, file_name: file.name, file_size: file.size, uploaded_by: currentUser.id
+      });
+      if(dbErr) throw dbErr;
+    }catch(e){ alert(`"${file.name}" ატვირთვა ვერ მოხერხდა: ` + (e.message||'')); }
+  }
+}
+async function deleteWorkTaskAttachment(attId, path){
+  await sb.storage.from(WT_ATTACHMENTS_BUCKET).remove([path]);
+  const { error } = await sb.from('work_task_attachments').delete().eq('id', attId);
+  if(error) throw error;
+}
+
+function openWorkTaskModal(existingId){
+  const existing = existingId ? workTasks.find(t=>t.id===existingId) : null;
+  const canFullEdit = canEdit();
+  const canSelfUpdate = existing && isMyWorkTask(existing);
+  const data = existing || {
+    title:'', task_type:TASK_TYPES[0], employee:EMPLOYEES[0], priority:'საშუალო',
+    due_date:'', status:WORK_STATUSES[0], progress:0, notes:'', comments:[], attachments:[]
+  };
+  const typeOptions = TASK_TYPES.concat(['სხვა (ხელით შეყვანა)']);
+  const isCustomType = existing && !TASK_TYPES.includes(existing.task_type);
+
+  const readonly = !canFullEdit && !canSelfUpdate;
+
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>${existing?'დავალების დეტალები':'ახალი დავალება'}</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>დავალების დასახელება</label>
+        <input type="text" id="wtTitle" value="${escapeHtml(data.title)}" placeholder="მაგ. სამზარეულოს ტექნიკური ნახაზი" ${canFullEdit?'':'disabled'}>
+      </div>
+      <div class="field"><label>ტიპი</label>
+        <select id="wtType" ${canFullEdit?'':'disabled'}>${opt(typeOptions, isCustomType ? 'სხვა (ხელით შეყვანა)' : data.task_type)}</select>
+      </div>
+      <div class="field" id="wtCustomTypeWrap" style="display:${isCustomType?'block':'none'}">
+        <label>ტიპის სახელი (ხელით)</label>
+        <input type="text" id="wtTypeCustom" value="${escapeHtml(isCustomType?existing.task_type:'')}" ${canFullEdit?'':'disabled'}>
+      </div>
+      <div class="row2">
+        <div class="field"><label>პასუხისმგებელი</label><select id="wtEmployee" ${canFullEdit?'':'disabled'}>${opt(EMPLOYEES, data.employee)}</select></div>
+        <div class="field"><label>პრიორიტეტი</label><select id="wtPriority" ${canFullEdit?'':'disabled'}>${opt(PRIORITIES, data.priority)}</select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>ვადა</label><input type="date" id="wtDueDate" value="${data.due_date||''}" ${canFullEdit?'':'disabled'}></div>
+        <div class="field"><label>სტატუსი</label><select id="wtStatus" ${readonly?'disabled':''}>${opt(WORK_STATUSES, data.status)}</select></div>
+      </div>
+      <div class="field"><label>პროგრესი (%)</label>
+        <input type="number" min="0" max="100" id="wtProgress" value="${data.progress}" ${readonly?'disabled':''}>
+      </div>
+      <div class="field"><label>შენიშვნა</label>
+        <textarea id="wtNotes" placeholder="დამატებითი დეტალები" ${canFullEdit?'':'disabled'}>${escapeHtml(data.notes)}</textarea>
+      </div>
+      ${existing ? `
+      <div class="field">
+        <label>დანართები</label>
+        <div id="wtAttachmentsList" class="attachments-list"></div>
+        <input type="file" id="wtAttachmentInput" multiple style="display:none">
+        <button type="button" class="btn btn-ghost" id="btnAddWtAttachment" style="margin-top:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          ფაილის დამატება
+        </button>
+      </div>
+      <div class="field">
+        <label>კომენტარები</label>
+        <div id="wtCommentsList"></div>
+        <div class="expense-add-row" style="margin-top:8px;">
+          <div class="field"><input type="text" id="wtCommentInput" placeholder="დაწერეთ კომენტარი..."></div>
+          <button class="btn btn-ghost" id="btnAddWtComment" style="flex-shrink:0;">დამატება</button>
+        </div>
+      </div>` : `<div class="hint">დანართებისა და კომენტარების დამატება შესაძლებელია დავალების შენახვის შემდეგ.</div>`}
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">დახურვა</button>
+      ${(canFullEdit || canSelfUpdate) ? `<button class="btn btn-primary" id="btnSaveWt">${existing?'შენახვა':'დამატება'}</button>` : ''}
+    </div>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('mCancel').onclick = closeModal;
+
+  if(canFullEdit){
+    const typeSel = document.getElementById('wtType');
+    typeSel.onchange = ()=>{
+      document.getElementById('wtCustomTypeWrap').style.display = (typeSel.value==='სხვა (ხელით შეყვანა)') ? 'block' : 'none';
+    };
+  }
+
+  if(existing){
+    renderWtAttachmentsList(existing.id);
+    renderWtCommentsList(existing.id);
+    const attBtn = document.getElementById('btnAddWtAttachment');
+    if(attBtn){
+      attBtn.onclick = ()=> document.getElementById('wtAttachmentInput').click();
+      document.getElementById('wtAttachmentInput').addEventListener('change', async (e)=>{
+        const files = Array.from(e.target.files||[]);
+        if(files.length){ await uploadWorkTaskAttachments(existing.id, files); await loadWorkTasks(); renderWtAttachmentsList(existing.id); renderTasksPage(); }
+        e.target.value = '';
+      });
+    }
+    document.getElementById('btnAddWtComment').onclick = async ()=>{
+      const text = document.getElementById('wtCommentInput').value.trim();
+      if(!text) return;
+      try{
+        await addWorkTaskComment(existing.id, text);
+        document.getElementById('wtCommentInput').value = '';
+        await loadWorkTasks();
+        renderWtCommentsList(existing.id);
+        renderTasksPage();
+      }catch(e){ alert('კომენტარის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  }
+
+  const saveBtn = document.getElementById('btnSaveWt');
+  if(saveBtn){
+    saveBtn.onclick = async ()=>{
+      saveBtn.disabled = true; saveBtn.textContent = 'ინახება...';
+      try{
+        if(canFullEdit){
+          let typeVal = document.getElementById('wtType').value;
+          if(typeVal === 'სხვა (ხელით შეყვანა)') typeVal = document.getElementById('wtTypeCustom').value.trim() || 'დავალება';
+          const title = document.getElementById('wtTitle').value.trim() || typeVal;
+          const payload = {
+            title, task_type: typeVal,
+            employee: document.getElementById('wtEmployee').value,
+            priority: document.getElementById('wtPriority').value,
+            due_date: document.getElementById('wtDueDate').value,
+            status: document.getElementById('wtStatus').value,
+            progress: Math.max(0, Math.min(100, Number(document.getElementById('wtProgress').value)||0)),
+            notes: document.getElementById('wtNotes').value.trim()
+          };
+          await saveWorkTask(payload, existing ? existing.id : null);
+        } else if(canSelfUpdate){
+          const status = document.getElementById('wtStatus').value;
+          const progress = Math.max(0, Math.min(100, Number(document.getElementById('wtProgress').value)||0));
+          await updateWorkTaskStatusProgress(existing, status, progress);
+        }
+        await loadWorkTasks();
+        renderTasksPage();
+        closeModal();
+      }catch(e){
+        alert('შენახვა ვერ მოხერხდა: ' + (e.message||''));
+        saveBtn.disabled = false; saveBtn.textContent = existing?'შენახვა':'დამატება';
+      }
+    };
+  }
+}
+
+function renderWtAttachmentsList(taskId){
+  const listEl = document.getElementById('wtAttachmentsList');
+  if(!listEl) return;
+  const task = workTasks.find(t=>t.id===taskId);
+  const atts = task ? task.attachments : [];
+  if(!atts.length){ listEl.innerHTML = `<div class="hint" style="margin:0;">დანართები არ არის</div>`; return; }
+  listEl.innerHTML = atts.map(a=>`
+    <div class="attachment-row" data-att-id="${a.id}" data-att-path="${escapeHtml(a.file_path)}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--ink-soft);"><path d="M14 3v4a1 1 0 0 0 1 1h4M6 3h8l6 6v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/></svg>
+      <span class="att-name" data-att-download="${a.id}" title="${escapeHtml(a.file_name)}">${escapeHtml(a.file_name)}</span>
+      <span class="att-size">${formatFileSize(a.file_size)}</span>
+      <button type="button" class="btn-icon danger" data-att-delete="${a.id}" title="წაშლა">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+      </button>
+    </div>
+  `).join('');
+  listEl.querySelectorAll('[data-att-download]').forEach(el=>{
+    el.onclick = async ()=>{
+      const row = el.closest('.attachment-row');
+      const path = row.getAttribute('data-att-path');
+      try{
+        const { data: signed, error } = await sb.storage.from(WT_ATTACHMENTS_BUCKET).createSignedUrl(path, 3600);
+        if(error) throw error;
+        window.open(signed.signedUrl, '_blank');
+      }catch(e){ alert('ფაილის გახსნა ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  });
+  listEl.querySelectorAll('[data-att-delete]').forEach(el=>{
+    el.onclick = async ()=>{
+      if(!confirm('წავშალო ეს დანართი?')) return;
+      const row = el.closest('.attachment-row');
+      const path = row.getAttribute('data-att-path');
+      try{
+        await deleteWorkTaskAttachment(el.getAttribute('data-att-delete'), path);
+        await loadWorkTasks();
+        renderWtAttachmentsList(taskId);
+        renderTasksPage();
+      }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  });
+}
+
+function renderWtCommentsList(taskId){
+  const listEl = document.getElementById('wtCommentsList');
+  if(!listEl) return;
+  const task = workTasks.find(t=>t.id===taskId);
+  const comments = task ? task.comments : [];
+  if(!comments.length){ listEl.innerHTML = `<div class="hint" style="margin:0;">კომენტარი ჯერ არ არის</div>`; return; }
+  listEl.innerHTML = comments.map(c=>`
+    <div class="wt-comment-row">
+      <span class="wt-comment-author">${escapeHtml(c.author_name||'')}</span>
+      <span class="wt-comment-date">${formatGeorgianDate(c.created_at.slice(0,10))}</span>
+      ${isAdmin() ? `<button type="button" class="btn-icon danger" data-comment-delete="${c.id}" style="float:right;width:22px;height:22px;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+      </button>` : ''}
+      <div class="wt-comment-text">${escapeHtml(c.text)}</div>
+    </div>
+  `).join('');
+  listEl.querySelectorAll('[data-comment-delete]').forEach(el=>{
+    el.onclick = async ()=>{
+      if(!confirm('წავშალო ეს კომენტარი?')) return;
+      try{
+        await deleteWorkTaskComment(el.getAttribute('data-comment-delete'));
+        await loadWorkTasks();
+        renderWtCommentsList(taskId);
+      }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  });
 }
 
 function seedData(){
@@ -1769,6 +2303,7 @@ function buildSwatches(colorInput){
 }
 
 document.getElementById('btnNewOrder').onclick = ()=> openOrderModal(null);
+document.getElementById('btnNewWorkTask').onclick = ()=> openWorkTaskModal(null);
 document.getElementById('searchInput').addEventListener('input', render);
 
 document.getElementById('tabActive').onclick = ()=>{
