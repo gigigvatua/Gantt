@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -495,6 +496,10 @@ body{
   <div class="login-card">
     <h1>ავეჯის Gantt ცხრილი</h1>
     <p id="loginSubtitle">გაიარეთ ავტორიზაცია სამუშაოდ გასაგრძელებლად</p>
+    <div class="field" id="loginNameWrap" style="display:none;">
+      <label>სახელი</label>
+      <input type="text" id="loginName" placeholder="მაგ. Luka" autocomplete="name">
+    </div>
     <div class="field">
       <label>ელფოსტა</label>
       <input type="text" id="loginEmail" placeholder="name@company.com" autocomplete="username">
@@ -780,6 +785,7 @@ function hideLoginScreen(){
 async function handleAuthSubmit(){
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
+  const name = document.getElementById('loginName').value.trim();
   const errEl = document.getElementById('loginErr');
   errEl.style.display = 'none';
   if(!email || !password){
@@ -787,9 +793,17 @@ async function handleAuthSubmit(){
     errEl.style.display = 'block';
     return;
   }
+  if(isSignupMode && !name){
+    errEl.textContent = 'შეავსეთ თქვენი სახელი';
+    errEl.style.display = 'block';
+    return;
+  }
   try{
     if(isSignupMode){
-      const { error } = await sb.auth.signUp({ email, password });
+      const { error } = await sb.auth.signUp({
+        email, password,
+        options: { data: { employee_name: name } }
+      });
       if(error) throw error;
       errEl.style.color = 'var(--sage)';
       errEl.textContent = 'რეგისტრაცია დასრულებულია. თუ ელფოსტის დადასტურებაა საჭირო, გადაამოწმეთ თქვენი ფოსტა, შემდეგ შედით სისტემაში. ახალი ანგარიშისთვის საწყისი როლია "თანამშრომელი" — ადმინმა უნდა შეცვალოს საჭიროებისამებრ.';
@@ -815,6 +829,7 @@ function wireAuthUI(){
       ? 'შექმენით ანგარიში — ადმინი შემდეგ დაგანიშნავთ როლს'
       : 'გაიარეთ ავტორიზაცია სამუშაოდ გასაგრძელებლად';
     document.getElementById('toggleSignup').textContent = isSignupMode ? 'უკვე გაქვთ ანგარიში? შედით' : 'დარეგისტრირდით';
+    document.getElementById('loginNameWrap').style.display = isSignupMode ? 'block' : 'none';
     document.getElementById('loginErr').style.display = 'none';
   };
   document.getElementById('btnLogout').onclick = async ()=>{
