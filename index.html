@@ -637,9 +637,9 @@ const STAGE_DEFAULT_EMPLOYEE = [
   "Luka","Luka","Gigi","Giorgi D","Giorgi D",
   "Gocha","Gocha","Gocha","Giorgi Ts","Gigi"
 ];
-const EMPLOYEES = [
+let EMPLOYEES = [
   "Luka","Gigi","Giorgi D","Gocha","Giorgi Ts","Lasha"
-];
+]; /* fallback default — overwritten live from Supabase profiles.employee_name on login */
 const ORDER_STATUSES = ["დაწყებული","მიმდინარეობს","შეჩერებული","დასრულებული"];
 const TASK_STATUSES  = ["დაგეგმილი","მიმდინარეობს","დასრულებული"];
 const STATUS_COLOR = {
@@ -848,10 +848,23 @@ async function onSignedIn(session){
   currentProfile = profile;
   hideLoginScreen();
   applyRoleUI();
+  await loadEmployeeList();
   populateStageFilter();
   populateWorkTaskFilters();
   await loadData();
   subscribeRealtime();
+}
+
+async function loadEmployeeList(){
+  try{
+    const { data, error } = await sb.from('profiles').select('employee_name').not('employee_name', 'is', null);
+    if(error) throw error;
+    const names = [...new Set((data||[]).map(r=>r.employee_name).filter(n=>n && n.trim()))]
+      .sort((a,b)=> a.localeCompare(b, 'ka'));
+    if(names.length) EMPLOYEES = names;
+  }catch(e){
+    console.error('Employee list load failed, using fallback list:', e);
+  }
 }
 
 /* ---------- Data layer (shared Postgres tables via Supabase) ---------- */
