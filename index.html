@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -872,10 +871,12 @@ async function onSignedIn(session){
 
 async function loadEmployeeList(){
   try{
-    const { data, error } = await sb.from('profiles').select('employee_name').not('employee_name', 'is', null);
+    const { data, error } = await sb.from('profiles').select('employee_name');
     if(error) throw error;
+    console.log('profiles rows fetched for employee list:', data);
     const names = [...new Set((data||[]).map(r=>r.employee_name).filter(n=>n && n.trim()))]
       .sort((a,b)=> a.localeCompare(b, 'ka'));
+    console.log('resolved EMPLOYEES list:', names);
     if(names.length) EMPLOYEES = names;
   }catch(e){
     console.error('Employee list load failed, using fallback list:', e);
