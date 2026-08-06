@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -403,6 +404,10 @@ body{
 .wt-due-overdue{color:var(--rust);font-weight:700;}
 .wt-employee-select{
   font-size:12px;padding:3px 6px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--ink);
+}
+.wt-inline-notes{
+  font-size:12.5px;color:var(--ink);background:var(--bg);border-radius:6px;
+  padding:6px 10px;margin-top:6px;white-space:pre-wrap;
 }
 .wt-inline-comments{
   margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
@@ -1489,6 +1494,7 @@ function renderTasksPage(){
           <span class="wt-status-badge" style="background:${WORK_STATUS_COLOR[t.status]||'#6B7280'}">${escapeHtml(t.status)}</span>
         </div>
         <div class="wt-type">${escapeHtml(t.task_type)} · დანიშნა: ${escapeHtml(t.created_by_name)}</div>
+        ${t.notes ? `<div class="wt-inline-notes">📝 ${escapeHtml(t.notes)}</div>` : ''}
         <div class="wt-meta-row">
           <span class="${overdue?'wt-due-overdue':''}">📅 ${dueLabel}${overdue?' (ვადაგადაცილებული)':''}</span>
           <span class="wt-progress-wrap"><div class="wt-progress-bar"><div class="wt-progress-fill" style="width:${t.progress}%"></div></div>${t.progress}%</span>
