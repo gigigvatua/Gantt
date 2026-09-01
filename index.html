@@ -98,6 +98,14 @@ body{
 }
 .view-tab:hover{border-color:var(--ink-soft);color:var(--ink);}
 .view-tab.active{background:var(--blueprint);color:#fff;border-color:var(--blueprint);}
+#tabActive{background:#E11D2E;color:#fff;border-color:#E11D2E;}
+#tabCompleted{background:#16A34A;color:#fff;border-color:#16A34A;}
+#btnNavTasks{background:#7B2CBF;color:#fff;border-color:#7B2CBF;}
+#btnNavFinance{background:#C9A227;color:#fff;border-color:#C9A227;}
+.tab-count{
+  display:inline-block;margin-left:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
+  background:rgba(0,0,0,.15);padding:1px 6px;border-radius:10px;
+}
 
 .page-nav{display:flex;gap:6px;}
 .page-nav-btn{
@@ -139,7 +147,10 @@ body{
 .gantt-inner{position:relative;width:max-content;min-width:100%;}
 
 /* ---- Finance page ---- */
-.finance-summary{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.finance-summary{
+  display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:4;background:var(--bg);padding:6px 0 10px;
+}
 .finance-stat{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
   padding:14px 20px;flex:1;min-width:160px;
@@ -154,13 +165,23 @@ body{
 }
 .finance-table{width:100%;border-collapse:collapse;font-size:13.5px;}
 .finance-table th{
-  position:sticky;top:0;z-index:2;background:var(--panel);
+  position:sticky;top:0;z-index:3;background:var(--panel);
   text-align:left;padding:11px 14px;border-bottom:2px solid var(--line);
   font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;
   color:var(--ink-soft);letter-spacing:.03em;white-space:nowrap;
   box-shadow:0 1px 0 var(--line);
 }
+.th-total{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+  text-transform:none;letter-spacing:0;color:var(--ink);margin-top:3px;
+}
 .finance-table td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+.finance-editable{cursor:text;}
+.finance-editable:hover{background:var(--line-soft);}
+.finance-budget-input{
+  width:100px;box-sizing:border-box;font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:700;text-align:right;
+  border:1px solid var(--blueprint);border-radius:4px;padding:3px 6px;background:#fff;
+}
 .finance-table tbody tr:hover{background:var(--line-soft);}
 .finance-table .num-cell{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;}
 .finance-table th.num-cell{text-align:right;}
@@ -178,8 +199,17 @@ body{
   display:flex;align-items:center;gap:8px;padding:7px 10px;
   border:1px solid var(--line);border-radius:6px;background:#fbfaf6;
 }
-.expense-row .exp-desc{flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.expense-row .exp-amt{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--rust);}
+.expense-row .exp-desc{flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text;border-radius:3px;padding:2px 4px;margin:-2px -4px;}
+.expense-row .exp-desc:hover{background:var(--line-soft);}
+.expense-row .exp-amt{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--rust);cursor:text;border-radius:3px;padding:2px 4px;margin:-2px -4px;}
+.expense-row .exp-amt:hover{background:var(--line-soft);}
+.exp-desc-input{
+  flex:1;min-width:0;font-size:12.5px;font-family:inherit;border:1px solid var(--blueprint);border-radius:3px;padding:2px 4px;background:#fff;
+}
+.exp-amt-input{
+  width:80px;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--rust);
+  border:1px solid var(--blueprint);border-radius:3px;padding:2px 4px;background:#fff;
+}
 .expense-add-row{display:flex;gap:8px;align-items:flex-end;}
 .expense-add-row .field{flex:1;margin-bottom:0;}
 .expense-add-row input{
@@ -222,6 +252,11 @@ body{
 /* order / task rows */
 .order-row .side{height:56px;background:#fbfaf6;}
 .task-row .side{height:44px;}
+.furniture-group-row{background:#f2ede0;}
+.furniture-group-row .side{height:34px;background:#f2ede0;border-right:1px solid var(--line);gap:6px;}
+.furniture-group-label{
+  font-size:14px;font-weight:700;color:var(--mdf-dark);text-transform:uppercase;letter-spacing:.03em;
+}
 .order-row .timeline{height:56px;}
 .task-row .timeline{height:44px;}
 
@@ -531,32 +566,15 @@ body{
   <div class="topbar">
     <div class="brand">
       <img class="logo-img" src="data:image/png;base64,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" alt="კაბინეტი">
-      <button class="btn btn-primary" id="btnNewOrder">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        <span class="label">ახალი შეკვეთა</span>
-      </button>
       <div class="view-tabs" style="margin-bottom:0;">
-        <button class="view-tab active" id="tabActive" data-view="active">მიმდინარე</button>
+        <button class="view-tab" id="tabActive" data-view="active">მიმდინარე</button>
         <button class="view-tab" id="tabCompleted" data-view="completed">დასრულებული</button>
+        <button class="view-tab" id="btnNavTasks" title="დავალებები">დავალებები</button>
+        <button class="view-tab" id="btnNavFinance" style="display:none;" title="ფინანსები">ფინანსები</button>
       </div>
-      <div class="stats" id="stats"></div>
     </div>
     <div style="display:flex;align-items:center;gap:16px;">
       <div class="user-badge" id="userBadge"></div>
-      <div class="page-nav">
-        <button class="page-nav-btn active" id="btnNavGantt" title="Gantt ცხრილი">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg>
-          <span>Gantt</span>
-        </button>
-        <button class="page-nav-btn" id="btnNavTasks" title="დავალებები">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          <span>დავალებები</span>
-        </button>
-        <button class="page-nav-btn" id="btnNavFinance" style="display:none;" title="ფინანსები">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span>ფინანსები</span>
-        </button>
-      </div>
       <button class="btn btn-ghost" id="btnLogout" title="გამოსვლა">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
@@ -565,6 +583,10 @@ body{
 
   <div id="ganttPage">
   <div class="toolbar">
+    <button class="btn btn-primary" id="btnNewOrder" style="padding:7px 14px;font-size:13px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="label">ახალი შეკვეთა</span>
+    </button>
     <div class="search-box">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="searchInput" type="text" placeholder="ძებნა შეკვეთის ან დამკვეთის მიხედვით...">
@@ -587,7 +609,6 @@ body{
   </div>
 
   <div id="financePage" style="display:none;flex:1 1 auto;min-height:0;overflow-y:auto;">
-    <div class="finance-summary" id="financeSummary"></div>
     <div class="finance-table-wrap">
       <table class="finance-table">
         <thead>
@@ -595,13 +616,12 @@ body{
             <th>#</th>
             <th>შეკვეთა</th>
             <th>სტატუსი</th>
-            <th class="num-cell">ბიუჯეტი</th>
-            <th class="num-cell">ავანსი</th>
-            <th class="num-cell">ხარჯი</th>
-            <th class="num-cell">ავანსიდან ნაღდი</th>
-            <th class="num-cell">ბიუჯეტიდან დარჩენილი</th>
-            <th class="num-cell">მოგება</th>
-            <th></th>
+            <th class="num-cell">ბიუჯეტი<div class="th-total" id="thTotalBudget"></div></th>
+            <th class="num-cell">ავანსი<div class="th-total" id="thTotalAdvance"></div></th>
+            <th class="num-cell">ხარჯი<div class="th-total" id="thTotalExpenses"></div></th>
+            <th class="num-cell">ავანსიდან ნაღდი<div class="th-total" id="thTotalAdvanceCash"></div></th>
+            <th class="num-cell">ბიუჯეტიდან დარჩენილი<div class="th-total" id="thTotalRemaining"></div></th>
+            <th class="num-cell">მოგება<div class="th-total" id="thTotalProfit"></div></th>
           </tr>
         </thead>
         <tbody id="financeTableBody"></tbody>
@@ -636,28 +656,23 @@ body{
 
 <script>
 const STAGES = [
-  "სივრცის აზომვა",
-  "ავეჯის დიზაინის შეთანხმება",
-  "განფასების მომზადება",
-  "ავეჯის კონსტრუქციული პროექტირება",
-  "მასალების დაჭრა",
-  "კონსტრუქციების აწყობა",
-  "კონსტრუქციების ტრანსპორტირება",
-  "ავეჯის მონტაჟი",
-  "ფოტოების გადაღება",
-  "პროექტის დასრულება, დაარქივება"
+  "აზომვა",
+  "ნახაზი",
+  "მასალები",
+  "ფურნიტურა",
+  "სხვა"
 ];
 const STAGE_DEFAULT_EMPLOYEE = [
-  "Luka","Luka","Gigi","Giorgi D","Giorgi D",
-  "Gocha","Gocha","Gocha","Giorgi Ts","Gigi"
+  "Luka","Gigi","Giorgi D","Gocha","Gigi"
 ];
 let EMPLOYEES = [
   "Luka","Gigi","Giorgi D","Gocha","Giorgi Ts","Lasha"
 ]; /* fallback default — overwritten live from Supabase profiles.employee_name on login */
-const ORDER_STATUSES = ["დაწყებული","მიმდინარეობს","შეჩერებული","დასრულებული"];
+const ORDER_STATUSES = ["მიმდინარე","შეჩერებული","დასრულებული"];
 const TASK_STATUSES  = ["დაგეგმილი","მიმდინარეობს","დასრულებული"];
 const STATUS_COLOR = {
   "დაწყებული":"#2563EB","დაგეგმილი":"#2563EB",
+  "მიმდინარე":"#E11D2E",
   "მიმდინარეობს":"#E11D2E",
   "შეჩერებული":"#6B7280",
   "დასრულებული":"#16A34A"
@@ -688,6 +703,7 @@ const WORK_STATUS_COLOR = {
 
 let orders = [];
 let expanded = {};
+let expandedGroups = {}; /* key: `${orderId}|${unitName}` -> bool, default true (expanded) */
 let currentView = 'active'; /* 'active' | 'completed' */
 let stageFilter = 'all'; /* 'all' or one of STAGES */
 let currentPageView = 'gantt'; /* 'gantt' | 'finance' */
@@ -845,7 +861,6 @@ function wireAuthUI(){
     if(realtimeChannel) sb.removeChannel(realtimeChannel);
     await sb.auth.signOut();
   };
-  document.getElementById('btnNavGantt').onclick = ()=> switchPage('gantt');
   document.getElementById('btnNavTasks').onclick = ()=> switchPage('tasks');
   document.getElementById('btnNavFinance').onclick = ()=> switchPage('finance');
 }
@@ -896,14 +911,16 @@ async function loadEmployeeList(){
 /* ---------- Data layer (shared Postgres tables via Supabase) ---------- */
 function rowToOrder(o){
   return {
-    id:o.id, name:o.name, client:o.client||'', start:o.start_date, end:o.end_date,
-    color:o.color, status:o.status, responsible:o.responsible||'', notes:o.notes||'', tasks:[]
+    id:o.id, name:o.name, client:o.client||'', client_phone:o.client_phone||'', client_address:o.client_address||'',
+    start:o.start_date, end:o.end_date,
+    color:o.color, status:o.status, responsible:o.responsible||'', notes:o.notes||'', tasks:[], furnitureItems:[]
   };
 }
 function rowToTask(t, attCount){
   return {
     id:t.id, title:t.title||'', stage:t.stage, start:t.start_date, end:t.end_date,
     color:t.color, status:t.status, employee:t.employee||'', notes:t.notes||'',
+    quantity:t.quantity||'', contractor:t.contractor||'', furniture_unit:t.furniture_unit||'',
     attachmentCount: attCount || 0
   };
 }
@@ -911,14 +928,16 @@ function rowToTask(t, attCount){
 async function loadData(){
   updateStatusText('იტვირთება...');
   try{
-    const [{ data: orderRows, error: oErr }, { data: taskRows, error: tErr }, { data: attRows, error: aErr }] = await Promise.all([
+    const [{ data: orderRows, error: oErr }, { data: taskRows, error: tErr }, { data: attRows, error: aErr }, { data: furnitureRows, error: fuErr }] = await Promise.all([
       sb.from('orders').select('*').order('seq', { ascending:true }),
       sb.from('tasks').select('*').order('seq', { ascending:true }),
-      sb.from('task_attachments').select('task_id')
+      sb.from('task_attachments').select('task_id'),
+      sb.from('order_furniture_items').select('*').order('seq', { ascending:true })
     ]);
     if(oErr) throw oErr;
     if(tErr) throw tErr;
     if(aErr) throw aErr;
+    if(fuErr) throw fuErr;
 
     const attCounts = {};
     (attRows||[]).forEach(r=>{ attCounts[r.task_id] = (attCounts[r.task_id]||0) + 1; });
@@ -926,6 +945,10 @@ async function loadData(){
     const byId = {};
     orders = orderRows.map(o=>{ const ord = rowToOrder(o); byId[ord.id] = ord; return ord; });
     taskRows.forEach(t=>{ const ord = byId[t.order_id]; if(ord) ord.tasks.push(rowToTask(t, attCounts[t.id])); });
+    (furnitureRows||[]).forEach(fi=>{
+      const ord = byId[fi.order_id];
+      if(ord) ord.furnitureItems.push({ id: fi.id, name: fi.name, volume: fi.volume||'', color: fi.color||'' });
+    });
 
     orders.forEach(o=>{ if(expanded[o.id] === undefined) expanded[o.id] = false; });
     updateStatusText(`დაკავშირებულია (${orders.length} შეკვეთა)`);
@@ -942,8 +965,11 @@ function subscribeRealtime(){
     .on('postgres_changes', { event:'*', schema:'public', table:'orders' }, ()=> loadData())
     .on('postgres_changes', { event:'*', schema:'public', table:'tasks' }, ()=> loadData())
     .on('postgres_changes', { event:'*', schema:'public', table:'task_attachments' }, ()=> loadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'order_attachments' }, ()=> loadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'order_furniture_items' }, ()=> loadData())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_finance' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_expenses' }, ()=> refreshFinanceIfVisible())
+    .on('postgres_changes', { event:'*', schema:'public', table:'order_advance_payments' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'work_tasks' }, ()=> refreshTasksIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'work_task_comments' }, ()=> refreshTasksIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'work_task_attachments' }, ()=> refreshTasksIfVisible())
@@ -964,7 +990,9 @@ async function refreshFinanceIfVisible(){
 
 async function saveOrder(payload, existingId){
   const row = {
-    name: payload.name, client: payload.client, start_date: payload.start, end_date: payload.end,
+    name: payload.name, client: payload.client,
+    client_phone: payload.client_phone, client_address: payload.client_address,
+    start_date: payload.start, end_date: payload.end,
     color: payload.color, status: payload.status, responsible: payload.responsible, notes: payload.notes,
     updated_at: new Date().toISOString()
   };
@@ -989,6 +1017,7 @@ async function saveTask(orderId, payload, existingId){
     order_id: orderId, title: payload.title, stage: payload.stage,
     start_date: payload.start, end_date: payload.end, color: payload.color,
     status: payload.status, employee: payload.employee, notes: payload.notes,
+    quantity: payload.quantity, contractor: payload.contractor, furniture_unit: payload.furniture_unit || null,
     updated_at: new Date().toISOString()
   };
   if(existingId){
@@ -1092,6 +1121,82 @@ async function uploadAttachments(taskId, files){
   loadAttachmentsList(taskId);
 }
 
+/* ---------- Order-level (project) attachments ---------- */
+const ORDER_ATTACHMENTS_BUCKET = 'order-attachments';
+
+async function loadOrderAttachmentsList(orderId){
+  const listEl = document.getElementById('orderAttachmentsList');
+  if(!listEl) return;
+  try{
+    const { data, error } = await sb.from('order_attachments')
+      .select('*').eq('order_id', orderId).order('created_at', { ascending:true }).order('id', { ascending:true });
+    if(error) throw error;
+    if(!data || data.length === 0){
+      listEl.innerHTML = `<div class="hint" style="margin:0;">ფაილები არ არის</div>`;
+      return;
+    }
+    listEl.innerHTML = data.map(a => `
+      <div class="attachment-row" data-att-id="${a.id}" data-att-path="${escapeHtml(a.file_path)}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--ink-soft);"><path d="M14 3v4a1 1 0 0 0 1 1h4M6 3h8l6 6v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/></svg>
+        <span class="att-name" data-att-download="${a.id}" title="${escapeHtml(a.file_name)}">${escapeHtml(a.file_name)}</span>
+        <span class="att-size">${formatFileSize(a.file_size)}</span>
+        ${canEdit() ? `<button type="button" class="btn-icon danger" data-att-delete="${a.id}" title="წაშლა">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>` : ''}
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-att-download]').forEach(el=>{
+      el.onclick = async ()=>{
+        const row = el.closest('.attachment-row');
+        const path = row.getAttribute('data-att-path');
+        try{
+          const { data: signed, error } = await sb.storage.from(ORDER_ATTACHMENTS_BUCKET).createSignedUrl(path, 3600);
+          if(error) throw error;
+          window.open(signed.signedUrl, '_blank');
+        }catch(e){ alert('ფაილის გახსნა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+    listEl.querySelectorAll('[data-att-delete]').forEach(el=>{
+      el.onclick = async ()=>{
+        if(!confirm('წავშალო ეს ფაილი?')) return;
+        const row = el.closest('.attachment-row');
+        const path = row.getAttribute('data-att-path');
+        const attId = el.getAttribute('data-att-delete');
+        try{
+          await sb.storage.from(ORDER_ATTACHMENTS_BUCKET).remove([path]);
+          const { error } = await sb.from('order_attachments').delete().eq('id', attId);
+          if(error) throw error;
+          loadOrderAttachmentsList(orderId);
+        }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+  }catch(e){
+    listEl.innerHTML = `<div class="hint" style="margin:0;color:var(--rust);">ჩატვირთვის შეცდომა: ${escapeHtml(e.message||'')}</div>`;
+  }
+}
+
+async function uploadOrderAttachments(orderId, files){
+  const listEl = document.getElementById('orderAttachmentsList');
+  if(listEl) listEl.innerHTML = `<div class="hint" style="margin:0;">იტვირთება (${files.length})...</div>`;
+  for(const file of files){
+    try{
+      const safeName = file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, '_');
+      const path = `${orderId}/${Date.now()}_${safeName}`;
+      const { error: upErr } = await sb.storage.from(ORDER_ATTACHMENTS_BUCKET).upload(path, file);
+      if(upErr) throw upErr;
+      const { error: dbErr } = await sb.from('order_attachments').insert({
+        order_id: orderId, file_path: path, file_name: file.name,
+        file_size: file.size, uploaded_by: currentUser.id
+      });
+      if(dbErr) throw dbErr;
+    }catch(e){
+      alert(`"${file.name}" ატვირთვა ვერ მოხერხდა: ` + (e.message||''));
+    }
+  }
+  loadOrderAttachmentsList(orderId);
+}
+
 /* ---------- Finance page (admin/manager only) ---------- */
 function formatMoney(n){
   if(n === null || n === undefined || isNaN(n)) return '—';
@@ -1104,28 +1209,33 @@ function formatNumber(n){
 
 async function loadFinanceData(){
   try{
-    const [{ data: financeRows, error: fErr }, { data: expenseRows, error: eErr }] = await Promise.all([
+    const [{ data: financeRows, error: fErr }, { data: expenseRows, error: eErr }, { data: advanceRows, error: aErr }] = await Promise.all([
       sb.from('order_finance').select('*'),
-      sb.from('order_expenses').select('*').order('created_at', { ascending:true }).order('id', { ascending:true })
+      sb.from('order_expenses').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
+      sb.from('order_advance_payments').select('*').order('created_at', { ascending:true }).order('id', { ascending:true })
     ]);
     if(fErr) throw fErr;
     if(eErr) throw eErr;
+    if(aErr) throw aErr;
 
     financeData = {};
     orders.forEach(o=>{
-      financeData[o.id] = { budget_total: null, furniture_size: null, advance_payment: 0, advance_received: false, final_received: false, expenses: [] };
+      financeData[o.id] = { budget_total: null, furniture_size: null, advancePayments: [], advance_received: false, final_received: false, expenses: [] };
     });
     (financeRows||[]).forEach(r=>{
-      if(!financeData[r.order_id]) financeData[r.order_id] = { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
+      if(!financeData[r.order_id]) financeData[r.order_id] = { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
       financeData[r.order_id].budget_total = r.budget_total;
       financeData[r.order_id].furniture_size = r.furniture_size;
-      financeData[r.order_id].advance_payment = r.advance_payment || 0;
       financeData[r.order_id].advance_received = !!r.advance_received;
       financeData[r.order_id].final_received = !!r.final_received;
     });
     (expenseRows||[]).forEach(e=>{
-      if(!financeData[e.order_id]) financeData[e.order_id] = { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
+      if(!financeData[e.order_id]) financeData[e.order_id] = { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
       financeData[e.order_id].expenses.push({ id:e.id, description:e.description, amount:e.amount });
+    });
+    (advanceRows||[]).forEach(a=>{
+      if(!financeData[a.order_id]) financeData[a.order_id] = { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
+      financeData[a.order_id].advancePayments.push({ id:a.id, description:a.description, amount:a.amount });
     });
   }catch(e){
     console.error('Finance load failed:', e);
@@ -1138,25 +1248,28 @@ function calcExpensesTotal(orderId){
   if(!fd) return 0;
   return fd.expenses.reduce((sum,e)=> sum + (Number(e.amount)||0), 0);
 }
+function calcAdvanceTotal(orderId){
+  const fd = financeData[orderId];
+  if(!fd || !fd.advancePayments) return 0;
+  return fd.advancePayments.reduce((sum,a)=> sum + (Number(a.amount)||0), 0);
+}
 
 function renderFinancePage(){
-  const summaryEl = document.getElementById('financeSummary');
   const bodyEl = document.getElementById('financeTableBody');
-  if(!summaryEl || !bodyEl) return;
+  if(!bodyEl) return;
 
-  let totalBudget = 0, totalExpenses = 0, totalRemaining = 0, totalAdvanceCash = 0;
+  let totalBudget = 0, totalExpenses = 0, totalRemaining = 0, totalAdvanceCash = 0, totalAdvance = 0;
   const rowsHtml = orders.map((o, idx)=>{
-    const fd = financeData[o.id] || { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
+    const fd = financeData[o.id] || { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
     const expTotal = calcExpensesTotal(o.id);
     const budget = Number(fd.budget_total) || 0;
-    const advance = Number(fd.advance_payment) || 0;
+    const advance = calcAdvanceTotal(o.id);
     const remaining = budget - advance;
     const advanceCash = advance - expTotal;
     const profit = budget - expTotal;
-    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; totalAdvanceCash += advanceCash; }
+    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; totalAdvanceCash += advanceCash; totalAdvance += advance; }
     const profitClass = profit > 0 ? 'finance-profit-positive' : (profit < 0 ? 'finance-profit-negative' : '');
     const advanceCashClass = advanceCash > 0 ? 'finance-profit-positive' : (advanceCash < 0 ? 'finance-profit-negative' : '');
-    const advanceIcon = fd.advance_received ? '✓' : '';
     const finalIcon = fd.final_received ? '✓' : '';
     return `<tr>
       <td>${idx+1}</td>
@@ -1165,31 +1278,82 @@ function renderFinancePage(){
         <div class="finance-order-client">${escapeHtml(o.client)}</div>
       </td>
       <td><span class="badge" style="background:${STATUS_COLOR[o.status]||'#9B968C'}">${o.status}</span></td>
-      <td class="num-cell">${fd.budget_total !== null ? formatMoney(fd.budget_total) : '—'}</td>
-      <td class="num-cell">${advance > 0 ? formatMoney(advance) : '—'} ${advanceIcon ? '<span class="pay-check" title="ავანსი მიღებულია">'+advanceIcon+'</span>' : ''}</td>
-      <td class="num-cell">${expTotal > 0 ? formatMoney(expTotal) : '—'}</td>
+      <td class="num-cell finance-editable" data-budget-edit="${o.id}" title="დააჭირეთ რედაქტირებისთვის">${fd.budget_total !== null ? formatMoney(fd.budget_total) : '—'}</td>
+      <td class="num-cell">
+        ${advance > 0 ? formatMoney(advance) : '—'}
+        <button class="btn-icon" data-advance-edit="${o.id}" title="ავანსების რედაქტირება">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+      </td>
+      <td class="num-cell">
+        ${expTotal > 0 ? formatMoney(expTotal) : '—'}
+        <button class="btn-icon" data-expenses-edit="${o.id}" title="ხარჯების რედაქტირება">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+      </td>
       <td class="num-cell ${advanceCashClass}">${advance > 0 ? formatMoney(advanceCash) : '—'}</td>
       <td class="num-cell">${budget > 0 ? formatMoney(remaining) : '—'} ${finalIcon ? '<span class="pay-check" title="საბოლოო გადახდა მიღებულია">'+finalIcon+'</span>' : ''}</td>
       <td class="num-cell ${profitClass}">${(fd.budget_total !== null || expTotal>0) ? formatMoney(profit) : '—'}</td>
-      <td><button class="btn-icon" data-finance-edit="${o.id}" title="რედაქტირება">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-      </button></td>
     </tr>`;
   }).join('');
 
   const totalProfit = totalBudget - totalExpenses;
-  summaryEl.innerHTML = `
-    <div class="finance-stat"><div class="fs-lbl">სულ ბიუჯეტი (მიმდინარე)</div><div class="fs-val">${formatMoney(totalBudget)}</div></div>
-    <div class="finance-stat"><div class="fs-lbl">სულ ხარჯი (მიმდინარე)</div><div class="fs-val">${formatMoney(totalExpenses)}</div></div>
-    <div class="finance-stat profit"><div class="fs-lbl">სულ მოგება (მიმდინარე)</div><div class="fs-val ${totalProfit>=0?'positive':'negative'}">${formatMoney(totalProfit)}</div></div>
-    <div class="finance-stat"><div class="fs-lbl">მისაღები დარჩენილი თანხა</div><div class="fs-val">${formatMoney(totalRemaining)}</div></div>
-    <div class="finance-stat profit"><div class="fs-lbl">ავანსიდან დარჩენილი ნაღდი</div><div class="fs-val ${totalAdvanceCash>=0?'positive':'negative'}">${formatMoney(totalAdvanceCash)}</div></div>
-  `;
 
-  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="10" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
+  const thBudget = document.getElementById('thTotalBudget');
+  const thAdvance = document.getElementById('thTotalAdvance');
+  const thExpenses = document.getElementById('thTotalExpenses');
+  const thAdvanceCash = document.getElementById('thTotalAdvanceCash');
+  const thRemaining = document.getElementById('thTotalRemaining');
+  const thProfit = document.getElementById('thTotalProfit');
+  if(thBudget) thBudget.textContent = formatMoney(totalBudget);
+  if(thAdvance) thAdvance.textContent = formatMoney(totalAdvance);
+  if(thExpenses) thExpenses.textContent = formatMoney(totalExpenses);
+  if(thAdvanceCash){ thAdvanceCash.textContent = formatMoney(totalAdvanceCash); thAdvanceCash.style.color = totalAdvanceCash>=0 ? 'var(--sage)' : 'var(--rust)'; }
+  if(thRemaining) thRemaining.textContent = formatMoney(totalRemaining);
+  if(thProfit){ thProfit.textContent = formatMoney(totalProfit); thProfit.style.color = totalProfit>=0 ? 'var(--sage)' : 'var(--rust)'; }
 
-  bodyEl.querySelectorAll('[data-finance-edit]').forEach(el=>{
-    el.onclick = ()=> openFinanceModal(el.getAttribute('data-finance-edit'));
+  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
+
+  bodyEl.querySelectorAll('[data-advance-edit]').forEach(el=>{
+    el.onclick = ()=> openAdvancePaymentsModal(el.getAttribute('data-advance-edit'));
+  });
+  bodyEl.querySelectorAll('[data-expenses-edit]').forEach(el=>{
+    el.onclick = ()=> openExpensesModal(el.getAttribute('data-expenses-edit'));
+  });
+  bodyEl.querySelectorAll('[data-budget-edit]').forEach(el=>{
+    el.onclick = ()=>{
+      const orderId = el.getAttribute('data-budget-edit');
+      const fd = financeData[orderId] || {};
+      const currentVal = (fd.budget_total !== null && fd.budget_total !== undefined) ? fd.budget_total : '';
+      const input = document.createElement('input');
+      input.type = 'number'; input.step = '0.01'; input.value = currentVal;
+      input.className = 'finance-budget-input';
+      el.innerHTML = '';
+      el.appendChild(input);
+      input.focus(); input.select();
+
+      let done = false;
+      const commit = async ()=>{
+        if(done) return;
+        done = true;
+        try{
+          await saveOrderFinance(
+            orderId,
+            input.value,
+            fd.furniture_size !== null && fd.furniture_size !== undefined ? fd.furniture_size : '',
+            fd.advance_received,
+            fd.final_received
+          );
+          await loadFinanceData();
+          renderFinancePage();
+        }catch(e){ alert('შენახვა ვერ მოხერხდა: ' + (e.message||'')); renderFinancePage(); }
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', ev=>{
+        if(ev.key === 'Enter'){ ev.preventDefault(); input.blur(); }
+        else if(ev.key === 'Escape'){ done = true; renderFinancePage(); }
+      });
+    };
   });
 }
 
@@ -1201,7 +1365,6 @@ async function switchPage(page){
   document.getElementById('financePage').style.display = page === 'finance' ? 'block' : 'none';
   document.getElementById('tasksPage').style.display = page === 'tasks' ? 'flex' : 'none';
 
-  document.getElementById('btnNavGantt').classList.toggle('active', page === 'gantt');
   document.getElementById('btnNavTasks').classList.toggle('active', page === 'tasks');
   document.getElementById('btnNavFinance').classList.toggle('active', page === 'finance');
 
@@ -1218,12 +1381,11 @@ async function switchPage(page){
   }
 }
 
-async function saveOrderFinance(orderId, budgetTotal, furnitureSize, advancePayment, advanceReceived, finalReceived){
+async function saveOrderFinance(orderId, budgetTotal, furnitureSize, advanceReceived, finalReceived){
   const row = {
     order_id: orderId,
     budget_total: budgetTotal === '' ? null : Number(budgetTotal),
     furniture_size: furnitureSize === '' ? null : Number(furnitureSize),
-    advance_payment: advancePayment === '' ? 0 : Number(advancePayment),
     advance_received: !!advanceReceived,
     final_received: !!finalReceived,
     updated_at: new Date().toISOString()
@@ -1244,42 +1406,161 @@ async function deleteExpenseEntry(expenseId){
   if(error) throw error;
 }
 
-function openFinanceModal(orderId){
+async function updateExpenseEntry(expenseId, description, amount){
+  const { error } = await sb.from('order_expenses').update({ description, amount: Number(amount) || 0 }).eq('id', expenseId);
+  if(error) throw error;
+}
+
+/* ---- advance payments: same add/edit/delete pattern as expenses, so a project
+   that receives several installments over time keeps a full, correct history ---- */
+async function addAdvancePaymentEntry(orderId, description, amount){
+  const { error } = await sb.from('order_advance_payments').insert({
+    order_id: orderId, description, amount: Number(amount), created_by: currentUser.id
+  });
+  if(error) throw error;
+}
+async function deleteAdvancePaymentEntry(paymentId){
+  const { error } = await sb.from('order_advance_payments').delete().eq('id', paymentId);
+  if(error) throw error;
+}
+async function updateAdvancePaymentEntry(paymentId, description, amount){
+  const { error } = await sb.from('order_advance_payments').update({ description, amount: Number(amount) || 0 }).eq('id', paymentId);
+  if(error) throw error;
+}
+
+function makeEditableMoneyList(opts){
+  const { listElId, getItems, updateFn, deleteFn, emptyText, deleteConfirmText } = opts;
+  function renderList(){
+    const listEl = document.getElementById(listElId);
+    if(!listEl) return;
+    const items = getItems();
+    if(!items.length){
+      listEl.innerHTML = `<div class="hint" style="margin:0;">${emptyText}</div>`;
+      return;
+    }
+    listEl.innerHTML = items.map(it=>`
+      <div class="expense-row" data-item-id="${it.id}">
+        <span class="exp-desc" data-edit-desc="${it.id}" title="დააჭირეთ რედაქტირებისთვის — ${escapeHtml(it.description)}">${escapeHtml(it.description)}</span>
+        <span class="exp-amt" data-edit-amt="${it.id}" title="დააჭირეთ რედაქტირებისთვის">${formatMoney(it.amount)}</span>
+        <button type="button" class="btn-icon danger" data-item-delete="${it.id}" title="წაშლა">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>
+      </div>
+    `).join('');
+
+    function startEditing(spanEl, itemId, field){
+      const it = items.find(x=>x.id === itemId);
+      if(!it) return;
+      const currentValue = field === 'description' ? it.description : it.amount;
+      const input = document.createElement('input');
+      input.type = field === 'amount' ? 'number' : 'text';
+      if(field === 'amount') input.step = '0.01';
+      input.value = currentValue;
+      input.className = field === 'amount' ? 'exp-amt-input' : 'exp-desc-input';
+      spanEl.replaceWith(input);
+      input.focus();
+      input.select();
+
+      let done = false;
+      const commit = async ()=>{
+        if(done) return;
+        done = true;
+        const newDesc = field === 'description' ? input.value.trim() || it.description : it.description;
+        const newAmt = field === 'amount' ? input.value : it.amount;
+        try{
+          await updateFn(itemId, newDesc, newAmt);
+          await loadFinanceData();
+          renderList();
+          renderFinancePage();
+        }catch(err){ alert('განახლება ვერ მოხერხდა: ' + (err.message||'')); renderList(); }
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', ev=>{
+        if(ev.key === 'Enter'){ ev.preventDefault(); input.blur(); }
+        else if(ev.key === 'Escape'){ done = true; renderList(); }
+      });
+    }
+
+    listEl.querySelectorAll('[data-edit-desc]').forEach(el=>{
+      el.onclick = ()=> startEditing(el, el.getAttribute('data-edit-desc'), 'description');
+    });
+    listEl.querySelectorAll('[data-edit-amt]').forEach(el=>{
+      el.onclick = ()=> startEditing(el, el.getAttribute('data-edit-amt'), 'amount');
+    });
+    listEl.querySelectorAll('[data-item-delete]').forEach(el=>{
+      el.onclick = async ()=>{
+        if(!confirm(deleteConfirmText)) return;
+        try{
+          await deleteFn(el.getAttribute('data-item-delete'));
+          await loadFinanceData();
+          renderList();
+          renderFinancePage();
+        }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+  }
+  renderList();
+  return renderList;
+}
+
+function openAdvancePaymentsModal(orderId){
   const order = orders.find(o=>o.id===orderId);
   if(!order) return;
-  const fd = financeData[orderId] || { budget_total:null, furniture_size:null, advance_payment:0, advance_received:false, final_received:false, expenses:[] };
-  const budgetNow = Number(fd.budget_total) || 0;
-  const advanceNow = Number(fd.advance_payment) || 0;
-  const remainingNow = budgetNow - advanceNow;
-
   modalContent.innerHTML = `
-    <div class="modal-head"><h3>ფინანსები — ${escapeHtml(order.name)}</h3>
+    <div class="modal-head"><h3>ავანსები — ${escapeHtml(order.name)}</h3>
       <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
-      <div class="row2">
-        <div class="field"><label>ბიუჯეტი (₾)</label>
-          <input type="number" step="0.01" id="fBudget" value="${fd.budget_total !== null ? fd.budget_total : ''}" placeholder="მაგ. 3500">
-        </div>
-        <div class="field"><label>ავეჯის ზომა (მ²)</label>
-          <input type="number" step="0.01" id="fSize" value="${fd.furniture_size !== null ? fd.furniture_size : ''}" placeholder="მაგ. 12.5">
-        </div>
-      </div>
-      <div class="field"><label>ავანსი / პირველი გადახდა (₾)</label>
-        <input type="number" step="0.01" id="fAdvance" value="${fd.advance_payment ? fd.advance_payment : ''}" placeholder="მაგ. 1750">
-        <div class="hint" id="remainingHint" style="margin-top:6px;margin-bottom:0;">დარჩენილი მისაღები: <strong>${formatMoney(remainingNow)}</strong></div>
-        <div class="hint" id="advanceCashHint" style="margin-top:2px;margin-bottom:0;">ავანსიდან დარჩენილი ნაღდი (ხარჯების შემდეგ): <strong>${formatMoney(advanceNow - calcExpensesTotal(orderId))}</strong></div>
-      </div>
-      <div class="payment-checkbox-row">
-        <label><input type="checkbox" id="fAdvanceReceived" ${fd.advance_received?'checked':''}> ავანსი მიღებულია</label>
-      </div>
-      <div class="payment-checkbox-row" style="margin-top:-8px;">
-        <label><input type="checkbox" id="fFinalReceived" ${fd.final_received?'checked':''}> საბოლოო გადახდა მიღებულია</label>
-      </div>
-      <button class="btn btn-primary" id="btnSaveFinance" style="width:100%;margin-bottom:18px;">ბიუჯეტის შენახვა</button>
-
       <div class="field">
-        <label>ხარჯები</label>
+        <div class="expense-list" id="advanceList"></div>
+        <div class="expense-add-row">
+          <div class="field"><input type="text" id="fAdvDesc" placeholder="მაგ. პირველი გადახდა"></div>
+          <div class="field" style="max-width:120px;"><input type="number" step="0.01" id="fAdvAmount" placeholder="თანხა"></div>
+          <button class="btn btn-ghost" id="btnAddAdvance" style="flex-shrink:0;">დამატება</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">დახურვა</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('mCancel').onclick = closeModal;
+
+  const renderAdvanceList = makeEditableMoneyList({
+    listElId: 'advanceList',
+    getItems: ()=> (financeData[orderId] && financeData[orderId].advancePayments) || [],
+    updateFn: updateAdvancePaymentEntry,
+    deleteFn: deleteAdvancePaymentEntry,
+    emptyText: 'ავანსი ჯერ არ არის დამატებული',
+    deleteConfirmText: 'წავშალო ეს გადახდა?'
+  });
+
+  document.getElementById('btnAddAdvance').onclick = async ()=>{
+    const desc = document.getElementById('fAdvDesc').value.trim();
+    const amt = document.getElementById('fAdvAmount').value;
+    if(!desc || !amt){ alert('შეავსეთ გადახდის აღწერა და თანხა'); return; }
+    try{
+      await addAdvancePaymentEntry(orderId, desc, amt);
+      document.getElementById('fAdvDesc').value = '';
+      document.getElementById('fAdvAmount').value = '';
+      await loadFinanceData();
+      renderAdvanceList();
+      renderFinancePage();
+    }catch(e){ alert('ავანსის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
+  };
+}
+
+function openExpensesModal(orderId){
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>ხარჯები — ${escapeHtml(order.name)}</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
         <div class="expense-list" id="expenseList"></div>
         <div class="expense-add-row">
           <div class="field"><input type="text" id="fExpDesc" placeholder="მაგ. მასალები"></div>
@@ -1293,72 +1574,17 @@ function openFinanceModal(orderId){
     </div>
   `;
   overlay.classList.add('open');
-
-  function refreshRemainingHint(){
-    const b = Number(document.getElementById('fBudget').value) || 0;
-    const a = Number(document.getElementById('fAdvance').value) || 0;
-    document.getElementById('remainingHint').innerHTML = `დარჩენილი მისაღები: <strong>${formatMoney(b - a)}</strong>`;
-    document.getElementById('advanceCashHint').innerHTML = `ავანსიდან დარჩენილი ნაღდი (ხარჯების შემდეგ): <strong>${formatMoney(a - calcExpensesTotal(orderId))}</strong>`;
-  }
-  document.getElementById('fBudget').addEventListener('input', refreshRemainingHint);
-  document.getElementById('fAdvance').addEventListener('input', refreshRemainingHint);
-
   document.getElementById('mClose').onclick = closeModal;
   document.getElementById('mCancel').onclick = closeModal;
 
-  function renderExpenseList(){
-    const listEl = document.getElementById('expenseList');
-    const current = financeData[orderId] || { expenses:[] };
-    if(!current.expenses.length){
-      listEl.innerHTML = `<div class="hint" style="margin:0;">ხარჯი ჯერ არ არის დამატებული</div>`;
-      refreshRemainingHint();
-      return;
-    }
-    listEl.innerHTML = current.expenses.map(e=>`
-      <div class="expense-row" data-exp-id="${e.id}">
-        <span class="exp-desc" title="${escapeHtml(e.description)}">${escapeHtml(e.description)}</span>
-        <span class="exp-amt">${formatMoney(e.amount)}</span>
-        <button type="button" class="btn-icon danger" data-exp-delete="${e.id}" title="წაშლა">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
-        </button>
-      </div>
-    `).join('');
-    refreshRemainingHint();
-    listEl.querySelectorAll('[data-exp-delete]').forEach(el=>{
-      el.onclick = async ()=>{
-        if(!confirm('წავშალო ეს ხარჯი?')) return;
-        try{
-          await deleteExpenseEntry(el.getAttribute('data-exp-delete'));
-          await loadFinanceData();
-          renderExpenseList();
-          renderFinancePage();
-        }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
-      };
-    });
-  }
-  renderExpenseList();
-
-  document.getElementById('btnSaveFinance').onclick = async ()=>{
-    const btn = document.getElementById('btnSaveFinance');
-    btn.disabled = true; btn.textContent = 'ინახება...';
-    try{
-      await saveOrderFinance(
-        orderId,
-        document.getElementById('fBudget').value,
-        document.getElementById('fSize').value,
-        document.getElementById('fAdvance').value,
-        document.getElementById('fAdvanceReceived').checked,
-        document.getElementById('fFinalReceived').checked
-      );
-      await loadFinanceData();
-      renderFinancePage();
-      btn.textContent = 'შენახულია ✓';
-      setTimeout(()=>{ btn.textContent = 'ბიუჯეტის შენახვა'; btn.disabled = false; }, 1200);
-    }catch(e){
-      alert('შენახვა ვერ მოხერხდა: ' + (e.message||''));
-      btn.disabled = false; btn.textContent = 'ბიუჯეტის შენახვა';
-    }
-  };
+  const renderExpenseList = makeEditableMoneyList({
+    listElId: 'expenseList',
+    getItems: ()=> (financeData[orderId] && financeData[orderId].expenses) || [],
+    updateFn: updateExpenseEntry,
+    deleteFn: deleteExpenseEntry,
+    emptyText: 'ხარჯი ჯერ არ არის დამატებული',
+    deleteConfirmText: 'წავშალო ეს ხარჯი?'
+  });
 
   document.getElementById('btnAddExpense').onclick = async ()=>{
     const desc = document.getElementById('fExpDesc').value.trim();
@@ -1916,7 +2142,62 @@ function render(){
       rowCount++;
       if(expanded[o.id]){
         let taskNum = 0;
-        o.tasks.forEach(task=>{
+        const items = o.furnitureItems || [];
+        const knownNames = new Set(items.map(fi=>fi.name));
+
+        function renderFurnitureDivider(unit){
+          const fi = items.find(x=>x.name === unit);
+          const volumeLabel = fi && fi.volume ? ` (${escapeHtml(fi.volume)})` : '';
+          const groupKey = `${o.id}|${unit}`;
+          const isGroupOpen = expandedGroups[groupKey] !== false;
+          return `<div class="row furniture-group-row"><div class="side" style="padding-left:22px;">
+              <button class="chev ${isGroupOpen?'':'collapsed'}" data-toggle-group="${escapeHtml(groupKey)}" style="width:18px;height:18px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <span class="furniture-group-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;"><rect x="3" y="3" width="18" height="16" rx="1"/><line x1="12" y1="3" x2="12" y2="19"/><line x1="9" y1="9" x2="9" y2="13"/><line x1="15" y1="9" x2="15" y2="13"/><line x1="5" y1="19" x2="5" y2="21"/><line x1="19" y1="19" x2="19" y2="21"/></svg> ${escapeHtml(unit)}${volumeLabel}</span>
+              ${canEdit() ? `
+              <div style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+              <select class="wt-employee-select" data-quick-add-task-group="${o.id}|${escapeHtml(unit)}" style="font-size:13px;padding:5px 8px;">
+                <option value="" selected disabled>დაამატე კატეგორია</option>
+                ${STAGES.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
+              </select>
+              <button class="btn-icon" data-edit-furniture="${o.id}|${escapeHtml(unit)}" title="ერთეულის სახელის რედაქტირება">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </button>
+              <button class="btn-icon danger" data-del-furniture="${o.id}|${escapeHtml(unit)}" title="მთელი ერთეულის წაშლა (ყველა ეტაპთან ერთად)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+              </button>
+              </div>` : ''}
+            </div><div class="timeline" style="width:${range.days*dayW}px"></div></div>`;
+        }
+
+        /* one section per furniture line — shown even with zero tasks yet */
+        items.forEach(fi=>{
+          rowsHtml += renderFurnitureDivider(fi.name);
+          if(expandedGroups[`${o.id}|${fi.name}`] !== false){
+            o.tasks.filter(t=> t.furniture_unit === fi.name).forEach(task=>{
+              taskNum++;
+              rowsHtml += renderTaskRow(o, task, range, dayW, `${orderNum}.${taskNum}`);
+              rowCount++;
+            });
+          }
+        });
+
+        /* defensive: tasks tagged with a unit name that no longer has a line (e.g. imported data) */
+        const orphanUnits = [...new Set(o.tasks.map(t=>t.furniture_unit).filter(u=>u && !knownNames.has(u)))];
+        orphanUnits.forEach(unit=>{
+          rowsHtml += renderFurnitureDivider(unit);
+          if(expandedGroups[`${o.id}|${unit}`] !== false){
+            o.tasks.filter(t=> t.furniture_unit === unit).forEach(task=>{
+              taskNum++;
+              rowsHtml += renderTaskRow(o, task, range, dayW, `${orderNum}.${taskNum}`);
+              rowCount++;
+            });
+          }
+        });
+
+        /* tasks with no furniture line at all */
+        o.tasks.filter(t=> !t.furniture_unit).forEach(task=>{
           taskNum++;
           rowsHtml += renderTaskRow(o, task, range, dayW, `${orderNum}.${taskNum}`);
           rowCount++;
@@ -2013,8 +2294,8 @@ function renderOrderRow(o, range, dayW, num){
   const statusColor = STATUS_COLOR[o.status] || '#9B968C';
   const isOpen = !!expanded[o.id];
   const actionsHtml = canEdit() ? `
-        <button class="btn-icon" data-add-task="${o.id}" title="ეტაპის დამატება">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <button class="btn-icon" data-add-furniture="${o.id}" title="ავეჯის ერთეულის დამატება (ცარიელი ხაზი — ეტაპებს ხელით დაამატებთ)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="16" rx="1"/><line x1="12" y1="3" x2="12" y2="19"/><line x1="9" y1="9" x2="9" y2="13"/><line x1="15" y1="9" x2="15" y2="13"/><line x1="5" y1="19" x2="5" y2="21"/><line x1="19" y1="19" x2="19" y2="21"/></svg>
         </button>
         <button class="btn-icon" data-edit-order="${o.id}" title="რედაქტირება">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -2030,7 +2311,7 @@ function renderOrderRow(o, range, dayW, num){
       </button>
       <div class="name-block">
         <div class="nm" title="${escapeHtml(o.name)}">${escapeHtml(o.name)}${o.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(o.notes)+'\">📝</span>' : ''}${o.tasks.some(x=>x.attachmentCount>0) ? ' <span class=\"note-dot\" title=\"ეტაპებს აქვს დანართები\">📎</span>' : ''}</div>
-        <div class="sub">${escapeHtml(o.client)} · ${escapeHtml(o.responsible)}</div>
+        <div class="sub" style="font-size:14px;font-weight:600;color:${o.color};">${escapeHtml(o.client)}${o.client_phone ? ' · '+escapeHtml(o.client_phone) : ''}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${o.status}</span>
       <div class="row-actions">${actionsHtml}</div>
@@ -2063,7 +2344,7 @@ function renderTaskRow(o, task, range, dayW, num){
       <div class="row-num sub-num">${num}</div>
       <div class="name-block">
         <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
-        <div class="sub">${escapeHtml(task.stage)} · ${escapeHtml(task.employee)}</div>
+        <div class="sub">${escapeHtml(task.employee)}${task.stage === 'მასალები' && task.contractor ? ' · '+escapeHtml(task.contractor) : ''}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${task.status}</span>
       <div class="row-actions">${actionsHtml}</div>
@@ -2098,7 +2379,7 @@ function renderFlatTaskRow(o, task, range, dayW, num){
       <div class="row-num">${num}</div>
       <div class="name-block">
         <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
-        <div class="sub">${escapeHtml(o.name)} · ${escapeHtml(o.client)} · ${escapeHtml(task.employee)}</div>
+        <div class="sub">${escapeHtml(o.name)} · ${escapeHtml(o.client)}${task.furniture_unit ? ' · <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;"><rect x="3" y="3" width="18" height="16" rx="1"/><line x1="12" y1="3" x2="12" y2="19"/><line x1="9" y1="9" x2="9" y2="13"/><line x1="15" y1="9" x2="15" y2="13"/><line x1="5" y1="19" x2="5" y2="21"/><line x1="19" y1="19" x2="19" y2="21"/></svg> '+escapeHtml(task.furniture_unit) : ''} · ${escapeHtml(task.employee)}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${task.status}</span>
       <div class="row-actions">${actionsHtml}</div>
@@ -2113,22 +2394,50 @@ function renderFlatTaskRow(o, task, range, dayW, num){
 }
 
 function renderStats(){
-  const total = orders.length;
-  const active = orders.filter(o=>o.status==="მიმდინარეობს").length;
+  const active = orders.filter(o=>o.status!=="დასრულებული" && o.status!=="შეჩერებული").length;
   const done = orders.filter(o=>o.status==="დასრულებული").length;
-  document.getElementById('stats').innerHTML = `
-    <div class="stat-card"><div class="num">${total}</div><div class="lbl">სულ შეკვეთა</div></div>
-    <div class="stat-card"><div class="num">${active}</div><div class="lbl">მიმდინარე</div></div>
-    <div class="stat-card"><div class="num">${done}</div><div class="lbl">დასრულებული</div></div>
-  `;
+  const tabActiveEl = document.getElementById('tabActive');
+  const tabCompletedEl = document.getElementById('tabCompleted');
+  if(tabActiveEl) tabActiveEl.innerHTML = `მიმდინარე <span class="tab-count">${active}</span>`;
+  if(tabCompletedEl) tabCompletedEl.innerHTML = `დასრულებული <span class="tab-count">${done}</span>`;
 }
 
 function attachRowEvents(){
   document.querySelectorAll('[data-toggle]').forEach(el=>{
     el.onclick = ()=>{ const id=el.getAttribute('data-toggle'); expanded[id]=!expanded[id]; render(); };
   });
+  document.querySelectorAll('[data-toggle-group]').forEach(el=>{
+    el.onclick = ()=>{
+      const key = el.getAttribute('data-toggle-group');
+      expandedGroups[key] = (expandedGroups[key] === false) ? true : false;
+      render();
+    };
+  });
   document.querySelectorAll('[data-add-task]').forEach(el=>{
     el.onclick = ()=> openTaskModal(el.getAttribute('data-add-task'), null);
+  });
+  document.querySelectorAll('[data-quick-add-task-group]').forEach(el=>{
+    el.onclick = (e)=> e.stopPropagation();
+    el.onchange = ()=>{
+      const [orderId, unit] = el.getAttribute('data-quick-add-task-group').split('|');
+      const stage = el.value;
+      if(stage) quickAddTask(orderId, stage, unit);
+    };
+  });
+  document.querySelectorAll('[data-add-furniture]').forEach(el=>{
+    el.onclick = ()=> addFurnitureUnit(el.getAttribute('data-add-furniture'));
+  });
+  document.querySelectorAll('[data-edit-furniture]').forEach(el=>{
+    el.onclick = ()=>{
+      const [orderId, unit] = el.getAttribute('data-edit-furniture').split('|');
+      renameFurnitureUnit(orderId, unit);
+    };
+  });
+  document.querySelectorAll('[data-del-furniture]').forEach(el=>{
+    el.onclick = ()=>{
+      const [orderId, unit] = el.getAttribute('data-del-furniture').split('|');
+      deleteFurnitureUnit(orderId, unit);
+    };
   });
   document.querySelectorAll('[data-edit-order]').forEach(el=>{
     el.onclick = ()=>{ if(canEdit()) openOrderModal(el.getAttribute('data-edit-order')); };
@@ -2188,7 +2497,7 @@ function openOrderModal(existingId){
   const existing = existingId ? orders.find(o=>o.id===existingId) : null;
   const t = todayLocal();
   const data = existing || {
-    id:null, name:'', client:'', start:toISO(t), end:toISO(addDays(t,14)),
+    id:null, name:'', client:'', client_phone:'', client_address:'', start:toISO(t), end:toISO(addDays(t,14)),
     color:'#C99B5E', status:ORDER_STATUSES[0], responsible:EMPLOYEES[0], notes:''
   };
   modalContent.innerHTML = `
@@ -2196,12 +2505,25 @@ function openOrderModal(existingId){
       <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
-      <div class="field"><label>შეკვეთის დასახელება</label>
-        <input type="text" id="fName" value="${escapeHtml(data.name)}" placeholder="მაგ. სამზარეულო - საბურთალო">
-        <div class="err" id="errName">გთხოვთ მიუთითოთ დასახელება</div>
+      <div class="row2">
+        <div class="field" style="flex:1;"><label>შეკვეთის დასახელება</label>
+          <input type="text" id="fName" value="${escapeHtml(data.name)}" placeholder="მაგ. სამზარეულო - საბურთალო">
+          <div class="err" id="errName">გთხოვთ მიუთითოთ დასახელება</div>
+        </div>
+        <div class="field" style="flex:0 0 auto;"><label>ფერი</label>
+          <input type="color" id="fColor" value="${data.color}" style="width:48px;height:38px;border:1px solid var(--line);border-radius:6px;padding:2px;cursor:pointer;background:#fff;">
+        </div>
       </div>
-      <div class="field"><label>დამკვეთი</label>
+      <div class="field"><label>დამკვეთის სახელი</label>
         <input type="text" id="fClient" value="${escapeHtml(data.client)}" placeholder="დამკვეთის სახელი">
+      </div>
+      <div class="row2">
+        <div class="field"><label>ტელეფონი</label>
+          <input type="text" id="fPhone" value="${escapeHtml(data.client_phone||'')}" placeholder="მაგ. 555 12 34 56">
+        </div>
+        <div class="field"><label>მისამართი</label>
+          <input type="text" id="fAddress" value="${escapeHtml(data.client_address||'')}" placeholder="დამკვეთის მისამართი">
+        </div>
       </div>
       <div class="row2">
         <div class="field"><label>დაწყების თარიღი</label><input type="date" id="fStart" value="${data.start}"></div>
@@ -2212,15 +2534,19 @@ function openOrderModal(existingId){
         <div class="field"><label>სტატუსი</label><select id="fStatus">${opt(ORDER_STATUSES, data.status)}</select></div>
         <div class="field"><label>პასუხისმგებელი</label><select id="fResp">${opt(EMPLOYEES, data.responsible)}</select></div>
       </div>
-      <div class="field"><label>ფერი</label>
-        <div class="color-row">
-          <input type="color" id="fColor" value="${data.color}">
-          <div class="swatches" id="swatches"></div>
-        </div>
-      </div>
       <div class="field"><label>შენიშვნა</label>
         <textarea id="fNotes" placeholder="დამატებითი დეტალები, სპეციალური მოთხოვნები და ა.შ.">${escapeHtml(data.notes||'')}</textarea>
       </div>
+      ${existing ? `
+      <div class="field">
+        <label>პროექტის ფაილები</label>
+        <div id="orderAttachmentsList" class="attachments-list"><div class="hint" style="margin:0;">იტვირთება...</div></div>
+        <input type="file" id="orderAttachmentInput" multiple style="display:none">
+        <button type="button" class="btn btn-ghost" id="btnAddOrderAttachment" style="margin-top:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          ფაილის დამატება
+        </button>
+      </div>` : `<div class="hint">პროექტის ფაილების დამატება შესაძლებელია შეკვეთის შენახვის შემდეგ.</div>`}
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" id="mCancel">გაუქმება</button>
@@ -2228,9 +2554,18 @@ function openOrderModal(existingId){
     </div>
   `;
   overlay.classList.add('open');
-  buildSwatches(document.getElementById('fColor'));
   document.getElementById('mClose').onclick = closeModal;
   document.getElementById('mCancel').onclick = closeModal;
+  if(existing){
+    loadOrderAttachmentsList(existing.id);
+    const attBtn = document.getElementById('btnAddOrderAttachment');
+    attBtn.onclick = ()=> document.getElementById('orderAttachmentInput').click();
+    document.getElementById('orderAttachmentInput').addEventListener('change', async (e)=>{
+      const files = Array.from(e.target.files||[]);
+      if(files.length) await uploadOrderAttachments(existing.id, files);
+      e.target.value = '';
+    });
+  }
   document.getElementById('mSave').onclick = async ()=>{
     const name = document.getElementById('fName').value.trim();
     const start = document.getElementById('fStart').value;
@@ -2241,6 +2576,8 @@ function openOrderModal(existingId){
     if(!ok) return;
     const payload = {
       name, client: document.getElementById('fClient').value.trim(),
+      client_phone: document.getElementById('fPhone').value.trim(),
+      client_address: document.getElementById('fAddress').value.trim(),
       start, end,
       color: document.getElementById('fColor').value,
       status: document.getElementById('fStatus').value,
@@ -2260,7 +2597,154 @@ function openOrderModal(existingId){
   };
 }
 
-function openTaskModal(orderId, existingTaskId){
+/* Instantly creates a task from the inline "ეტაპის კატეგორია" dropdown —
+   no modal, sensible defaults (today → +3 days, default employee for that
+   stage, color inherited from the order). Edit it afterwards if needed. */
+async function quickAddTask(orderId, stage, furnitureUnit){
+  if(!canEdit()) return;
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  const t = todayLocal();
+  const stageIdx = STAGES.indexOf(stage);
+  const employee = stageIdx > -1 ? STAGE_DEFAULT_EMPLOYEE[stageIdx] : EMPLOYEES[0];
+  try{
+    await saveTask(orderId, {
+      title: stage, stage, start: toISO(t), end: toISO(addDays(t,3)),
+      color: order.color, status: TASK_STATUSES[0], employee,
+      quantity: '', contractor: '', furniture_unit: furnitureUnit || '', notes: ''
+    }, null);
+    expanded[orderId] = true;
+    if(furnitureUnit) expandedGroups[`${orderId}|${furnitureUnit}`] = true;
+    await loadData();
+  }catch(e){ alert('ეტაპის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
+}
+
+/* Creates a new, empty furniture "line" only — no stages are added automatically.
+   Add stages to it afterwards, one at a time, using the + on its divider. */
+function addFurnitureUnit(orderId){
+  if(!canEdit()) return;
+  openFurnitureUnitModal(orderId, null);
+}
+
+function renameFurnitureUnit(orderId, oldName){
+  if(!canEdit()) return;
+  openFurnitureUnitModal(orderId, oldName);
+}
+
+function openFurnitureUnitModal(orderId, existingName){
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  const isEdit = !!existingName;
+  const existingItem = isEdit ? (order.furnitureItems||[]).find(fi=>fi.name === existingName) : null;
+
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>${isEdit ? 'ერთეულის სახელის რედაქტირება' : 'ახალი ავეჯის ერთეული'}</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="hint">შეკვეთა: ${escapeHtml(order.name)}</div>
+      <div class="field"><label>ერთეულის სახელი</label>
+        <input type="text" id="fUnitName" value="${escapeHtml(existingName||'')}" placeholder="მაგ. სამზარეულო, გარდერობი, სავარძელი">
+        <div class="err" id="errUnitName">გთხოვთ მიუთითოთ სახელი</div>
+      </div>
+      <div class="field"><label>მოცულობა</label>
+        <input type="text" id="fUnitVolume" value="${escapeHtml(existingItem && existingItem.volume ? existingItem.volume : '')}" placeholder="მაგ. 3 ცალი, 12.5 მ²">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">გაუქმება</button>
+      <button class="btn btn-primary" id="mSave">${isEdit?'შენახვა':'დამატება'}</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('mCancel').onclick = closeModal;
+
+  const input = document.getElementById('fUnitName');
+  input.focus();
+  input.select();
+
+  const submit = async ()=>{
+    const name = input.value.trim();
+    const volume = document.getElementById('fUnitVolume').value.trim();
+    if(!name){ document.getElementById('errUnitName').style.display = 'block'; return; }
+    document.getElementById('errUnitName').style.display = 'none';
+
+    const saveBtn = document.getElementById('mSave');
+    saveBtn.disabled = true;
+
+    try{
+      if(isEdit){
+        if(!existingItem){ closeModal(); return; }
+        const { error: updErr } = await sb.from('order_furniture_items')
+          .update({ name, volume })
+          .eq('id', existingItem.id);
+        if(updErr) throw updErr;
+
+        if(name !== existingName){
+          const tasksToRename = order.tasks.filter(t=>t.furniture_unit === existingName);
+          for(const t of tasksToRename){
+            let newTitle = t.title;
+            if(t.title && t.title.startsWith(existingName + ' — ')){
+              newTitle = name + ' — ' + t.title.slice(existingName.length + 3);
+            }
+            const { error: taskErr } = await sb.from('tasks')
+              .update({ furniture_unit: name, title: newTitle })
+              .eq('id', t.id);
+            if(taskErr) throw taskErr;
+          }
+        }
+      } else {
+        if((order.furnitureItems||[]).some(fi=>fi.name === name)){
+          document.getElementById('errUnitName').textContent = 'ეს სახელი უკვე გამოყენებულია ამ შეკვეთაში';
+          document.getElementById('errUnitName').style.display = 'block';
+          saveBtn.disabled = false;
+          return;
+        }
+        const color = SWATCHES[(order.furnitureItems||[]).length % SWATCHES.length];
+        const { error: insErr } = await sb.from('order_furniture_items')
+          .insert({ order_id: orderId, name, volume, color });
+        if(insErr) throw insErr;
+        expanded[orderId] = true;
+      }
+
+      await loadData();
+      closeModal();
+    }catch(e){
+      alert('შენახვა ვერ მოხერხდა: ' + (e.message||''));
+      saveBtn.disabled = false;
+    }
+  };
+
+  document.getElementById('mSave').onclick = submit;
+}
+
+async function deleteFurnitureUnit(orderId, unitName){
+  if(!canEdit()) return;
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  const matchingTasks = order.tasks.filter(t=>t.furniture_unit === unitName);
+  const msg = matchingTasks.length > 0
+    ? `წავშალო "${unitName}" და მისი ${matchingTasks.length} ეტაპი? ეს მოქმედება ვერ გაუქმდება.`
+    : `წავშალო "${unitName}"?`;
+  if(!confirm(msg)) return;
+
+  try{
+    if(matchingTasks.length > 0){
+      const { error: delTasksErr } = await sb.from('tasks')
+        .delete().in('id', matchingTasks.map(t=>t.id));
+      if(delTasksErr) throw delTasksErr;
+    }
+    const item = (order.furnitureItems||[]).find(fi=>fi.name === unitName);
+    if(item){
+      const { error: delItemErr } = await sb.from('order_furniture_items').delete().eq('id', item.id);
+      if(delItemErr) throw delItemErr;
+    }
+    await loadData();
+  }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+}
+
+function openTaskModal(orderId, existingTaskId, prefillUnit){
   if(!canEdit()) return;
   const order = orders.find(o=>o.id===orderId);
   if(!order) return;
@@ -2268,7 +2752,8 @@ function openTaskModal(orderId, existingTaskId){
   const t = todayLocal();
   const data = existing || {
     title:'', stage: STAGES[0], start: toISO(t), end: toISO(addDays(t,3)),
-    color:'#C99B5E', status:TASK_STATUSES[0], employee: STAGE_DEFAULT_EMPLOYEE[0], notes:''
+    color:'#C99B5E', status:TASK_STATUSES[0], employee: STAGE_DEFAULT_EMPLOYEE[0], notes:'',
+    quantity:'', contractor:'', furniture_unit: prefillUnit || ''
   };
   const stageOptions = STAGES.map(s=>s).concat(['სხვა (ხელით შეყვანა)']);
   const isCustomStage = existing && !STAGES.includes(existing.stage);
@@ -2279,10 +2764,6 @@ function openTaskModal(orderId, existingTaskId){
     </div>
     <div class="modal-body">
       <div class="hint">შეკვეთა: ${escapeHtml(order.name)}</div>
-      <div class="field"><label>ეტაპის დასახელება</label>
-        <input type="text" id="fTitle" value="${escapeHtml(data.title||'')}" placeholder="მაგ. სამზარეულოს კარადების აწყობა">
-        <div class="hint" style="margin-top:6px;margin-bottom:0;">თუ ცარიელი დარჩება, ჩამონათვალში აჩვენებს ქვემოთ არჩეულ ეტაპის კატეგორიას</div>
-      </div>
       <div class="field"><label>ეტაპის კატეგორია</label>
         <select id="fStage">${opt(stageOptions, isCustomStage ? 'სხვა (ხელით შეყვანა)' : data.stage)}</select>
       </div>
@@ -2299,10 +2780,12 @@ function openTaskModal(orderId, existingTaskId){
         <div class="field"><label>სტატუსი</label><select id="fStatus">${opt(TASK_STATUSES, data.status)}</select></div>
         <div class="field"><label>პასუხისმგებელი</label><select id="fEmployee">${opt(EMPLOYEES, data.employee)}</select></div>
       </div>
-      <div class="field"><label>ფერი</label>
-        <div class="color-row">
-          <input type="color" id="fColor" value="${data.color}">
-          <div class="swatches" id="swatches"></div>
+      <div class="row2">
+        <div class="field"><label>რაოდენობა / მოცულობა</label>
+          <input type="text" id="fQuantity" value="${escapeHtml(data.quantity||'')}" placeholder="მაგ. 3 ცალი, 12.5 მ²">
+        </div>
+        <div class="field"><label>შემსრულებელი კომპანია</label>
+          <input type="text" id="fContractor" value="${escapeHtml(data.contractor||'')}" placeholder="მაგ. მომწოდებელი/ქვეკონტრაქტორი">
         </div>
       </div>
       <div class="field"><label>შენიშვნა</label>
@@ -2327,7 +2810,6 @@ function openTaskModal(orderId, existingTaskId){
     </div>
   `;
   overlay.classList.add('open');
-  buildSwatches(document.getElementById('fColor'));
   if(existing){
     loadAttachmentsList(existing.id);
     const attBtn = document.getElementById('btnAddAttachment');
@@ -2362,12 +2844,15 @@ function openTaskModal(orderId, existingTaskId){
     if(stageVal === 'სხვა (ხელით შეყვანა)'){
       stageVal = document.getElementById('fStageCustom').value.trim() || 'ეტაპი';
     }
-    const titleVal = document.getElementById('fTitle').value.trim() || stageVal;
+    const titleVal = stageVal;
     const payload = {
       title: titleVal, stage: stageVal, start, end,
-      color: document.getElementById('fColor').value,
+      color: existing ? existing.color : order.color,
       status: document.getElementById('fStatus').value,
       employee: document.getElementById('fEmployee').value,
+      quantity: document.getElementById('fQuantity').value.trim(),
+      contractor: document.getElementById('fContractor').value.trim(),
+      furniture_unit: data.furniture_unit || '',
       notes: document.getElementById('fNotes').value.trim()
     };
     const btn = document.getElementById('mSave');
@@ -2405,14 +2890,14 @@ document.getElementById('tabActive').onclick = ()=>{
   document.getElementById('tabActive').classList.add('active');
   document.getElementById('tabCompleted').classList.remove('active');
   _isFirstRender = true; /* re-center the view on today when switching tabs */
-  render();
+  if(currentPageView !== 'gantt') switchPage('gantt'); else render();
 };
 document.getElementById('tabCompleted').onclick = ()=>{
   currentView = 'completed';
   document.getElementById('tabCompleted').classList.add('active');
   document.getElementById('tabActive').classList.remove('active');
   _isFirstRender = true;
-  render();
+  if(currentPageView !== 'gantt') switchPage('gantt'); else render();
 };
 
 /* ---------- admin-only backup export ---------- */
