@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -2901,16 +2900,81 @@ document.getElementById('tabCompleted').onclick = ()=>{
 };
 
 /* ---------- admin-only backup export ---------- */
-function exportData(){
-  const blob = new Blob([JSON.stringify(orders, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `gantt-shekvetebi-${toISO(todayLocal())}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+async function exportData(){
+  const btn = document.getElementById('btnExport');
+  const prevLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = 'ინახება...';
+  try{
+    const [
+      { data: financeRows, error: fErr },
+      { data: expenseRows, error: eErr },
+      { data: advanceRows, error: aErr },
+      { data: workTaskRows, error: wErr },
+      { data: commentRows, error: cErr }
+    ] = await Promise.all([
+      sb.from('order_finance').select('*'),
+      sb.from('order_expenses').select('*'),
+      sb.from('order_advance_payments').select('*'),
+      sb.from('work_tasks').select('*'),
+      sb.from('work_task_comments').select('*')
+    ]);
+    if(fErr) throw fErr;
+    if(eErr) throw eErr;
+    if(aErr) throw aErr;
+    if(wErr) throw wErr;
+    if(cErr) throw cErr;
+
+    const orderFinance = {};
+    orders.forEach(o=>{ orderFinance[o.id] = { budget_total:null, furniture_size:null, advance_received:false, final_received:false, expenses:[], advancePayments:[] }; });
+    (financeRows||[]).forEach(r=>{
+      if(!orderFinance[r.order_id]) orderFinance[r.order_id] = { expenses:[], advancePayments:[] };
+      orderFinance[r.order_id].budget_total = r.budget_total;
+      orderFinance[r.order_id].furniture_size = r.furniture_size;
+      orderFinance[r.order_id].advance_received = !!r.advance_received;
+      orderFinance[r.order_id].final_received = !!r.final_received;
+    });
+    (expenseRows||[]).forEach(e=>{
+      if(!orderFinance[e.order_id]) orderFinance[e.order_id] = { expenses:[], advancePayments:[] };
+      if(!orderFinance[e.order_id].expenses) orderFinance[e.order_id].expenses = [];
+      orderFinance[e.order_id].expenses.push({ id:e.id, description:e.description, amount:e.amount });
+    });
+    (advanceRows||[]).forEach(a=>{
+      if(!orderFinance[a.order_id]) orderFinance[a.order_id] = { expenses:[], advancePayments:[] };
+      if(!orderFinance[a.order_id].advancePayments) orderFinance[a.order_id].advancePayments = [];
+      orderFinance[a.order_id].advancePayments.push({ id:a.id, description:a.description, amount:a.amount });
+    });
+
+    const workTasksExport = (workTaskRows||[]).map(w=>({
+      id:w.id, title:w.title, task_type:w.task_type, employee:w.employee, priority:w.priority,
+      due_date:w.due_date, status:w.status, progress:w.progress, notes:w.notes,
+      comments: (commentRows||[]).filter(c=>c.work_task_id===w.id)
+        .map(c=>({ id:c.id, author_name:c.author_name, text:c.comment_text, created_at:c.created_at }))
+    }));
+
+    const fullBackup = {
+      exportedAt: new Date().toISOString(),
+      note: 'ფაილის დანართები (ატვირთული ფოტოები/დოკუმენტები) ამ სარეზერვო ასლში არ შედის — ისინი ცალკე ინახება Supabase Storage-ში.',
+      orders: orders,
+      orderFinance: orderFinance,
+      workTasks: workTasksExport
+    };
+
+    const blob = new Blob([JSON.stringify(fullBackup, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gantt-sruli-sarezervo-${toISO(todayLocal())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert('სარეზერვო ასლის შექმნა ვერ მოხერხდა: ' + (e.message||''));
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = prevLabel;
+  }
 }
 document.getElementById('btnExport').onclick = exportData;
 
