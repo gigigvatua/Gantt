@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -1015,6 +1016,10 @@ async function saveOrder(payload, existingId){
   if(existingId){
     const { error } = await sb.from('orders').update(row).eq('id', existingId);
     if(error) throw error;
+    /* keep every sub-task's color in sync with the order — tasks don't have
+       their own color picker, they always mirror the parent order's color */
+    const { error: taskColorErr } = await sb.from('tasks').update({ color: payload.color }).eq('order_id', existingId);
+    if(taskColorErr) console.error('sub-task color sync failed:', taskColorErr);
     return existingId;
   } else {
     row.created_by = currentUser.id;
