@@ -1283,6 +1283,96 @@ function calcAdvanceTotal(orderId){
   return fd.advancePayments.reduce((sum,a)=> sum + (Number(a.amount)||0), 0);
 }
 
+function printOrderFinanceReport(orderId){
+  const order = orders.find(o=>o.id===orderId);
+  if(!order) return;
+  const fd = financeData[orderId] || { budget_total:null, advancePayments:[], expenses:[] };
+  const budget = Number(fd.budget_total) || 0;
+  const advancePayments = fd.advancePayments || [];
+  const expenses = fd.expenses || [];
+  const totalAdvance = calcAdvanceTotal(orderId);
+  const totalExpenses = calcExpensesTotal(orderId);
+  const remaining = budget - totalAdvance;
+  const profit = budget - totalExpenses;
+  const today = todayLocal();
+
+  const advanceRowsHtml = advancePayments.length
+    ? advancePayments.map(a=>`<tr><td>${escapeHtml(a.description)}</td><td class="rnum">${formatMoney(a.amount)}</td></tr>`).join('')
+    : `<tr><td colspan="2" class="rmuted">ავანსი არ არის დამატებული</td></tr>`;
+  const expenseRowsHtml = expenses.length
+    ? expenses.map(e=>`<tr><td>${escapeHtml(e.description)}</td><td class="rnum">${formatMoney(e.amount)}</td></tr>`).join('')
+    : `<tr><td colspan="2" class="rmuted">ხარჯი არ არის დამატებული</td></tr>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<title>ფინანსური ანგარიში — ${escapeHtml(order.name)}</title>
+<style>
+  * { box-sizing:border-box; }
+  body{ font-family:'Segoe UI', Arial, sans-serif; color:#211E1A; padding:40px; max-width:800px; margin:0 auto; }
+  h1{ font-size:22px; margin:0 0 2px; }
+  .subtitle{ color:#6B6459; font-size:13px; margin:0 0 24px; }
+  .info-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; margin-bottom:28px; font-size:13.5px; }
+  .info-grid .lbl{ color:#6B6459; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+  .info-grid .val{ font-weight:600; }
+  table{ width:100%; border-collapse:collapse; margin-bottom:20px; font-size:13.5px; }
+  th{ text-align:left; padding:8px 6px; border-bottom:2px solid #211E1A; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:#6B6459; }
+  td{ padding:8px 6px; border-bottom:1px solid #E5E1D8; }
+  .rnum{ text-align:right; font-variant-numeric:tabular-nums; }
+  .rmuted{ color:#9B968C; font-style:italic; }
+  .summary{ background:#FBFAF6; border:1px solid #E5E1D8; border-radius:8px; padding:16px 20px; margin-top:16px; }
+  .summary-row{ display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
+  .summary-row.total{ border-top:2px solid #211E1A; margin-top:6px; padding-top:12px; font-weight:700; font-size:16px; }
+  .positive{ color:#16A34A; }
+  .negative{ color:#E11D2E; }
+  .footer{ margin-top:36px; font-size:11px; color:#9B968C; text-align:center; }
+  @media print{ body{ padding:15mm; } }
+</style>
+</head>
+<body>
+  <h1>${escapeHtml(order.name)}</h1>
+  <p class="subtitle">ფინანსური ანგარიში · გენერირებულია ${toISO(today)}-ს</p>
+
+  <div class="info-grid">
+    <div><div class="lbl">დამკვეთი</div><div class="val">${escapeHtml(order.client || '—')}</div></div>
+    <div><div class="lbl">პასუხისმგებელი</div><div class="val">${escapeHtml(order.responsible || '—')}</div></div>
+    <div><div class="lbl">ტელეფონი</div><div class="val">${escapeHtml(order.client_phone || '—')}</div></div>
+    <div><div class="lbl">მისამართი</div><div class="val">${escapeHtml(order.client_address || '—')}</div></div>
+    <div><div class="lbl">დაწყების თარიღი</div><div class="val">${escapeHtml(order.start || '—')}</div></div>
+    <div><div class="lbl">დასრულების თარიღი</div><div class="val">${escapeHtml(order.end || '—')}</div></div>
+  </div>
+
+  <table>
+    <thead><tr><th>ავანსები / გადახდები</th><th style="text-align:right;">თანხა</th></tr></thead>
+    <tbody>${advanceRowsHtml}</tbody>
+  </table>
+
+  <table>
+    <thead><tr><th>ხარჯები</th><th style="text-align:right;">თანხა</th></tr></thead>
+    <tbody>${expenseRowsHtml}</tbody>
+  </table>
+
+  <div class="summary">
+    <div class="summary-row"><span>ბიუჯეტი</span><span>${formatMoney(budget)}</span></div>
+    <div class="summary-row"><span>ავანსი (მიღებული)</span><span>${formatMoney(totalAdvance)}</span></div>
+    <div class="summary-row"><span>ხარჯები</span><span>${formatMoney(totalExpenses)}</span></div>
+    <div class="summary-row"><span>ბიუჯეტიდან დარჩენილი (მისაღები)</span><span>${formatMoney(remaining)}</span></div>
+    <div class="summary-row total"><span>მოგება</span><span class="${profit>=0?'positive':'negative'}">${formatMoney(profit)}</span></div>
+  </div>
+
+  <div class="footer">კაბინეტი · ავეჯის საწარმო</div>
+</body>
+</html>`;
+
+  const printWin = window.open('', '_blank');
+  if(!printWin){ alert('ბრაუზერმა დაბლოკა ახალი ფანჯარა — გთხოვთ დაუშვათ pop-up-ები ამ საიტისთვის.'); return; }
+  printWin.document.open();
+  printWin.document.write(html);
+  printWin.document.close();
+  printWin.onload = ()=>{ printWin.focus(); printWin.print(); };
+}
+
 function renderFinancePage(){
   const bodyEl = document.getElementById('financeTableBody');
   if(!bodyEl) return;
@@ -1303,7 +1393,11 @@ function renderFinancePage(){
     return `<tr>
       <td>${idx+1}</td>
       <td>
-        <div class="finance-order-name">${escapeHtml(o.name)}</div>
+        <div class="finance-order-name">${escapeHtml(o.name)}
+          <button class="btn-icon" data-print-report="${o.id}" title="ფინანსური ანგარიშის ბეჭდვა" style="margin-left:6px;vertical-align:middle;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"/></svg>
+          </button>
+        </div>
         <div class="finance-order-client">${escapeHtml(o.client)}</div>
       </td>
       <td><span class="badge" style="background:${STATUS_COLOR[o.status]||'#9B968C'}">${o.status}</span></td>
@@ -1348,6 +1442,9 @@ function renderFinancePage(){
   });
   bodyEl.querySelectorAll('[data-expenses-edit]').forEach(el=>{
     el.onclick = ()=> openExpensesModal(el.getAttribute('data-expenses-edit'));
+  });
+  bodyEl.querySelectorAll('[data-print-report]').forEach(el=>{
+    el.onclick = (e)=>{ e.stopPropagation(); printOrderFinanceReport(el.getAttribute('data-print-report')); };
   });
   bodyEl.querySelectorAll('[data-budget-edit]').forEach(el=>{
     el.onclick = ()=>{
