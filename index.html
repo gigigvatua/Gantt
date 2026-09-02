@@ -295,6 +295,13 @@ body{
   box-shadow:0 2px 4px rgba(0,0,0,.28);border:1px solid rgba(0,0,0,.22);
   min-width:6px;transition:filter .1s;
 }
+.bar-resize-handle{
+  position:absolute;top:0;bottom:0;width:9px;cursor:ew-resize;z-index:5;
+}
+.bar-resize-handle.left{left:0;}
+.bar-resize-handle.right{right:0;}
+.bar-resize-handle:hover{background:rgba(255,255,255,.4);}
+.bar.resizing{transition:none;filter:brightness(1.08);}
 .order-row .bar{height:38px;}
 .task-row .bar{height:26px;top:9px;}
 .bar:hover{filter:brightness(1.06);}
@@ -366,6 +373,15 @@ body{
   align-items:center;justify-content:center;z-index:50;padding:20px;
 }
 .overlay.open{display:flex;}
+.preview-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;
+  align-items:center;justify-content:center;z-index:200;padding:20px;
+}
+.preview-overlay.open{display:flex;}
+.preview-box{
+  background:var(--panel);border-radius:10px;width:100%;max-width:480px;
+  max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
 .modal{
   background:var(--panel);border-radius:10px;width:100%;max-width:480px;
   max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);
@@ -652,6 +668,7 @@ body{
 </div>
 
 <div class="overlay" id="overlay"><div class="modal" id="modalContent"></div></div>
+<div class="preview-overlay" id="previewOverlay"><div class="preview-box" id="previewBox"></div></div>
 
 <script>
 const STAGES = [
@@ -1076,7 +1093,7 @@ async function loadAttachmentsList(taskId){
         try{
           const { data: signed, error } = await sb.storage.from(ATTACHMENTS_BUCKET).createSignedUrl(path, 3600);
           if(error) throw error;
-          window.open(signed.signedUrl, '_blank');
+          previewAttachment(el.title, signed.signedUrl);
         }catch(e){ alert('ფაილის გახსნა ვერ მოხერხდა: ' + (e.message||'')); }
       };
     });
@@ -1152,7 +1169,7 @@ async function loadOrderAttachmentsList(orderId){
         try{
           const { data: signed, error } = await sb.storage.from(ORDER_ATTACHMENTS_BUCKET).createSignedUrl(path, 3600);
           if(error) throw error;
-          window.open(signed.signedUrl, '_blank');
+          previewAttachment(el.title, signed.signedUrl);
         }catch(e){ alert('ფაილის გახსნა ვერ მოხერხდა: ' + (e.message||'')); }
       };
     });
@@ -2017,7 +2034,7 @@ function renderWtAttachmentsList(taskId){
       try{
         const { data: signed, error } = await sb.storage.from(WT_ATTACHMENTS_BUCKET).createSignedUrl(path, 3600);
         if(error) throw error;
-        window.open(signed.signedUrl, '_blank');
+        previewAttachment(el.title, signed.signedUrl);
       }catch(e){ alert('ფაილის გახსნა ვერ მოხერხდა: ' + (e.message||'')); }
     };
   });
@@ -2316,9 +2333,11 @@ function renderOrderRow(o, range, dayW, num){
       <div class="row-actions">${actionsHtml}</div>
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
-      <div class="bar" data-edit-order="${o.id}" style="left:${left}px;width:${width}px;background:${o.color}">
+      <div class="bar" data-edit-order="${o.id}" data-resize-order="${o.id}" style="left:${left}px;width:${width}px;background:${o.color}">
+        <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor}"></div>
         <div class="lbl">${escapeHtml(o.name)}</div>
+        <div class="bar-resize-handle right" data-resize="right"></div>
       </div>
     </div>
   </div>`;
@@ -2349,9 +2368,11 @@ function renderTaskRow(o, task, range, dayW, num){
       <div class="row-actions">${actionsHtml}</div>
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
-      <div class="bar task-bar" data-edit-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${lightenColor(task.color, 0.55)};border-color:${task.color};">
+      <div class="bar task-bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${lightenColor(task.color, 0.55)};border-color:${task.color};">
+        <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor};height:3px;"></div>
         <div class="lbl">${escapeHtml(displayName)}</div>
+        <div class="bar-resize-handle right" data-resize="right"></div>
       </div>
     </div>
   </div>`;
@@ -2384,9 +2405,11 @@ function renderFlatTaskRow(o, task, range, dayW, num){
       <div class="row-actions">${actionsHtml}</div>
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
-      <div class="bar" data-edit-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${task.color}">
+      <div class="bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${task.color}">
+        <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor}"></div>
         <div class="lbl">${escapeHtml(displayName)}</div>
+        <div class="bar-resize-handle right" data-resize="right"></div>
       </div>
     </div>
   </div>`;
@@ -2439,13 +2462,13 @@ function attachRowEvents(){
     };
   });
   document.querySelectorAll('[data-edit-order]').forEach(el=>{
-    el.onclick = ()=>{ if(canEdit()) openOrderModal(el.getAttribute('data-edit-order')); };
+    el.onclick = ()=>{ if(barDragJustHappened) return; if(canEdit()) openOrderModal(el.getAttribute('data-edit-order')); };
   });
   document.querySelectorAll('[data-del-order]').forEach(el=>{
     el.onclick = (e)=>{ e.stopPropagation(); deleteOrder(el.getAttribute('data-del-order')); };
   });
   document.querySelectorAll('[data-edit-task]').forEach(el=>{
-    el.onclick = ()=>{ if(!canEdit()) return; const [oId,tId]=el.getAttribute('data-edit-task').split('|'); openTaskModal(oId, tId); };
+    el.onclick = ()=>{ if(barDragJustHappened) return; if(!canEdit()) return; const [oId,tId]=el.getAttribute('data-edit-task').split('|'); openTaskModal(oId, tId); };
   });
   document.querySelectorAll('[data-del-task]').forEach(el=>{
     el.onclick = (e)=>{ e.stopPropagation(); const [oId,tId]=el.getAttribute('data-del-task').split('|'); deleteTask(oId,tId); };
@@ -2484,8 +2507,145 @@ async function submitOwnStatus(taskId, newStatus){
 /* ---------- modals ---------- */
 const overlay = document.getElementById('overlay');
 const modalContent = document.getElementById('modalContent');
-function closeModal(){ overlay.classList.remove('open'); modalContent.innerHTML=''; }
+function closeModal(){ overlay.classList.remove('open'); modalContent.innerHTML=''; modalContent.style.maxWidth = ''; }
+
+/* Shows images and PDFs directly in-app (no new tab, no download) —
+   in its own lightbox, separate from the main modal, so it doesn't
+   disturb whatever edit form (task/order) is open underneath it.
+   Any other file type still opens in a new tab, since the browser
+   can't meaningfully preview it anyway. */
+function previewAttachment(fileName, signedUrl){
+  const ext = (fileName.split('.').pop() || '').toLowerCase();
+  const isImage = ['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext);
+  const isPdf = ext === 'pdf';
+
+  if(!isImage && !isPdf){
+    window.open(signedUrl, '_blank');
+    return;
+  }
+
+  const box = document.getElementById('previewBox');
+  box.style.maxWidth = isImage ? '720px' : '900px';
+  box.innerHTML = `
+    <div class="modal-head"><h3 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(fileName)}</h3>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <a href="${signedUrl}" download="${escapeHtml(fileName)}" class="btn-icon" title="ჩამოტვირთვა">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16"/></svg>
+        </a>
+        <button class="btn-icon" id="previewClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      ${isImage
+        ? `<img src="${signedUrl}" style="width:100%;display:block;">`
+        : `<iframe src="${signedUrl}" style="width:100%;height:78vh;border:none;display:block;"></iframe>`}
+    </div>
+  `;
+  document.getElementById('previewOverlay').classList.add('open');
+  document.getElementById('previewClose').onclick = closePreview;
+}
+function closePreview(){
+  document.getElementById('previewOverlay').classList.remove('open');
+  document.getElementById('previewBox').innerHTML = '';
+}
+document.getElementById('previewOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'previewOverlay') closePreview();
+});
 overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+
+/* ---------- drag-to-resize Gantt bars (order + task) ----------
+   Delegated on document since #ganttInner's content is fully replaced
+   on every render() — direct listeners on the handles wouldn't survive. */
+let barDragJustHappened = false;
+document.addEventListener('mousedown', (e)=>{
+  const handle = e.target.closest('.bar-resize-handle');
+  if(!handle || !canEdit()) return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  const bar = handle.closest('.bar');
+  const side = handle.getAttribute('data-resize'); // 'left' or 'right'
+  const orderAttr = bar.getAttribute('data-resize-order');
+  const taskAttr = bar.getAttribute('data-resize-task');
+
+  let entity = null, isOrder = false, taskOrderId = null;
+  if(orderAttr){
+    entity = orders.find(o=>o.id===orderAttr);
+    isOrder = true;
+  } else if(taskAttr){
+    const [oId, tId] = taskAttr.split('|');
+    const ord = orders.find(o=>o.id===oId);
+    entity = ord ? ord.tasks.find(t=>t.id===tId) : null;
+    taskOrderId = oId;
+  }
+  if(!entity) return;
+
+  const dayW = getDayWidth();
+  const startX = e.clientX;
+  const origLeft = parseFloat(bar.style.left) || 0;
+  const origWidth = parseFloat(bar.style.width) || dayW;
+  const originalStart = parseISO(entity.start);
+  const originalEnd = parseISO(entity.end);
+  const totalDays = diffDays(originalStart, originalEnd);
+
+  bar.classList.add('resizing');
+  document.body.style.userSelect = 'none';
+  let lastDeltaDays = 0;
+
+  function onMove(ev){
+    const deltaX = ev.clientX - startX;
+    let deltaDays = Math.round(deltaX / dayW);
+    if(side === 'left'){
+      if(deltaDays > totalDays) deltaDays = totalDays; /* keep at least 1 day */
+      bar.style.left = (origLeft + deltaDays*dayW) + 'px';
+      bar.style.width = (origWidth - deltaDays*dayW) + 'px';
+    } else {
+      if(deltaDays < -totalDays) deltaDays = -totalDays;
+      bar.style.width = (origWidth + deltaDays*dayW) + 'px';
+    }
+    lastDeltaDays = deltaDays;
+  }
+
+  async function onUp(){
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    bar.classList.remove('resizing');
+    document.body.style.userSelect = '';
+    barDragJustHappened = true;
+    setTimeout(()=>{ barDragJustHappened = false; }, 50);
+
+    if(lastDeltaDays === 0) return;
+
+    const newStart = side === 'left' ? addDays(originalStart, lastDeltaDays) : originalStart;
+    const newEnd = side === 'right' ? addDays(originalEnd, lastDeltaDays) : originalEnd;
+
+    try{
+      if(isOrder){
+        await saveOrder({
+          name: entity.name, client: entity.client,
+          client_phone: entity.client_phone, client_address: entity.client_address,
+          start: toISO(newStart), end: toISO(newEnd),
+          color: entity.color, status: entity.status, responsible: entity.responsible, notes: entity.notes
+        }, entity.id);
+      } else {
+        await saveTask(taskOrderId, {
+          title: entity.title, stage: entity.stage,
+          start: toISO(newStart), end: toISO(newEnd),
+          color: entity.color, status: entity.status, employee: entity.employee,
+          quantity: entity.quantity, contractor: entity.contractor, furniture_unit: entity.furniture_unit,
+          notes: entity.notes
+        }, entity.id);
+      }
+      await loadData();
+    }catch(err){
+      alert('თარიღის განახლება ვერ მოხერხდა: ' + (err.message||''));
+      await loadData();
+    }
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+});
 
 function opt(list, selected){
   return list.map(v=>`<option value="${escapeHtml(v)}" ${v===selected?'selected':''}>${escapeHtml(v)}</option>`).join('');
