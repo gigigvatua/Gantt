@@ -675,12 +675,15 @@ body{
 const STAGES = [
   "აზომვა",
   "ნახაზი",
-  "მასალები",
+  "მასალა",
   "ფურნიტურა",
+  "ტრანსპორტირება",
+  "აწყობა",
+  "მონტაჟი",
   "სხვა"
 ];
 const STAGE_DEFAULT_EMPLOYEE = [
-  "Luka","Gigi","Giorgi D","Gocha","Gigi"
+  "Luka","Gigi","Giorgi D","Gocha","Gega","Kaxa","Giorgi Ts","Gigi"
 ];
 let EMPLOYEES = [
   "Luka","Gigi","Giorgi D","Gocha","Giorgi Ts","Lasha"
@@ -2367,7 +2370,7 @@ function renderTaskRow(o, task, range, dayW, num){
       <div class="row-num sub-num">${num}</div>
       <div class="name-block">
         <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
-        <div class="sub">${escapeHtml(task.employee)}${task.stage === 'მასალები' && task.contractor ? ' · '+escapeHtml(task.contractor) : ''}</div>
+        <div class="sub">${escapeHtml(task.employee)}${task.stage === 'მასალა' && task.contractor ? ' · '+escapeHtml(task.contractor) : ''}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${task.status}</span>
       <div class="row-actions">${actionsHtml}</div>
