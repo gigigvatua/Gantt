@@ -383,6 +383,17 @@ body{
   background:var(--panel);border-radius:10px;width:100%;max-width:480px;
   max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.45);
 }
+.preview-box:fullscreen{
+  max-width:100%;width:100%;height:100%;max-height:100%;border-radius:0;
+  display:flex;flex-direction:column;background:#111;
+}
+.preview-box:fullscreen .modal-head{background:#111;border-color:#333;color:#fff;}
+.preview-box:fullscreen .modal-head .btn-icon{color:#fff;}
+.preview-box:fullscreen .modal-body{
+  flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;
+}
+.preview-box:fullscreen .modal-body img{width:auto;max-width:100%;max-height:100%;object-fit:contain;}
+.preview-box:fullscreen .modal-body iframe{width:100%;height:100%;}
 .modal{
   background:var(--panel);border-radius:10px;width:100%;max-width:480px;
   max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);
@@ -2687,13 +2698,35 @@ function closeModal(){ overlay.classList.remove('open'); modalContent.innerHTML=
    disturb whatever edit form (task/order) is open underneath it.
    Any other file type still opens in a new tab, since the browser
    can't meaningfully preview it anyway. */
+/* Cross-origin links (Supabase Storage lives on a different domain) ignore
+   the <a download> attribute in most browsers, so downloads land with the
+   storage path's internal filename instead of the real one. Fetching the
+   file first and downloading it as a same-origin blob fixes that reliably. */
+async function downloadAttachment(fileName, signedUrl){
+  try{
+    const resp = await fetch(signedUrl);
+    if(!resp.ok) throw new Error('ფაილის მოტანა ვერ მოხერხდა');
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(blobUrl), 1000);
+  }catch(e){
+    alert('ჩამოტვირთვა ვერ მოხერხდა: ' + (e.message||''));
+  }
+}
+
 function previewAttachment(fileName, signedUrl){
   const ext = (fileName.split('.').pop() || '').toLowerCase();
   const isImage = ['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext);
   const isPdf = ext === 'pdf';
 
   if(!isImage && !isPdf){
-    window.open(signedUrl, '_blank');
+    downloadAttachment(fileName, signedUrl);
     return;
   }
 
@@ -2702,9 +2735,12 @@ function previewAttachment(fileName, signedUrl){
   box.innerHTML = `
     <div class="modal-head"><h3 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(fileName)}</h3>
       <div style="display:flex;gap:6px;flex-shrink:0;">
-        <a href="${signedUrl}" download="${escapeHtml(fileName)}" class="btn-icon" title="ჩამოტვირთვა">
+        <button class="btn-icon" id="previewFullscreen" title="სრულ ეკრანზე">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+        </button>
+        <button class="btn-icon" id="previewDownload" title="ჩამოტვირთვა">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 19h16"/></svg>
-        </a>
+        </button>
         <button class="btn-icon" id="previewClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
     </div>
@@ -2716,8 +2752,17 @@ function previewAttachment(fileName, signedUrl){
   `;
   document.getElementById('previewOverlay').classList.add('open');
   document.getElementById('previewClose').onclick = closePreview;
+  document.getElementById('previewDownload').onclick = ()=> downloadAttachment(fileName, signedUrl);
+  document.getElementById('previewFullscreen').onclick = ()=>{
+    if(!document.fullscreenElement){
+      box.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen();
+    }
+  };
 }
 function closePreview(){
+  if(document.fullscreenElement) document.exitFullscreen();
   document.getElementById('previewOverlay').classList.remove('open');
   document.getElementById('previewBox').innerHTML = '';
 }
