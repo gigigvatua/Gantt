@@ -282,7 +282,7 @@ body{
 }
 .task-row .name-block .nm{font-weight:500;font-size:14px;}
 
-.name-block .nm .note-dot{font-size:12px;cursor:help;}
+.name-block .nm .note-dot{font-size:17px;cursor:pointer;}
 .badge{
   font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;
   padding:3px 10px;border-radius:4px;color:#fff;white-space:nowrap;letter-spacing:.02em;
@@ -2504,7 +2504,7 @@ function renderOrderRow(o, range, dayW, num){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
       </button>
       <div class="name-block">
-        <div class="nm" title="${escapeHtml(o.name)}">${escapeHtml(o.name)}${o.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(o.notes)+'\">📝</span>' : ''}${o.tasks.some(x=>x.attachmentCount>0) ? ' <span class=\"note-dot\" title=\"ეტაპებს აქვს დანართები\">📎</span>' : ''}</div>
+        <div class="nm" title="${escapeHtml(o.name)}">${escapeHtml(o.name)}${o.notes ? ' <span class="note-dot" data-edit-order="'+o.id+'" title="'+escapeHtml(o.notes)+'">📝</span>' : ''}${o.tasks.some(x=>x.attachmentCount>0) ? ' <span class="note-dot" data-edit-order="'+o.id+'" title="ეტაპებს აქვს დანართები">📎</span>' : ''}</div>
         <div class="sub" style="font-size:14px;font-weight:600;color:${o.color};">${escapeHtml(o.client)}${o.client_phone ? ' · '+escapeHtml(o.client_phone) : ''}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${o.status}</span>
@@ -2539,7 +2539,7 @@ function renderTaskRow(o, task, range, dayW, num){
     <div class="side" style="padding-left:10px;">
       <div class="row-num sub-num">${num}</div>
       <div class="name-block">
-        <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
+        <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
         <div class="sub">${escapeHtml(task.employee)}${task.stage === 'მასალა' && task.contractor ? ' · '+escapeHtml(task.contractor) : ''}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${task.status}</span>
@@ -2576,7 +2576,7 @@ function renderFlatTaskRow(o, task, range, dayW, num){
     <div class="side">
       <div class="row-num">${num}</div>
       <div class="name-block">
-        <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
+        <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
         <div class="sub">${escapeHtml(o.name)} · ${escapeHtml(o.client)}${task.furniture_unit ? ' · <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;"><rect x="3" y="3" width="18" height="16" rx="1"/><line x1="12" y1="3" x2="12" y2="19"/><line x1="9" y1="9" x2="9" y2="13"/><line x1="15" y1="9" x2="15" y2="13"/><line x1="5" y1="19" x2="5" y2="21"/><line x1="19" y1="19" x2="19" y2="21"/></svg> '+escapeHtml(task.furniture_unit) : ''} · ${escapeHtml(task.employee)}</div>
       </div>
       <span class="badge" style="background:${statusColor}">${task.status}</span>
