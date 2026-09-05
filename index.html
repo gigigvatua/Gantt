@@ -102,6 +102,7 @@ body{
 #tabCompleted{background:#16A34A;color:#fff;border-color:#16A34A;}
 #btnNavTasks{background:#7B2CBF;color:#fff;border-color:#7B2CBF;}
 #btnNavFinance{background:#C9A227;color:#fff;border-color:#C9A227;}
+#btnNavCostEstimate{background:#0E7C7B;color:#fff;border-color:#0E7C7B;}
 .tab-count{
   display:inline-block;margin-left:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
   background:rgba(0,0,0,.15);padding:1px 6px;border-radius:10px;
@@ -215,6 +216,60 @@ body{
 .expense-add-row input{
   width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;
 }
+
+/* ---------- ხარჯთაღრიცხვა (Cost Estimate) ---------- */
+.ce-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.ce-header h2{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:20px;}
+.ce-volume{font-weight:400;color:var(--ink-soft);font-size:15px;}
+.ce-sub{color:var(--ink-soft);font-size:13.5px;}
+.ce-section{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;margin-bottom:16px;
+}
+.ce-section h4{margin:0 0 10px;font-size:13.5px;font-weight:700;}
+.ce-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;}
+.ce-table th{
+  text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);
+  font-size:10px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:.02em;
+}
+.ce-table td{padding:6px 8px;border-bottom:1px solid var(--line-soft);}
+.ce-table .rnum{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.ce-table .rmuted{color:var(--ink-soft);font-style:italic;}
+.ce-cell{cursor:text;border-radius:3px;}
+.ce-cell:hover{background:var(--line-soft);}
+.ce-inline-input{
+  width:100%;font-size:13px;font-family:inherit;border:1px solid var(--blueprint);border-radius:3px;padding:2px 5px;
+}
+.ce-add-row{display:flex;gap:6px;align-items:center;position:relative;}
+.ce-add-row input{
+  padding:6px 9px;border:1px solid var(--line);border-radius:5px;font-size:12.5px;min-width:0;
+}
+.ce-section-total{
+  text-align:right;font-size:13px;color:var(--ink-soft);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
+}
+.ce-autocomplete{
+  position:absolute;top:100%;left:0;right:0;background:var(--panel);border:1px solid var(--line);
+  border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:20;max-height:220px;overflow-y:auto;display:none;
+}
+.ce-autocomplete-item{padding:7px 10px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--line-soft);}
+.ce-autocomplete-item:last-child{border-bottom:none;}
+.ce-autocomplete-item:hover{background:var(--line-soft);}
+.ce-ac-meta{color:var(--ink-soft);font-size:11px;float:right;}
+.ce-summary{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;
+}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;}
+.summary-row.total{border-top:2px solid var(--ink);margin-top:6px;padding-top:12px;font-weight:700;font-size:16px;}
+.ce-pct-grid{
+  display:grid;grid-template-columns:repeat(5, 1fr) auto;gap:10px;align-items:end;
+  margin-bottom:16px;padding-bottom:16px;border-bottom:1px dashed var(--line);
+}
+.ce-pct-grid .field{margin-bottom:0;}
+.ce-pct-grid input{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:5px;font-size:13px;}
+.ce-pct-grid label{font-size:11px;color:var(--ink-soft);display:block;margin-bottom:4px;}
+.cat-brand{font-size:11.5px;color:var(--ink-soft);min-width:60px;cursor:text;border-radius:3px;padding:2px 4px;margin:-2px -4px;}
+.cat-brand:hover{background:var(--line-soft);}
 
 .row{display:flex;border-bottom:1px solid var(--line-soft);}
 .row:last-child{border-bottom:none;}
@@ -603,6 +658,7 @@ body{
         <button class="view-tab" id="tabCompleted" data-view="completed">დასრულებული</button>
         <button class="view-tab" id="btnNavTasks" title="დავალებები">დავალებები</button>
         <button class="view-tab" id="btnNavFinance" style="display:none;" title="ფინანსები">ფინანსები</button>
+        <button class="view-tab" id="btnNavCostEstimate" style="display:none;" title="ხარჯთაღრიცხვა">ხარჯთაღრიცხვა</button>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:16px;">
@@ -681,6 +737,22 @@ body{
       </button>
     </div>
     <div class="wt-list-wrap" id="wtListWrap"></div>
+  </div>
+
+  <div id="costEstimatePage" style="display:none;flex:1 1 auto;min-height:0;overflow-y:auto;">
+    <div class="toolbar" style="margin-bottom:12px;">
+      <div class="field" style="min-width:220px;margin-bottom:0;">
+        <select id="ceOrderSelect"><option value="">— აირჩიეთ პროექტი —</option></select>
+      </div>
+      <div class="field" style="min-width:220px;margin-bottom:0;">
+        <select id="ceFurnitureSelect" disabled><option value="">— ჯერ აირჩიეთ პროექტი —</option></select>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btnManageCatalog" style="margin-left:auto;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/></svg>
+        კატალოგის მართვა
+      </button>
+    </div>
+    <div id="ceContent"></div>
   </div>
 </div>
 
@@ -831,6 +903,7 @@ function applyRoleUI(){
   document.getElementById('btnNewOrder').style.display = canEdit() ? '' : 'none';
   document.getElementById('btnExport').style.display = isAdmin() ? '' : 'none';
   document.getElementById('btnNavFinance').style.display = isAdmin() ? '' : 'none';
+  document.getElementById('btnNavCostEstimate').style.display = canEdit() ? '' : 'none';
   document.getElementById('btnNewWorkTask').style.display = canEdit() ? '' : 'none';
   renderUserBadge();
 }
@@ -899,6 +972,7 @@ function wireAuthUI(){
   };
   document.getElementById('btnNavTasks').onclick = ()=> switchPage('tasks');
   document.getElementById('btnNavFinance').onclick = ()=> switchPage('finance');
+  document.getElementById('btnNavCostEstimate').onclick = ()=> switchPage('costestimate');
 }
 
 async function initAuth(){
@@ -1496,14 +1570,17 @@ function renderFinancePage(){
 
 async function switchPage(page){
   if(page === 'finance' && !isAdmin()) return;
+  if(page === 'costestimate' && !canEdit()) return;
   currentPageView = page;
 
   document.getElementById('ganttPage').style.display = page === 'gantt' ? 'flex' : 'none';
   document.getElementById('financePage').style.display = page === 'finance' ? 'block' : 'none';
   document.getElementById('tasksPage').style.display = page === 'tasks' ? 'flex' : 'none';
+  document.getElementById('costEstimatePage').style.display = page === 'costestimate' ? 'block' : 'none';
 
   document.getElementById('btnNavTasks').classList.toggle('active', page === 'tasks');
   document.getElementById('btnNavFinance').classList.toggle('active', page === 'finance');
+  document.getElementById('btnNavCostEstimate').classList.toggle('active', page === 'costestimate');
 
   if(page === 'gantt'){
     render();
@@ -1515,6 +1592,10 @@ async function switchPage(page){
     updateStatusText('');
     await loadWorkTasks();
     renderTasksPage();
+  } else if(page === 'costestimate'){
+    updateStatusText('');
+    await loadCostEstimatePageData();
+    renderCostEstimatePage();
   }
 }
 
@@ -1737,6 +1818,530 @@ function openExpensesModal(orderId){
     }catch(e){ alert('ხარჯის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
   };
 }
+
+/* ============================================================================
+   ხარჯთაღრიცხვა (Cost Estimate) — თითო ავეჯის ერთეულის სრული ღირებულების
+   კალკულატორი: მასალები, ფურნიტურა, მომსახურება, ხელობა + ავტომატური
+   თვითღირებულება → გაუთვალისწინებელი → ზედნადები → მოგება → ფასდაკლება → დღგ
+   ============================================================================ */
+let costSettings = { contingency_pct:0.04, overhead_pct:0.06, profit_pct:0.25, vat_pct:0.18 };
+let hardwareCatalog = [];
+let ceSelectedOrderId = '';
+let ceSelectedFurnitureId = '';
+let ceCostItems = []; /* line items for the currently selected furniture item */
+
+const CE_SECTIONS = [
+  { key:'material', label:'მასალები', hasBrandSize:true },
+  { key:'service',  label:'დამატებითი მომსახურება', hasBrandSize:false },
+  { key:'hardware', label:'ავეჯის ფურნიტურა', hasBrandSize:true, catalog:true },
+  { key:'labor',    label:'ხელობა (აწყობა, მონტაჟი, ტრანსპორტირება)', hasBrandSize:false }
+];
+
+async function loadCostEstimatePageData(){
+  try{
+    const [{ data: settingsRow, error: sErr }, { data: catalogRows, error: cErr }] = await Promise.all([
+      sb.from('cost_settings').select('*').eq('id', 1).single(),
+      sb.from('hardware_catalog').select('*').order('category', { ascending:true }).order('seq', { ascending:true })
+    ]);
+    if(sErr) throw sErr;
+    if(cErr) throw cErr;
+    if(settingsRow) costSettings = settingsRow;
+    hardwareCatalog = catalogRows || [];
+  }catch(e){ console.error('cost estimate data load failed:', e); }
+  populateCeOrderSelect();
+}
+
+function populateCeOrderSelect(){
+  const sel = document.getElementById('ceOrderSelect');
+  const prevVal = ceSelectedOrderId;
+  sel.innerHTML = '<option value="">— აირჩიეთ პროექტი —</option>' +
+    orders.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join('');
+  sel.value = prevVal;
+  sel.onchange = ()=>{
+    ceSelectedOrderId = sel.value;
+    ceSelectedFurnitureId = '';
+    ceCostItems = [];
+    populateCeFurnitureSelect();
+    renderCostEstimatePage();
+  };
+  populateCeFurnitureSelect();
+}
+
+function populateCeFurnitureSelect(){
+  const sel = document.getElementById('ceFurnitureSelect');
+  const order = orders.find(o=>o.id===ceSelectedOrderId);
+  if(!order || !order.furnitureItems || !order.furnitureItems.length){
+    sel.innerHTML = '<option value="">— ჯერ აირჩიეთ პროექტი —</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">— აირჩიეთ ავეჯის ერთეული —</option>' +
+    order.furnitureItems.map(fi=>`<option value="${fi.id}" ${fi.id===ceSelectedFurnitureId?'selected':''}>${escapeHtml(fi.name)}</option>`).join('');
+  sel.onchange = async ()=>{
+    ceSelectedFurnitureId = sel.value;
+    if(ceSelectedFurnitureId) await loadCostItemsForFurniture(ceSelectedFurnitureId);
+    else ceCostItems = [];
+    renderCostEstimatePage();
+  };
+}
+
+async function loadCostItemsForFurniture(furnitureItemId){
+  try{
+    const { data, error } = await sb.from('furniture_cost_items').select('*')
+      .eq('furniture_item_id', furnitureItemId).order('seq', { ascending:true });
+    if(error) throw error;
+    ceCostItems = data || [];
+  }catch(e){
+    alert('ხარჯის პუნქტების ჩატვირთვა ვერ მოხერხდა: ' + (e.message||''));
+    ceCostItems = [];
+  }
+}
+
+function ceEffectivePct(furnitureItem, field){
+  const overrideKey = field + '_pct_override';
+  if(furnitureItem && furnitureItem[overrideKey] !== null && furnitureItem[overrideKey] !== undefined){
+    return Number(furnitureItem[overrideKey]);
+  }
+  if(field === 'discount') return 0; /* no company-wide default for discount */
+  return Number(costSettings[field + '_pct']) || 0;
+}
+
+function ceCalcTotals(furnitureItem){
+  const bySection = { material:0, service:0, hardware:0, labor:0 };
+  ceCostItems.forEach(it=>{
+    bySection[it.section] = (bySection[it.section]||0) + (Number(it.quantity)||0) * (Number(it.unit_price)||0);
+  });
+  const materialsTotal = bySection.material + bySection.service + bySection.hardware;
+  const laborTotal = bySection.labor;
+  const primeCost = materialsTotal + laborTotal;
+
+  const contingencyPct = ceEffectivePct(furnitureItem, 'contingency');
+  const overheadPct = ceEffectivePct(furnitureItem, 'overhead');
+  const profitPct = ceEffectivePct(furnitureItem, 'profit');
+  const discountPct = ceEffectivePct(furnitureItem, 'discount');
+  const vatPct = ceEffectivePct(furnitureItem, 'vat');
+
+  const contingency = primeCost * contingencyPct;
+  const overhead = primeCost * overheadPct;
+  const profit = primeCost * profitPct;
+  const discount = profit * discountPct;
+  const beforeVat = primeCost + profit + contingency + overhead - discount;
+  const vat = beforeVat * vatPct;
+  const totalWithVat = beforeVat + vat;
+
+  return { bySection, materialsTotal, laborTotal, primeCost,
+    contingencyPct, overheadPct, profitPct, discountPct, vatPct,
+    contingency, overhead, profit, discount, beforeVat, vat, totalWithVat };
+}
+
+async function addCostItem(furnitureItemId, section, fields){
+  const { error } = await sb.from('furniture_cost_items').insert({
+    furniture_item_id: furnitureItemId, section,
+    brand: fields.brand || null, size: fields.size || null,
+    description: fields.description, quantity: Number(fields.quantity)||0, unit_price: Number(fields.unit_price)||0,
+    created_by: currentUser.id
+  });
+  if(error) throw error;
+}
+async function updateCostItemField(itemId, field, value){
+  const patch = {};
+  patch[field] = (field === 'quantity' || field === 'unit_price') ? (Number(value)||0) : (value || null);
+  const { error } = await sb.from('furniture_cost_items').update(patch).eq('id', itemId);
+  if(error) throw error;
+}
+async function deleteCostItem(itemId){
+  const { error } = await sb.from('furniture_cost_items').delete().eq('id', itemId);
+  if(error) throw error;
+}
+async function saveFurnitureCostOverrides(furnitureItemId, overrides){
+  const { error } = await sb.from('order_furniture_items').update(overrides).eq('id', furnitureItemId);
+  if(error) throw error;
+}
+
+function renderCostEstimatePage(){
+  const contentEl = document.getElementById('ceContent');
+  if(!ceSelectedFurnitureId){
+    contentEl.innerHTML = `<div class="empty-state"><div class="hint">აირჩიეთ პროექტი და ავეჯის ერთეული ხარჯთაღრიცხვის სანახავად.</div></div>`;
+    return;
+  }
+  const order = orders.find(o=>o.id===ceSelectedOrderId);
+  const fi = order ? (order.furnitureItems||[]).find(x=>x.id===ceSelectedFurnitureId) : null;
+  if(!fi){ contentEl.innerHTML = ''; return; }
+
+  const totals = ceCalcTotals(fi);
+
+  const sectionsHtml = CE_SECTIONS.map(sec=>{
+    const items = ceCostItems.filter(it=>it.section===sec.key);
+    const sectionTotal = items.reduce((s,it)=> s + (Number(it.quantity)||0)*(Number(it.unit_price)||0), 0);
+    const rowsHtml = items.map(it=>`
+      <tr data-ce-row="${it.id}">
+        ${sec.hasBrandSize ? `
+        <td class="ce-cell" data-ce-field="brand" data-ce-item="${it.id}">${escapeHtml(it.brand||'—')}</td>
+        <td class="ce-cell" data-ce-field="size" data-ce-item="${it.id}">${escapeHtml(it.size||'—')}</td>` : ''}
+        <td class="ce-cell" data-ce-field="description" data-ce-item="${it.id}">${escapeHtml(it.description)}</td>
+        <td class="ce-cell rnum" data-ce-field="quantity" data-ce-item="${it.id}">${it.quantity}</td>
+        <td class="ce-cell rnum" data-ce-field="unit_price" data-ce-item="${it.id}">${formatMoney(it.unit_price)}</td>
+        <td class="rnum">${formatMoney((Number(it.quantity)||0)*(Number(it.unit_price)||0))}</td>
+        <td><button class="btn-icon danger" data-ce-delete="${it.id}" title="წაშლა">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button></td>
+      </tr>
+    `).join('');
+    return `
+      <div class="ce-section">
+        <h4>${sec.label}</h4>
+        <table class="ce-table">
+          <thead><tr>
+            ${sec.hasBrandSize ? '<th>ბრენდი</th><th>ზომა</th>' : ''}
+            <th>დასახელება</th><th>რაოდ.</th><th>ფასი</th><th>სულ</th><th></th>
+          </tr></thead>
+          <tbody>${rowsHtml || `<tr><td colspan="${sec.hasBrandSize?6:4}" class="rmuted" style="text-align:center;padding:14px;">ჯერ არაფერია დამატებული</td></tr>`}</tbody>
+        </table>
+        <div class="ce-add-row" data-ce-section="${sec.key}">
+          ${sec.hasBrandSize ? `<input type="text" class="ce-add-brand" placeholder="ბრენდი" style="max-width:110px;">
+          <input type="text" class="ce-add-size" placeholder="ზომა" style="max-width:100px;">` : ''}
+          <div style="position:relative;flex:1;">
+            <input type="text" class="ce-add-desc" placeholder="დასახელება" autocomplete="off">
+            ${sec.catalog ? `<div class="ce-autocomplete" data-ce-autocomplete-for="${sec.key}"></div>` : ''}
+          </div>
+          <input type="number" class="ce-add-qty" placeholder="რაოდ." value="1" style="max-width:80px;">
+          <input type="number" step="0.01" class="ce-add-price" placeholder="ფასი" style="max-width:100px;">
+          <button class="btn btn-ghost btn-sm ce-add-btn">დამატება</button>
+        </div>
+        <div class="ce-section-total">ჯამი: <strong>${formatMoney(sectionTotal)}</strong></div>
+      </div>
+    `;
+  }).join('');
+
+  contentEl.innerHTML = `
+    <div class="ce-header">
+      <div>
+        <h2>${escapeHtml(fi.name)}${fi.volume ? ' <span class="ce-volume">('+escapeHtml(fi.volume)+')</span>' : ''}</h2>
+        <div class="ce-sub">${escapeHtml(order.name)} · ${escapeHtml(order.client)}</div>
+      </div>
+      <button class="btn btn-ghost" id="btnPrintCostEstimate">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"/></svg>
+        ბეჭდვა
+      </button>
+    </div>
+
+    ${sectionsHtml}
+
+    <div class="ce-summary">
+      <div class="ce-pct-grid">
+        <div class="field"><label>გაუთვალისწინებელი %</label><input type="number" step="0.1" id="cePctContingency" value="${(totals.contingencyPct*100).toFixed(2)}"></div>
+        <div class="field"><label>ზედნადები (ტრანსპ.) %</label><input type="number" step="0.1" id="cePctOverhead" value="${(totals.overheadPct*100).toFixed(2)}"></div>
+        <div class="field"><label>მოგება %</label><input type="number" step="0.1" id="cePctProfit" value="${(totals.profitPct*100).toFixed(2)}"></div>
+        <div class="field"><label>ფასდაკლება %</label><input type="number" step="0.1" id="cePctDiscount" value="${(totals.discountPct*100).toFixed(2)}"></div>
+        <div class="field"><label>დღგ %</label><input type="number" step="0.1" id="cePctVat" value="${(totals.vatPct*100).toFixed(2)}"></div>
+        <button class="btn btn-primary btn-sm" id="btnSaveCePct" style="align-self:end;">შენახვა</button>
+      </div>
+      <div class="summary-row"><span>თვითღირებულება</span><span>${formatMoney(totals.primeCost)}</span></div>
+      <div class="summary-row"><span>გაუთვალისწინებელი</span><span>${formatMoney(totals.contingency)}</span></div>
+      <div class="summary-row"><span>ზედნადები (ტრანსპორტირება)</span><span>${formatMoney(totals.overhead)}</span></div>
+      <div class="summary-row"><span>მოგება</span><span>${formatMoney(totals.profit)}</span></div>
+      <div class="summary-row"><span>ფასდაკლება</span><span>-${formatMoney(totals.discount)}</span></div>
+      <div class="summary-row"><span>თანხა დღგს გარეშე</span><span>${formatMoney(totals.beforeVat)}</span></div>
+      <div class="summary-row"><span>დღგ</span><span>${formatMoney(totals.vat)}</span></div>
+      <div class="summary-row total"><span>სულ ფასი დღგ-ს ჩათვლით</span><span>${formatMoney(totals.totalWithVat)}</span></div>
+    </div>
+  `;
+
+  wireCostEstimateEvents(fi);
+}
+
+function wireCostEstimateEvents(fi){
+  /* inline click-to-edit on existing rows */
+  document.querySelectorAll('.ce-cell').forEach(cell=>{
+    cell.onclick = ()=>{
+      const itemId = cell.getAttribute('data-ce-item');
+      const field = cell.getAttribute('data-ce-field');
+      const item = ceCostItems.find(x=>x.id===itemId);
+      if(!item) return;
+      const currentVal = field==='quantity' ? item.quantity : field==='unit_price' ? item.unit_price : (item[field]||'');
+      const input = document.createElement('input');
+      input.type = (field==='quantity'||field==='unit_price') ? 'number' : 'text';
+      if(field==='unit_price') input.step = '0.01';
+      input.value = currentVal;
+      input.className = 'ce-inline-input';
+      cell.innerHTML = '';
+      cell.appendChild(input);
+      input.focus(); input.select();
+      let done = false;
+      const commit = async ()=>{
+        if(done) return; done = true;
+        try{
+          await updateCostItemField(itemId, field, input.value);
+          await loadCostItemsForFurniture(ceSelectedFurnitureId);
+          renderCostEstimatePage();
+        }catch(e){ alert('განახლება ვერ მოხერხდა: ' + (e.message||'')); renderCostEstimatePage(); }
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', ev=>{
+        if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); }
+        else if(ev.key==='Escape'){ done=true; renderCostEstimatePage(); }
+      });
+    };
+  });
+
+  document.querySelectorAll('[data-ce-delete]').forEach(el=>{
+    el.onclick = async ()=>{
+      if(!confirm('წავშალო ეს პუნქტი?')) return;
+      try{
+        await deleteCostItem(el.getAttribute('data-ce-delete'));
+        await loadCostItemsForFurniture(ceSelectedFurnitureId);
+        renderCostEstimatePage();
+      }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  });
+
+  /* add-row per section, with catalog autocomplete for hardware */
+  document.querySelectorAll('.ce-add-row').forEach(rowEl=>{
+    const section = rowEl.getAttribute('data-ce-section');
+    const descInput = rowEl.querySelector('.ce-add-desc');
+    const brandInput = rowEl.querySelector('.ce-add-brand');
+    const priceInput = rowEl.querySelector('.ce-add-price');
+    const autoBox = rowEl.querySelector('.ce-autocomplete');
+
+    if(autoBox){
+      descInput.addEventListener('input', ()=>{
+        const q = descInput.value.trim().toLowerCase();
+        if(!q){ autoBox.style.display = 'none'; return; }
+        const matches = hardwareCatalog.filter(h=>h.name.toLowerCase().includes(q)).slice(0, 8);
+        if(!matches.length){ autoBox.style.display = 'none'; return; }
+        autoBox.innerHTML = matches.map(h=>`<div class="ce-autocomplete-item" data-cat-id="${h.id}">${escapeHtml(h.name)} <span class="ce-ac-meta">${escapeHtml(h.brand||'')} · ${formatMoney(h.price)}</span></div>`).join('');
+        autoBox.style.display = 'block';
+        autoBox.querySelectorAll('[data-cat-id]').forEach(opt=>{
+          opt.onclick = ()=>{
+            const cat = hardwareCatalog.find(h=>h.id===opt.getAttribute('data-cat-id'));
+            if(cat){
+              descInput.value = cat.name;
+              if(priceInput) priceInput.value = cat.price;
+              if(brandInput) brandInput.value = cat.brand || '';
+            }
+            autoBox.style.display = 'none';
+          };
+        });
+      });
+      document.addEventListener('click', (e)=>{ if(!rowEl.contains(e.target)) autoBox.style.display = 'none'; });
+    }
+
+    rowEl.querySelector('.ce-add-btn').onclick = async ()=>{
+      const description = descInput.value.trim();
+      const qty = rowEl.querySelector('.ce-add-qty').value;
+      const price = priceInput ? priceInput.value : rowEl.querySelector('.ce-add-price').value;
+      if(!description){ alert('შეავსეთ დასახელება'); return; }
+      try{
+        await addCostItem(ceSelectedFurnitureId, section, {
+          brand: brandInput ? brandInput.value.trim() : '',
+          size: rowEl.querySelector('.ce-add-size') ? rowEl.querySelector('.ce-add-size').value.trim() : '',
+          description, quantity: qty, unit_price: price
+        });
+        await loadCostItemsForFurniture(ceSelectedFurnitureId);
+        renderCostEstimatePage();
+      }catch(e){ alert('დამატება ვერ მოხერხდა: ' + (e.message||'')); }
+    };
+  });
+
+  document.getElementById('btnSaveCePct').onclick = async ()=>{
+    const btn = document.getElementById('btnSaveCePct');
+    btn.disabled = true;
+    try{
+      await saveFurnitureCostOverrides(ceSelectedFurnitureId, {
+        contingency_pct_override: Number(document.getElementById('cePctContingency').value)/100,
+        overhead_pct_override: Number(document.getElementById('cePctOverhead').value)/100,
+        profit_pct_override: Number(document.getElementById('cePctProfit').value)/100,
+        discount_pct_override: Number(document.getElementById('cePctDiscount').value)/100,
+        vat_pct_override: Number(document.getElementById('cePctVat').value)/100
+      });
+      await loadData();
+      renderCostEstimatePage();
+    }catch(e){ alert('შენახვა ვერ მოხერხდა: ' + (e.message||'')); }
+    finally{ btn.disabled = false; }
+  };
+
+  document.getElementById('btnPrintCostEstimate').onclick = ()=> printCostEstimateReport(fi);
+}
+
+function openHardwareCatalogModal(){
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>ფურნიტურის სახარჯო კატალოგი</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><input type="text" id="catSearchInput" placeholder="ძებნა კატალოგში..."></div>
+      <div id="catalogList" style="max-height:420px;overflow-y:auto;margin-bottom:14px;"></div>
+      <div class="field" style="margin-bottom:8px;"><label>ახალი პუნქტის დამატება</label></div>
+      <div class="expense-add-row">
+        <input type="text" id="catAddCategory" placeholder="კატეგორია" style="max-width:130px;">
+        <input type="text" id="catAddName" placeholder="დასახელება" style="flex:1;">
+        <input type="number" step="0.01" id="catAddPrice" placeholder="ფასი" style="max-width:80px;">
+        <input type="text" id="catAddBrand" placeholder="ბრენდი" style="max-width:80px;">
+        <button class="btn btn-ghost" id="btnAddCatalogItem" style="flex-shrink:0;">დამატება</button>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="mCancel">დახურვა</button></div>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('mCancel').onclick = closeModal;
+
+  function renderCatalogList(filterText){
+    const listEl = document.getElementById('catalogList');
+    const q = (filterText||'').toLowerCase();
+    const filtered = hardwareCatalog.filter(h => !q || h.name.toLowerCase().includes(q) || (h.category||'').toLowerCase().includes(q));
+    const byCategory = {};
+    filtered.forEach(h=>{
+      const cat = h.category || 'უკატეგორიო';
+      if(!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push(h);
+    });
+    const categories = Object.keys(byCategory).sort();
+    if(!categories.length){ listEl.innerHTML = '<div class="hint">კატალოგი ცარიელია</div>'; return; }
+    listEl.innerHTML = categories.map(cat=>`
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:700;font-size:12px;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px;">${escapeHtml(cat)}</div>
+        ${byCategory[cat].map(h=>`
+          <div class="expense-row" data-cat-item="${h.id}">
+            <span class="exp-desc" data-cat-edit="name" data-cat-id="${h.id}" title="დააჭირეთ რედაქტირებისთვის">${escapeHtml(h.name)}</span>
+            <span class="cat-brand" data-cat-edit="brand" data-cat-id="${h.id}">${escapeHtml(h.brand||'—')}</span>
+            <span class="exp-amt" data-cat-edit="price" data-cat-id="${h.id}">${formatMoney(h.price)}</span>
+            <button class="btn-icon danger" data-cat-delete="${h.id}" title="წაშლა">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-cat-edit]').forEach(el=>{
+      el.onclick = ()=>{
+        const field = el.getAttribute('data-cat-edit');
+        const catId = el.getAttribute('data-cat-id');
+        const item = hardwareCatalog.find(h=>h.id===catId);
+        if(!item) return;
+        const input = document.createElement('input');
+        input.type = field==='price' ? 'number' : 'text';
+        if(field==='price') input.step = '0.01';
+        input.value = item[field] || '';
+        input.className = field==='price' ? 'exp-amt-input' : 'exp-desc-input';
+        el.replaceWith(input);
+        input.focus(); input.select();
+        let done = false;
+        const commit = async ()=>{
+          if(done) return; done = true;
+          try{
+            const patch = {}; patch[field] = field==='price' ? Number(input.value)||0 : input.value.trim();
+            const { error } = await sb.from('hardware_catalog').update(patch).eq('id', catId);
+            if(error) throw error;
+            await loadCostEstimatePageData();
+            renderCatalogList(document.getElementById('catSearchInput').value);
+          }catch(e){ alert('განახლება ვერ მოხერხდა: ' + (e.message||'')); renderCatalogList(document.getElementById('catSearchInput').value); }
+        };
+        input.addEventListener('blur', commit);
+        input.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); } else if(ev.key==='Escape'){ done=true; renderCatalogList(document.getElementById('catSearchInput').value); } });
+      };
+    });
+    listEl.querySelectorAll('[data-cat-delete]').forEach(el=>{
+      el.onclick = async ()=>{
+        if(!confirm('წავშალო ეს კატალოგის პუნქტი?')) return;
+        try{
+          const { error } = await sb.from('hardware_catalog').delete().eq('id', el.getAttribute('data-cat-delete'));
+          if(error) throw error;
+          await loadCostEstimatePageData();
+          renderCatalogList(document.getElementById('catSearchInput').value);
+        }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+  }
+  renderCatalogList('');
+  document.getElementById('catSearchInput').addEventListener('input', (e)=> renderCatalogList(e.target.value));
+
+  document.getElementById('btnAddCatalogItem').onclick = async ()=>{
+    const category = document.getElementById('catAddCategory').value.trim();
+    const name = document.getElementById('catAddName').value.trim();
+    const price = document.getElementById('catAddPrice').value;
+    const brand = document.getElementById('catAddBrand').value.trim();
+    if(!category || !name){ alert('შეავსეთ კატეგორია და დასახელება'); return; }
+    try{
+      const { error } = await sb.from('hardware_catalog').insert({ category, name, price: Number(price)||0, brand: brand||null, created_by: currentUser.id });
+      if(error) throw error;
+      document.getElementById('catAddCategory').value = '';
+      document.getElementById('catAddName').value = '';
+      document.getElementById('catAddPrice').value = '';
+      document.getElementById('catAddBrand').value = '';
+      await loadCostEstimatePageData();
+      renderCatalogList(document.getElementById('catSearchInput').value);
+    }catch(e){ alert('დამატება ვერ მოხერხდა: ' + (e.message||'')); }
+  };
+}
+
+function printCostEstimateReport(fi){
+  const order = orders.find(o=>o.id===ceSelectedOrderId);
+  const totals = ceCalcTotals(fi);
+  const sectionHtml = (title, key)=>{
+    const items = ceCostItems.filter(it=>it.section===key);
+    if(!items.length) return '';
+    const rows = items.map(it=>`<tr><td>${escapeHtml(it.brand||'')}</td><td>${escapeHtml(it.size||'')}</td><td>${escapeHtml(it.description)}</td><td class="rnum">${it.quantity}</td><td class="rnum">${formatMoney(it.unit_price)}</td><td class="rnum">${formatMoney((Number(it.quantity)||0)*(Number(it.unit_price)||0))}</td></tr>`).join('');
+    return `<h3>${title}</h3><table><thead><tr><th>ბრენდი</th><th>ზომა</th><th>დასახელება</th><th>რაოდ.</th><th>ფასი</th><th>სულ</th></tr></thead><tbody>${rows}</tbody></table>`;
+  };
+
+  const html = `<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<title>ხარჯთაღრიცხვა — ${escapeHtml(fi.name)}</title>
+<style>
+  * { box-sizing:border-box; }
+  body{ font-family:'Segoe UI', Arial, sans-serif; color:#211E1A; padding:40px; max-width:800px; margin:0 auto; }
+  h1{ font-size:22px; margin:0 0 2px; }
+  .subtitle{ color:#6B6459; font-size:13px; margin:0 0 24px; }
+  h3{ font-size:14px; margin:22px 0 8px; }
+  table{ width:100%; border-collapse:collapse; margin-bottom:6px; font-size:12.5px; }
+  th{ text-align:left; padding:6px; border-bottom:2px solid #211E1A; font-size:10.5px; text-transform:uppercase; color:#6B6459; }
+  td{ padding:6px; border-bottom:1px solid #E5E1D8; }
+  .rnum{ text-align:right; font-variant-numeric:tabular-nums; }
+  .summary{ background:#FBFAF6; border:1px solid #E5E1D8; border-radius:8px; padding:16px 20px; margin-top:22px; }
+  .summary-row{ display:flex; justify-content:space-between; padding:5px 0; font-size:13.5px; }
+  .summary-row.total{ border-top:2px solid #211E1A; margin-top:6px; padding-top:10px; font-weight:700; font-size:16px; }
+  .footer{ margin-top:32px; font-size:11px; color:#9B968C; text-align:center; }
+  @media print{ body{ padding:15mm; } }
+</style>
+</head>
+<body>
+  <h1>${escapeHtml(fi.name)}${fi.volume ? ' ('+escapeHtml(fi.volume)+')' : ''}</h1>
+  <p class="subtitle">ხარჯთაღრიცხვა · ${escapeHtml(order.name)} · ${escapeHtml(order.client)} · გენერირებულია ${toISO(todayLocal())}-ს</p>
+
+  ${sectionHtml('მასალები', 'material')}
+  ${sectionHtml('დამატებითი მომსახურება', 'service')}
+  ${sectionHtml('ავეჯის ფურნიტურა', 'hardware')}
+  ${sectionHtml('ხელობა (აწყობა, მონტაჟი, ტრანსპორტირება)', 'labor')}
+
+  <div class="summary">
+    <div class="summary-row"><span>თვითღირებულება</span><span>${formatMoney(totals.primeCost)}</span></div>
+    <div class="summary-row"><span>გაუთვალისწინებელი</span><span>${formatMoney(totals.contingency)}</span></div>
+    <div class="summary-row"><span>ზედნადები (ტრანსპორტირება)</span><span>${formatMoney(totals.overhead)}</span></div>
+    <div class="summary-row"><span>მოგება</span><span>${formatMoney(totals.profit)}</span></div>
+    <div class="summary-row"><span>ფასდაკლება</span><span>-${formatMoney(totals.discount)}</span></div>
+    <div class="summary-row"><span>თანხა დღგს გარეშე</span><span>${formatMoney(totals.beforeVat)}</span></div>
+    <div class="summary-row"><span>დღგ</span><span>${formatMoney(totals.vat)}</span></div>
+    <div class="summary-row total"><span>სულ ფასი დღგ-ს ჩათვლით</span><span>${formatMoney(totals.totalWithVat)}</span></div>
+  </div>
+
+  <div class="footer">კაბინეტი · ავეჯის საწარმო</div>
+</body>
+</html>`;
+
+  const printWin = window.open('', '_blank');
+  if(!printWin){ alert('ბრაუზერმა დაბლოკა ახალი ფანჯარა — გთხოვთ დაუშვათ pop-up-ები ამ საიტისთვის.'); return; }
+  printWin.document.open();
+  printWin.document.write(html);
+  printWin.document.close();
+  printWin.onload = ()=>{ printWin.focus(); printWin.print(); };
+}
+
+document.getElementById('btnManageCatalog').onclick = openHardwareCatalogModal;
 
 /* ============================================================================
    TASKS & ASSIGNMENTS (independent of orders)
