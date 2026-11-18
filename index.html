@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -162,38 +161,58 @@ body{
 .finance-stat.profit .fs-val.negative{color:var(--rust);}
 .finance-table-wrap{
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-  overflow:visible;
+  overflow-x:hidden;overflow-y:visible;
 }
-.finance-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.finance-table{width:100%;border-collapse:collapse;font-size:17.55px;}
 .finance-table th{
   position:sticky;top:0;z-index:3;background:var(--panel);
   text-align:left;padding:11px 14px;border-bottom:2px solid var(--line);
-  font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;
+  border-right:1px solid var(--line);
+  font-family:'JetBrains Mono',monospace;font-size:13.65px;text-transform:uppercase;
   color:var(--ink-soft);letter-spacing:.03em;white-space:nowrap;
   box-shadow:0 1px 0 var(--line);
+  overflow:hidden;text-overflow:ellipsis;
 }
+.finance-table th:last-child{border-right:none;}
+.finance-table th.th-stacked{white-space:normal;overflow:visible;text-align:center;}
+.th-stack-inner{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  text-align:center;width:100%;
+}
+.th-label{display:block;}
+.finance-status-filter{
+  display:block;margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:none;
+  letter-spacing:0;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:4px;
+  padding:3px 4px;cursor:pointer;width:100%;max-width:100%;box-sizing:border-box;align-self:stretch;
+}
+.col-resize-handle{
+  position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:6;
+}
+.col-resize-handle:hover, .col-resize-handle.resizing{background:var(--blueprint);opacity:.4;}
 .th-total{
-  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
-  text-transform:none;letter-spacing:0;color:var(--ink);margin-top:3px;
+  font-family:'JetBrains Mono',monospace;font-size:16.9px;font-weight:700;
+  text-transform:none;letter-spacing:0;color:var(--ink);margin-top:3px;white-space:nowrap;
 }
-.finance-table td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+.finance-table td{padding:11px 14px;border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;}
+.finance-table td:last-child{border-right:none;}
 .finance-editable{cursor:text;}
 .finance-editable:hover{background:var(--line-soft);}
 .finance-budget-input{
-  width:100px;box-sizing:border-box;font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:700;text-align:right;
+  width:100px;box-sizing:border-box;font-family:'JetBrains Mono',monospace;font-size:17.55px;font-weight:700;text-align:right;
   border:1px solid var(--blueprint);border-radius:4px;padding:3px 6px;background:#fff;
 }
 .finance-table tbody tr:hover{background:var(--line-soft);}
 .finance-table .num-cell{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;}
 .finance-table th.num-cell{text-align:right;}
+.finance-table th.num-cell.th-stacked{text-align:center;}
 .finance-profit-positive{color:var(--sage);font-weight:700;}
 .pay-check{color:var(--sage);font-weight:700;margin-left:3px;}
 .payment-checkbox-row{display:flex;align-items:center;gap:8px;margin:8px 0 14px;}
 .payment-checkbox-row label{font-size:13px;color:var(--ink);display:flex;align-items:center;gap:6px;cursor:pointer;}
 .payment-checkbox-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;}
 .finance-profit-negative{color:var(--rust);font-weight:700;}
-.finance-order-name{font-weight:600;}
-.finance-order-client{font-size:11.5px;color:var(--ink-soft);}
+.finance-order-name{font-weight:400;}
+.finance-order-client{font-size:13.8px;color:var(--ink-soft);}
 
 .expense-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
 .expense-row{
@@ -211,11 +230,29 @@ body{
   width:80px;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--rust);
   border:1px solid var(--blueprint);border-radius:3px;padding:2px 4px;background:#fff;
 }
-.expense-add-row{display:flex;gap:8px;align-items:flex-end;}
-.expense-add-row .field{flex:1;margin-bottom:0;}
-.expense-add-row input{
-  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;
+.expense-row .exp-cat{
+  flex-shrink:0;font-size:11px;font-weight:600;color:var(--blueprint);background:var(--line-soft);
+  border:1px solid var(--line);border-radius:20px;padding:3px 9px;cursor:pointer;white-space:nowrap;
 }
+.expense-row .exp-cat:hover{border-color:var(--blueprint);}
+.exp-cat-select{
+  flex-shrink:0;font-size:11px;font-weight:600;color:var(--blueprint);border:1px solid var(--blueprint);
+  border-radius:20px;padding:3px 7px;background:#fff;
+}
+.expense-add-row{display:flex;gap:8px;align-items:center;}
+.expense-add-row .field{flex:1;margin-bottom:0;}
+.expense-add-row input, .expense-add-row select{
+  width:100%;height:38px;box-sizing:border-box;padding:0 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff;
+}
+.expense-add-row .btn{height:38px;box-sizing:border-box;padding:0 16px;}
+.expense-add-row .btn-icon{width:38px;height:38px;flex-shrink:0;}
+.exp-cat-add-btn{flex-shrink:0;}
+.expcat-row{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border:1px solid var(--line);border-radius:6px;background:#fbfaf6;
+}
+.expcat-row .expcat-name{flex:1;min-width:0;font-size:12.5px;cursor:text;border-radius:3px;padding:2px 4px;margin:-2px -4px;}
+.expcat-row .expcat-name:hover{background:var(--line-soft);}
 
 /* ---------- ხარჯთაღრიცხვა (Cost Estimate) ---------- */
 .ce-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
@@ -699,17 +736,30 @@ body{
   <div id="financePage" style="display:none;flex:1 1 auto;min-height:0;overflow-y:auto;">
     <div class="finance-table-wrap">
       <table class="finance-table">
+        <colgroup>
+          <col id="finCol0"><col id="finCol1"><col id="finCol2"><col id="finCol3"><col id="finCol4">
+          <col id="finCol5"><col id="finCol6"><col id="finCol7"><col id="finCol8">
+        </colgroup>
         <thead>
           <tr>
-            <th>#</th>
-            <th>შეკვეთა</th>
-            <th>სტატუსი</th>
-            <th class="num-cell">ბიუჯეტი<div class="th-total" id="thTotalBudget"></div></th>
-            <th class="num-cell">ავანსი<div class="th-total" id="thTotalAdvance"></div></th>
-            <th class="num-cell">ხარჯი<div class="th-total" id="thTotalExpenses"></div></th>
-            <th class="num-cell">ავანსიდან ნაღდი<div class="th-total" id="thTotalAdvanceCash"></div></th>
-            <th class="num-cell">ბიუჯეტიდან დარჩენილი<div class="th-total" id="thTotalRemaining"></div></th>
-            <th class="num-cell">მოგება<div class="th-total" id="thTotalProfit"></div></th>
+            <th class="th-stacked"><div class="th-stack-inner"><span class="th-label">#</span></div></th>
+            <th class="th-stacked"><div class="th-stack-inner"><span class="th-label">შეკვეთა</span></div></th>
+            <th class="th-stacked"><div class="th-stack-inner"><span class="th-label">სტატუსი</span>
+              <select id="financeStatusFilter" class="finance-status-filter" onclick="event.stopPropagation()">
+                <option value="active">მიმდინარე</option>
+                <option value="completed">დასრულებული</option>
+                <option value="all">ყველა</option>
+              </select>
+            </div></th>
+            <th class="num-cell th-stacked"><div class="th-stack-inner"><span class="th-label">ბიუჯეტი</span><div class="th-total" id="thTotalBudget"></div></div></th>
+            <th class="num-cell th-stacked"><div class="th-stack-inner"><span class="th-label">ავანსი</span><div class="th-total" id="thTotalAdvance"></div></div></th>
+            <th class="num-cell th-stacked"><div class="th-stack-inner"><span class="th-label">ხარჯი</span>
+              <div class="th-total" id="thTotalExpenses"></div>
+              <select id="financeExpenseCategoryFilter" class="finance-status-filter" onclick="event.stopPropagation()"></select>
+            </div></th>
+            <th class="num-cell th-stacked"><div class="th-stack-inner"><span class="th-label">ავანსიდან ნაღდი</span><div class="th-total" id="thTotalAdvanceCash"></div></div></th>
+            <th class="num-cell th-stacked"><div class="th-stack-inner"><span class="th-label">ბიუჯეტიდან დარჩენილი</span><div class="th-total" id="thTotalRemaining"></div></div></th>
+            <th class="num-cell th-stacked"><div class="th-stack-inner"><span class="th-label">მოგება</span><div class="th-total" id="thTotalProfit"></div></div></th>
           </tr>
         </thead>
         <tbody id="financeTableBody"></tbody>
@@ -815,7 +865,10 @@ let expandedGroups = {}; /* key: `${orderId}|${unitName}` -> bool, default true 
 let currentView = 'active'; /* 'active' | 'completed' */
 let stageFilter = 'all'; /* 'all' or one of STAGES */
 let currentPageView = 'gantt'; /* 'gantt' | 'finance' */
-let financeData = {}; /* order_id -> {budget_total, furniture_size, expenses:[{id,description,amount}]} */
+let financeData = {}; /* order_id -> {budget_total, furniture_size, expenses:[{id,description,amount,category}]} */
+let expenseCategories = []; /* [{id,name,seq}] — "ხარჯი" ჩამოსაშლელი სია */
+let financeStatusFilter = 'active'; /* 'all' | 'active' | 'completed' — ფინანსების ცხრილის სტატუსით გაფილტვრა */
+let financeExpenseCategoryFilter = 'all'; /* 'all' ან კატეგორიის სახელი — "ხარჯი" სვეტის კატეგორიით გაფილტვრა */
 let workTasks = []; /* [{id,title,task_type,employee,priority,due_date,status,progress,notes,comments:[],attachments:[]}] */
 let wtEmployeeFilter = 'all';
 let wtStatusFilter = 'all';
@@ -1057,7 +1110,14 @@ async function loadData(){
     taskRows.forEach(t=>{ const ord = byId[t.order_id]; if(ord) ord.tasks.push(rowToTask(t, attCounts[t.id])); });
     (furnitureRows||[]).forEach(fi=>{
       const ord = byId[fi.order_id];
-      if(ord) ord.furnitureItems.push({ id: fi.id, name: fi.name, volume: fi.volume||'', color: fi.color||'' });
+      if(ord) ord.furnitureItems.push({
+        id: fi.id, name: fi.name, volume: fi.volume||'', color: fi.color||'',
+        contingency_pct_override: fi.contingency_pct_override,
+        overhead_pct_override: fi.overhead_pct_override,
+        profit_pct_override: fi.profit_pct_override,
+        discount_pct_override: fi.discount_pct_override,
+        vat_pct_override: fi.vat_pct_override
+      });
     });
 
     orders.forEach(o=>{ if(expanded[o.id] === undefined) expanded[o.id] = false; });
@@ -1079,6 +1139,7 @@ function subscribeRealtime(){
     .on('postgres_changes', { event:'*', schema:'public', table:'order_furniture_items' }, ()=> loadData())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_finance' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_expenses' }, ()=> refreshFinanceIfVisible())
+    .on('postgres_changes', { event:'*', schema:'public', table:'expense_categories' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_advance_payments' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'work_tasks' }, ()=> refreshTasksIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'work_task_comments' }, ()=> refreshTasksIfVisible())
@@ -1323,14 +1384,18 @@ function formatNumber(n){
 
 async function loadFinanceData(){
   try{
-    const [{ data: financeRows, error: fErr }, { data: expenseRows, error: eErr }, { data: advanceRows, error: aErr }] = await Promise.all([
+    const [{ data: financeRows, error: fErr }, { data: expenseRows, error: eErr }, { data: advanceRows, error: aErr }, { data: catRows, error: cErr }] = await Promise.all([
       sb.from('order_finance').select('*'),
       sb.from('order_expenses').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
-      sb.from('order_advance_payments').select('*').order('created_at', { ascending:true }).order('id', { ascending:true })
+      sb.from('order_advance_payments').select('*').order('created_at', { ascending:true }).order('id', { ascending:true }),
+      sb.from('expense_categories').select('*').order('seq', { ascending:true })
     ]);
     if(fErr) throw fErr;
     if(eErr) throw eErr;
     if(aErr) throw aErr;
+    if(cErr) throw cErr;
+
+    expenseCategories = catRows || [];
 
     financeData = {};
     orders.forEach(o=>{
@@ -1345,7 +1410,7 @@ async function loadFinanceData(){
     });
     (expenseRows||[]).forEach(e=>{
       if(!financeData[e.order_id]) financeData[e.order_id] = { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
-      financeData[e.order_id].expenses.push({ id:e.id, description:e.description, amount:e.amount });
+      financeData[e.order_id].expenses.push({ id:e.id, description:e.description, amount:e.amount, category:e.category||'' });
     });
     (advanceRows||[]).forEach(a=>{
       if(!financeData[a.order_id]) financeData[a.order_id] = { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
@@ -1357,10 +1422,108 @@ async function loadFinanceData(){
   }
 }
 
-function calcExpensesTotal(orderId){
+function addExpenseCategory(name){
+  return sb.from('expense_categories').insert({ name, created_by: currentUser.id }).then(({error})=>{ if(error) throw error; });
+}
+function updateExpenseCategory(id, name){
+  return sb.from('expense_categories').update({ name }).eq('id', id).then(({error})=>{ if(error) throw error; });
+}
+function deleteExpenseCategory(id){
+  return sb.from('expense_categories').delete().eq('id', id).then(({error})=>{ if(error) throw error; });
+}
+
+function openExpenseCategoriesModal(reopenOrderId){
+  modalContent.innerHTML = `
+    <div class="modal-head"><h3>ხარჯის კატეგორიები</h3>
+      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="expCatList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+      <div class="expense-add-row">
+        <div class="field"><input type="text" id="fExpCatName" placeholder="ახალი კატეგორია, მაგ. ლამინატი"></div>
+        <button class="btn btn-ghost" id="btnAddExpCat" style="flex-shrink:0;">დამატება</button>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="mCancel">დახურვა</button></div>
+  `;
+  overlay.classList.add('open');
+  const backToExpenses = ()=>{ if(reopenOrderId) openExpensesModal(reopenOrderId); else closeModal(); };
+  document.getElementById('mClose').onclick = backToExpenses;
+  document.getElementById('mCancel').onclick = backToExpenses;
+
+  function renderExpCatList(){
+    const listEl = document.getElementById('expCatList');
+    if(!expenseCategories.length){ listEl.innerHTML = '<div class="hint" style="margin:0;">კატეგორია ჯერ არ არის დამატებული</div>'; return; }
+    listEl.innerHTML = expenseCategories.map(c=>`
+      <div class="expcat-row" data-expcat-id="${c.id}">
+        <span class="expcat-name" data-expcat-edit="${c.id}" title="დააჭირეთ რედაქტირებისთვის">${escapeHtml(c.name)}</span>
+        <button type="button" class="btn-icon danger" data-expcat-delete="${c.id}" title="წაშლა">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
+        </button>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-expcat-edit]').forEach(el=>{
+      el.onclick = ()=>{
+        const id = el.getAttribute('data-expcat-edit');
+        const cat = expenseCategories.find(c=>c.id===id);
+        if(!cat) return;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = cat.name;
+        input.className = 'exp-desc-input';
+        el.replaceWith(input);
+        input.focus(); input.select();
+        let done = false;
+        const commit = async ()=>{
+          if(done) return; done = true;
+          const newName = input.value.trim() || cat.name;
+          try{
+            await updateExpenseCategory(id, newName);
+            await loadFinanceData();
+            renderExpCatList();
+            if(currentPageView === 'finance') renderFinancePage();
+          }catch(err){ alert('განახლება ვერ მოხერხდა: ' + (err.message||'')); renderExpCatList(); }
+        };
+        input.addEventListener('blur', commit);
+        input.addEventListener('keydown', ev=>{
+          if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); }
+          else if(ev.key==='Escape'){ done=true; renderExpCatList(); }
+        });
+      };
+    });
+    listEl.querySelectorAll('[data-expcat-delete]').forEach(el=>{
+      el.onclick = async ()=>{
+        if(!confirm('წავშალო ეს კატეგორია?')) return;
+        try{
+          await deleteExpenseCategory(el.getAttribute('data-expcat-delete'));
+          await loadFinanceData();
+          renderExpCatList();
+          if(currentPageView === 'finance') renderFinancePage();
+        }catch(e){ alert('წაშლა ვერ მოხერხდა: ' + (e.message||'')); }
+      };
+    });
+  }
+  renderExpCatList();
+
+  document.getElementById('btnAddExpCat').onclick = async ()=>{
+    const name = document.getElementById('fExpCatName').value.trim();
+    if(!name){ alert('შეავსეთ კატეგორიის დასახელება'); return; }
+    try{
+      await addExpenseCategory(name);
+      document.getElementById('fExpCatName').value = '';
+      await loadFinanceData();
+      renderExpCatList();
+      if(currentPageView === 'finance') renderFinancePage();
+    }catch(e){ alert('დამატება ვერ მოხერხდა: ' + (e.message||'')); }
+  };
+}
+
+function calcExpensesTotal(orderId, category){
   const fd = financeData[orderId];
   if(!fd) return 0;
-  return fd.expenses.reduce((sum,e)=> sum + (Number(e.amount)||0), 0);
+  const items = (!category || category === 'all') ? fd.expenses : fd.expenses.filter(e=> (e.category||'') === category);
+  return items.reduce((sum,e)=> sum + (Number(e.amount)||0), 0);
 }
 function calcAdvanceTotal(orderId){
   const fd = financeData[orderId];
@@ -1385,8 +1548,8 @@ function printOrderFinanceReport(orderId){
     ? advancePayments.map(a=>`<tr><td>${escapeHtml(a.description)}</td><td class="rnum">${formatMoney(a.amount)}</td></tr>`).join('')
     : `<tr><td colspan="2" class="rmuted">ავანსი არ არის დამატებული</td></tr>`;
   const expenseRowsHtml = expenses.length
-    ? expenses.map(e=>`<tr><td>${escapeHtml(e.description)}</td><td class="rnum">${formatMoney(e.amount)}</td></tr>`).join('')
-    : `<tr><td colspan="2" class="rmuted">ხარჯი არ არის დამატებული</td></tr>`;
+    ? expenses.map(e=>`<tr><td>${escapeHtml(e.category || '—')}</td><td>${escapeHtml(e.description)}</td><td class="rnum">${formatMoney(e.amount)}</td></tr>`).join('')
+    : `<tr><td colspan="3" class="rmuted">ხარჯი არ არის დამატებული</td></tr>`;
 
   const html = `<!DOCTYPE html>
 <html lang="ka">
@@ -1434,7 +1597,7 @@ function printOrderFinanceReport(orderId){
   </table>
 
   <table>
-    <thead><tr><th>ხარჯები</th><th style="text-align:right;">თანხა</th></tr></thead>
+    <thead><tr><th>კატეგორია</th><th>ხარჯები</th><th style="text-align:right;">თანხა</th></tr></thead>
     <tbody>${expenseRowsHtml}</tbody>
   </table>
 
@@ -1462,30 +1625,38 @@ function renderFinancePage(){
   const bodyEl = document.getElementById('financeTableBody');
   if(!bodyEl) return;
 
-  let totalBudget = 0, totalExpenses = 0, totalRemaining = 0, totalAdvanceCash = 0, totalAdvance = 0;
-  const rowsHtml = orders.map((o, idx)=>{
+  const filteredOrders = orders.filter(o=>{
+    if(financeStatusFilter === 'completed') return o.status === 'დასრულებული';
+    if(financeStatusFilter === 'active') return o.status !== 'დასრულებული';
+    return true;
+  });
+
+  let totalBudget = 0, totalExpenses = 0, totalExpensesDisplay = 0, totalRemaining = 0, totalAdvanceCash = 0, totalAdvance = 0;
+  const rowsHtml = filteredOrders.map((o, idx)=>{
     const fd = financeData[o.id] || { budget_total:null, furniture_size:null, advancePayments:[], advance_received:false, final_received:false, expenses:[] };
-    const expTotal = calcExpensesTotal(o.id);
+    const expTotal = calcExpensesTotal(o.id); /* სრული ხარჯი — ბიუჯეტის/მოგების გამოსათვლელად, კატეგორიის ფილტრის მიუხედავად */
+    const expTotalDisplay = calcExpensesTotal(o.id, financeExpenseCategoryFilter); /* მხოლოდ "ხარჯი" სვეტში საჩვენებლად */
     const budget = Number(fd.budget_total) || 0;
     const advance = calcAdvanceTotal(o.id);
     const remaining = budget - advance;
     const advanceCash = advance - expTotal;
     const profit = budget - expTotal;
-    if(o.status !== 'დასრულებული'){ totalBudget += budget; totalExpenses += expTotal; totalRemaining += remaining; totalAdvanceCash += advanceCash; totalAdvance += advance; }
+    totalBudget += budget; totalExpenses += expTotal; totalExpensesDisplay += expTotalDisplay; totalRemaining += remaining; totalAdvanceCash += advanceCash; totalAdvance += advance;
     const profitClass = profit > 0 ? 'finance-profit-positive' : (profit < 0 ? 'finance-profit-negative' : '');
     const advanceCashClass = advanceCash > 0 ? 'finance-profit-positive' : (advanceCash < 0 ? 'finance-profit-negative' : '');
     const finalIcon = fd.final_received ? '✓' : '';
     return `<tr>
       <td>${idx+1}</td>
-      <td>
-        <div class="finance-order-name">${escapeHtml(o.name)}
-          <button class="btn-icon" data-print-report="${o.id}" title="ფინანსური ანგარიშის ბეჭდვა" style="margin-left:6px;vertical-align:middle;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"/></svg>
-          </button>
+      <td style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div style="min-width:0;">
+          <div class="finance-order-name">${escapeHtml(o.name)}</div>
+          <div class="finance-order-client">${escapeHtml(o.client)}</div>
         </div>
-        <div class="finance-order-client">${escapeHtml(o.client)}</div>
+        <button class="btn-icon" data-print-report="${o.id}" title="ფინანსური ანგარიშის ბეჭდვა" style="flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"/></svg>
+        </button>
       </td>
-      <td><span class="badge" style="background:${STATUS_COLOR[o.status]||'#9B968C'}">${o.status}</span></td>
+      <td style="text-align:center;"><span class="badge" style="background:${STATUS_COLOR[o.status]||'#9B968C'}">${o.status}</span></td>
       <td class="num-cell finance-editable" data-budget-edit="${o.id}" title="დააჭირეთ რედაქტირებისთვის">${fd.budget_total !== null ? formatMoney(fd.budget_total) : '—'}</td>
       <td class="num-cell">
         ${advance > 0 ? formatMoney(advance) : '—'}
@@ -1494,7 +1665,7 @@ function renderFinancePage(){
         </button>
       </td>
       <td class="num-cell">
-        ${expTotal > 0 ? formatMoney(expTotal) : '—'}
+        ${expTotalDisplay > 0 ? formatMoney(expTotalDisplay) : '—'}
         <button class="btn-icon" data-expenses-edit="${o.id}" title="ხარჯების რედაქტირება">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </button>
@@ -1515,12 +1686,30 @@ function renderFinancePage(){
   const thProfit = document.getElementById('thTotalProfit');
   if(thBudget) thBudget.textContent = formatMoney(totalBudget);
   if(thAdvance) thAdvance.textContent = formatMoney(totalAdvance);
-  if(thExpenses) thExpenses.textContent = formatMoney(totalExpenses);
+  if(thExpenses) thExpenses.textContent = formatMoney(totalExpensesDisplay);
   if(thAdvanceCash){ thAdvanceCash.textContent = formatMoney(totalAdvanceCash); thAdvanceCash.style.color = totalAdvanceCash>=0 ? 'var(--sage)' : 'var(--rust)'; }
   if(thRemaining) thRemaining.textContent = formatMoney(totalRemaining);
   if(thProfit){ thProfit.textContent = formatMoney(totalProfit); thProfit.style.color = totalProfit>=0 ? 'var(--sage)' : 'var(--rust)'; }
 
-  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);padding:30px;">შეკვეთები არ არის</td></tr>`;
+  const emptyMsg = financeStatusFilter === 'completed' ? 'დასრულებული შეკვეთა არ არის'
+    : financeStatusFilter === 'active' ? 'მიმდინარე შეკვეთა არ არის'
+    : 'შეკვეთები არ არის';
+  bodyEl.innerHTML = rowsHtml || `<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);padding:30px;">${emptyMsg}</td></tr>`;
+
+  const statusFilterSel = document.getElementById('financeStatusFilter');
+  if(statusFilterSel){
+    statusFilterSel.value = financeStatusFilter;
+    statusFilterSel.onchange = ()=>{ financeStatusFilter = statusFilterSel.value; renderFinancePage(); };
+  }
+
+  const expCatFilterSel = document.getElementById('financeExpenseCategoryFilter');
+  if(expCatFilterSel){
+    expCatFilterSel.innerHTML = `<option value="all">ყველა</option>` +
+      expenseCategories.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+    expCatFilterSel.value = expenseCategories.some(c=>c.name===financeExpenseCategoryFilter) ? financeExpenseCategoryFilter : 'all';
+    if(expCatFilterSel.value !== financeExpenseCategoryFilter) financeExpenseCategoryFilter = expCatFilterSel.value;
+    expCatFilterSel.onchange = ()=>{ financeExpenseCategoryFilter = expCatFilterSel.value; renderFinancePage(); };
+  }
 
   bodyEl.querySelectorAll('[data-advance-edit]').forEach(el=>{
     el.onclick = ()=> openAdvancePaymentsModal(el.getAttribute('data-advance-edit'));
@@ -1565,6 +1754,76 @@ function renderFinancePage(){
         else if(ev.key === 'Escape'){ done = true; renderFinancePage(); }
       });
     };
+  });
+
+  initFinanceColumnResize();
+}
+
+/* სვეტების სიგანის ხელით გაწევა — ჩანაწერს ვცდით მხოლოდ ერთხელ, რადგან
+   <thead> სტატიკურია და renderFinancePage() მხოლოდ <tbody>-ს ცვლის, ასე
+   რომ უკვე დადებული სიგანეები და handle-ები ყოველ რენდერზე ინარჩუნებენ თავს. */
+/* საწყისი სიგანეები % -ში, # ვიწროდ და შეკვეთა ფართოდ რომ იყოს ყოველთვის,
+   მონაცემების ჩატვირთვის დროის მიუხედავად (არ ეყრდნობა offsetWidth-ის გაზომვას). */
+const FINANCE_COL_DEFAULT_WIDTHS = ['4%','22%','14%','10%','10%','14%','10%','10%','6%'];
+/* ცხრილი ყოველთვის ეკრანს (finance-table-wrap-ის სიგანეს) ემთხვევა ზუსტად —
+   არასდროს სქროლავს გვერდულად და არ გადის ეკრანის ფარგლებს გარეთ. სვეტების
+   სიგანე <colgroup>-ის <col>-ებზეა, %-ში, ჯამში ყოველთვის 100%. ერთი სვეტის
+   გაწევისას იცვლება მხოლოდ ის და მისი უშუალო მომდევნო სვეტი — ერთი იზრდება
+   ზუსტად იმდენით, რამდენითაც მეორე მცირდება, ასე რომ ჯამური სიგანე (და
+   ცხრილის მარჯვენა/მარცხენა კიდეები) უცვლელი რჩება. */
+function initFinanceColumnResize(){
+  const wrap = document.querySelector('.finance-table-wrap');
+  const table = document.querySelector('.finance-table');
+  if(!table || !wrap) return;
+  const ths = Array.from(table.querySelectorAll('thead th'));
+  const cols = Array.from(table.querySelectorAll('colgroup col'));
+  if(!cols.length || !ths.length) return;
+
+  if(!table.dataset.resizeInit){
+    table.style.tableLayout = 'fixed';
+    table.style.width = '100%';
+    cols.forEach((col, idx)=>{ col.style.width = FINANCE_COL_DEFAULT_WIDTHS[idx] || col.style.width; });
+    table.dataset.resizeInit = '1';
+  }
+
+  ths.forEach((th, idx)=>{
+    if(idx === ths.length - 1) return; /* ბოლო სვეტს handle არ სჭირდება */
+    if(th.querySelector('.col-resize-handle')) return; /* უკვე დამატებულია */
+    th.style.position = 'relative';
+    const handle = document.createElement('div');
+    handle.className = 'col-resize-handle';
+    th.appendChild(handle);
+    handle.addEventListener('mousedown', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const startX = e.clientX;
+      const tableWidthPx = table.getBoundingClientRect().width;
+      const thisPx = ths[idx].getBoundingClientRect().width;
+      const nextPx = ths[idx+1].getBoundingClientRect().width;
+      const minPx = 50;
+      const maxDelta = Math.max(0, nextPx - minPx);   /* რამდენით შეიძლება გაიზარდოს ეს სვეტი */
+      const minDelta = -Math.max(0, thisPx - minPx);  /* რამდენით შეიძლება შემცირდეს ეს სვეტი */
+      handle.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      function onMove(ev){
+        let delta = ev.clientX - startX;
+        delta = Math.max(minDelta, Math.min(maxDelta, delta));
+        const newThisPx = thisPx + delta;
+        const newNextPx = nextPx - delta;
+        cols[idx].style.width = (newThisPx / tableWidthPx * 100) + '%';
+        cols[idx+1].style.width = (newNextPx / tableWidthPx * 100) + '%';
+      }
+      function onUp(){
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        handle.classList.remove('resizing');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
   });
 }
 
@@ -1612,9 +1871,9 @@ async function saveOrderFinance(orderId, budgetTotal, furnitureSize, advanceRece
   if(error) throw error;
 }
 
-async function addExpenseEntry(orderId, description, amount){
+async function addExpenseEntry(orderId, description, amount, category){
   const { error } = await sb.from('order_expenses').insert({
-    order_id: orderId, description, amount: Number(amount), created_by: currentUser.id
+    order_id: orderId, description, amount: Number(amount), category: category||null, created_by: currentUser.id
   });
   if(error) throw error;
 }
@@ -1624,8 +1883,10 @@ async function deleteExpenseEntry(expenseId){
   if(error) throw error;
 }
 
-async function updateExpenseEntry(expenseId, description, amount){
-  const { error } = await sb.from('order_expenses').update({ description, amount: Number(amount) || 0 }).eq('id', expenseId);
+async function updateExpenseEntry(expenseId, description, amount, category){
+  const patch = { description, amount: Number(amount) || 0 };
+  if(category !== undefined) patch.category = category || null;
+  const { error } = await sb.from('order_expenses').update(patch).eq('id', expenseId);
   if(error) throw error;
 }
 
@@ -1647,7 +1908,7 @@ async function updateAdvancePaymentEntry(paymentId, description, amount){
 }
 
 function makeEditableMoneyList(opts){
-  const { listElId, getItems, updateFn, deleteFn, emptyText, deleteConfirmText } = opts;
+  const { listElId, getItems, updateFn, deleteFn, emptyText, deleteConfirmText, getCategories } = opts;
   function renderList(){
     const listEl = document.getElementById(listElId);
     if(!listEl) return;
@@ -1656,8 +1917,10 @@ function makeEditableMoneyList(opts){
       listEl.innerHTML = `<div class="hint" style="margin:0;">${emptyText}</div>`;
       return;
     }
+    const cats = getCategories ? getCategories() : null;
     listEl.innerHTML = items.map(it=>`
       <div class="expense-row" data-item-id="${it.id}">
+        ${cats ? `<span class="exp-cat" data-edit-cat="${it.id}" title="დააჭირეთ კატეგორიის შესაცვლელად">${escapeHtml(it.category || 'კატეგორია')}</span>` : ''}
         <span class="exp-desc" data-edit-desc="${it.id}" title="დააჭირეთ რედაქტირებისთვის — ${escapeHtml(it.description)}">${escapeHtml(it.description)}</span>
         <span class="exp-amt" data-edit-amt="${it.id}" title="დააჭირეთ რედაქტირებისთვის">${formatMoney(it.amount)}</span>
         <button type="button" class="btn-icon danger" data-item-delete="${it.id}" title="წაშლა">
@@ -1686,7 +1949,7 @@ function makeEditableMoneyList(opts){
         const newDesc = field === 'description' ? input.value.trim() || it.description : it.description;
         const newAmt = field === 'amount' ? input.value : it.amount;
         try{
-          await updateFn(itemId, newDesc, newAmt);
+          await updateFn(itemId, newDesc, newAmt, it.category);
           await loadFinanceData();
           renderList();
           renderFinancePage();
@@ -1699,6 +1962,37 @@ function makeEditableMoneyList(opts){
       });
     }
 
+    function startEditingCategory(spanEl, itemId){
+      const it = items.find(x=>x.id === itemId);
+      if(!it) return;
+      const select = document.createElement('select');
+      select.className = 'exp-cat-select';
+      const names = cats.map(c=>c.name);
+      if(it.category && !names.includes(it.category)) names.unshift(it.category);
+      select.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}" ${n===it.category?'selected':''}>${escapeHtml(n)}</option>`).join('');
+      spanEl.replaceWith(select);
+      select.focus();
+
+      let done = false;
+      const commit = async ()=>{
+        if(done) return;
+        done = true;
+        try{
+          await updateFn(itemId, it.description, it.amount, select.value);
+          await loadFinanceData();
+          renderList();
+          renderFinancePage();
+        }catch(err){ alert('განახლება ვერ მოხერხდა: ' + (err.message||'')); renderList(); }
+      };
+      select.addEventListener('change', commit);
+      select.addEventListener('blur', ()=>{ if(!done){ done = true; renderList(); } });
+    }
+
+    if(cats){
+      listEl.querySelectorAll('[data-edit-cat]').forEach(el=>{
+        el.onclick = ()=> startEditingCategory(el, el.getAttribute('data-edit-cat'));
+      });
+    }
     listEl.querySelectorAll('[data-edit-desc]').forEach(el=>{
       el.onclick = ()=> startEditing(el, el.getAttribute('data-edit-desc'), 'description');
     });
@@ -1773,6 +2067,7 @@ function openAdvancePaymentsModal(orderId){
 function openExpensesModal(orderId){
   const order = orders.find(o=>o.id===orderId);
   if(!order) return;
+  modalContent.style.maxWidth = '680px';
   modalContent.innerHTML = `
     <div class="modal-head"><h3>ხარჯები — ${escapeHtml(order.name)}</h3>
       <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -1781,6 +2076,10 @@ function openExpensesModal(orderId){
       <div class="field">
         <div class="expense-list" id="expenseList"></div>
         <div class="expense-add-row">
+          <button type="button" class="btn-icon exp-cat-add-btn" id="btnManageExpCategories" title="კატეგორიის დამატება/რედაქტირება">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="field" style="max-width:160px;"><select id="fExpCategory"></select></div>
           <div class="field"><input type="text" id="fExpDesc" placeholder="მაგ. მასალები"></div>
           <div class="field" style="max-width:120px;"><input type="number" step="0.01" id="fExpAmount" placeholder="თანხა"></div>
           <button class="btn btn-ghost" id="btnAddExpense" style="flex-shrink:0;">დამატება</button>
@@ -1795,24 +2094,38 @@ function openExpensesModal(orderId){
   document.getElementById('mClose').onclick = closeModal;
   document.getElementById('mCancel').onclick = closeModal;
 
+  function fillCategorySelect(){
+    const sel = document.getElementById('fExpCategory');
+    if(!sel) return;
+    sel.innerHTML = expenseCategories.length
+      ? expenseCategories.map(c=>`<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')
+      : `<option value="">კატეგორია არ არის</option>`;
+  }
+  fillCategorySelect();
+
   const renderExpenseList = makeEditableMoneyList({
     listElId: 'expenseList',
     getItems: ()=> (financeData[orderId] && financeData[orderId].expenses) || [],
     updateFn: updateExpenseEntry,
     deleteFn: deleteExpenseEntry,
     emptyText: 'ხარჯი ჯერ არ არის დამატებული',
-    deleteConfirmText: 'წავშალო ეს ხარჯი?'
+    deleteConfirmText: 'წავშალო ეს ხარჯი?',
+    getCategories: ()=> expenseCategories
   });
 
+  document.getElementById('btnManageExpCategories').onclick = ()=> openExpenseCategoriesModal(orderId);
+
   document.getElementById('btnAddExpense').onclick = async ()=>{
-    const desc = document.getElementById('fExpDesc').value.trim();
+    const cat = document.getElementById('fExpCategory').value;
+    const desc = document.getElementById('fExpDesc').value.trim() || cat;
     const amt = document.getElementById('fExpAmount').value;
     if(!desc || !amt){ alert('შეავსეთ ხარჯის აღწერა და თანხა'); return; }
     try{
-      await addExpenseEntry(orderId, desc, amt);
+      await addExpenseEntry(orderId, desc, amt, cat);
       document.getElementById('fExpDesc').value = '';
       document.getElementById('fExpAmount').value = '';
       await loadFinanceData();
+      fillCategorySelect();
       renderExpenseList();
       renderFinancePage();
     }catch(e){ alert('ხარჯის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
@@ -1831,11 +2144,13 @@ let ceSelectedFurnitureId = '';
 let ceCostItems = []; /* line items for the currently selected furniture item */
 
 const CE_SECTIONS = [
-  { key:'material', label:'მასალები', hasBrandSize:true },
+  { key:'material', label:'მასალები', hasBrandSize:true, materialFields:true },
   { key:'service',  label:'დამატებითი მომსახურება', hasBrandSize:false },
   { key:'hardware', label:'ავეჯის ფურნიტურა', hasBrandSize:true, catalog:true },
   { key:'labor',    label:'ხელობა (აწყობა, მონტაჟი, ტრანსპორტირება)', hasBrandSize:false }
 ];
+const MATERIAL_BRANDS = ['Egger','Cleaf','Arkopa','Kasta','Starwood','სხვა'];
+const MATERIAL_CATEGORIES = ['მდფ','მბფ','დსპ','ფანერა','სხვა'];
 
 async function loadCostEstimatePageData(){
   try{
@@ -1939,6 +2254,7 @@ async function addCostItem(furnitureItemId, section, fields){
   const { error } = await sb.from('furniture_cost_items').insert({
     furniture_item_id: furnitureItemId, section,
     brand: fields.brand || null, size: fields.size || null,
+    code: fields.code || null, category: fields.category || null,
     description: fields.description, quantity: Number(fields.quantity)||0, unit_price: Number(fields.unit_price)||0,
     created_by: currentUser.id
   });
@@ -1978,6 +2294,9 @@ function renderCostEstimatePage(){
       <tr data-ce-row="${it.id}">
         ${sec.hasBrandSize ? `
         <td class="ce-cell" data-ce-field="brand" data-ce-item="${it.id}">${escapeHtml(it.brand||'—')}</td>
+        ${sec.materialFields ? `
+        <td class="ce-cell" data-ce-field="code" data-ce-item="${it.id}">${escapeHtml(it.code||'—')}</td>
+        <td class="ce-cell" data-ce-field="category" data-ce-item="${it.id}">${escapeHtml(it.category||'—')}</td>` : ''}
         <td class="ce-cell" data-ce-field="size" data-ce-item="${it.id}">${escapeHtml(it.size||'—')}</td>` : ''}
         <td class="ce-cell" data-ce-field="description" data-ce-item="${it.id}">${escapeHtml(it.description)}</td>
         <td class="ce-cell rnum" data-ce-field="quantity" data-ce-item="${it.id}">${it.quantity}</td>
@@ -1993,13 +2312,18 @@ function renderCostEstimatePage(){
         <h4>${sec.label}</h4>
         <table class="ce-table">
           <thead><tr>
-            ${sec.hasBrandSize ? '<th>ბრენდი</th><th>ზომა</th>' : ''}
+            ${sec.hasBrandSize ? `<th>ბრენდი</th>${sec.materialFields ? '<th>მასალის კოდი</th><th>მასალის კატეგორია</th>' : ''}<th>ზომა</th>` : ''}
             <th>დასახელება</th><th>რაოდ.</th><th>ფასი</th><th>სულ</th><th></th>
           </tr></thead>
-          <tbody>${rowsHtml || `<tr><td colspan="${sec.hasBrandSize?6:4}" class="rmuted" style="text-align:center;padding:14px;">ჯერ არაფერია დამატებული</td></tr>`}</tbody>
+          <tbody>${rowsHtml || `<tr><td colspan="${(sec.hasBrandSize ? (sec.materialFields ? 4 : 2) : 0) + 5}" class="rmuted" style="text-align:center;padding:14px;">ჯერ არაფერია დამატებული</td></tr>`}</tbody>
         </table>
         <div class="ce-add-row" data-ce-section="${sec.key}">
-          ${sec.hasBrandSize ? `<input type="text" class="ce-add-brand" placeholder="ბრენდი" style="max-width:110px;">
+          ${sec.materialFields ? `
+          <select class="ce-add-brand" style="max-width:100px;">${opt(MATERIAL_BRANDS, MATERIAL_BRANDS[0])}</select>
+          <input type="text" class="ce-add-code" placeholder="კოდი" style="max-width:90px;">
+          <select class="ce-add-category" style="max-width:100px;">${opt(MATERIAL_CATEGORIES, MATERIAL_CATEGORIES[0])}</select>
+          <input type="text" class="ce-add-size" placeholder="ზომა" style="max-width:90px;">` : ''}
+          ${sec.hasBrandSize && !sec.materialFields ? `<input type="text" class="ce-add-brand" placeholder="ბრენდი" style="max-width:110px;">
           <input type="text" class="ce-add-size" placeholder="ზომა" style="max-width:100px;">` : ''}
           <div style="position:relative;flex:1;">
             <input type="text" class="ce-add-desc" placeholder="დასახელება" autocomplete="off">
@@ -2060,14 +2384,24 @@ function wireCostEstimateEvents(fi){
       const item = ceCostItems.find(x=>x.id===itemId);
       if(!item) return;
       const currentVal = field==='quantity' ? item.quantity : field==='unit_price' ? item.unit_price : (item[field]||'');
-      const input = document.createElement('input');
-      input.type = (field==='quantity'||field==='unit_price') ? 'number' : 'text';
-      if(field==='unit_price') input.step = '0.01';
-      input.value = currentVal;
-      input.className = 'ce-inline-input';
+      const isMaterialBrand = item.section==='material' && field==='brand';
+      const isMaterialCategory = item.section==='material' && field==='category';
+      let input;
+      if(isMaterialBrand || isMaterialCategory){
+        input = document.createElement('select');
+        input.className = 'ce-inline-input';
+        input.innerHTML = opt(isMaterialBrand ? MATERIAL_BRANDS : MATERIAL_CATEGORIES, currentVal);
+      } else {
+        input = document.createElement('input');
+        input.type = (field==='quantity'||field==='unit_price') ? 'number' : 'text';
+        if(field==='unit_price') input.step = '0.01';
+        input.value = currentVal;
+        input.className = 'ce-inline-input';
+      }
       cell.innerHTML = '';
       cell.appendChild(input);
-      input.focus(); input.select();
+      input.focus();
+      if(input.select) input.select();
       let done = false;
       const commit = async ()=>{
         if(done) return; done = true;
@@ -2078,6 +2412,7 @@ function wireCostEstimateEvents(fi){
         }catch(e){ alert('განახლება ვერ მოხერხდა: ' + (e.message||'')); renderCostEstimatePage(); }
       };
       input.addEventListener('blur', commit);
+      if(input.tagName === 'SELECT') input.addEventListener('change', commit);
       input.addEventListener('keydown', ev=>{
         if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); }
         else if(ev.key==='Escape'){ done=true; renderCostEstimatePage(); }
@@ -2131,11 +2466,15 @@ function wireCostEstimateEvents(fi){
       const description = descInput.value.trim();
       const qty = rowEl.querySelector('.ce-add-qty').value;
       const price = priceInput ? priceInput.value : rowEl.querySelector('.ce-add-price').value;
+      const codeInput = rowEl.querySelector('.ce-add-code');
+      const categoryInput = rowEl.querySelector('.ce-add-category');
       if(!description){ alert('შეავსეთ დასახელება'); return; }
       try{
         await addCostItem(ceSelectedFurnitureId, section, {
           brand: brandInput ? brandInput.value.trim() : '',
           size: rowEl.querySelector('.ce-add-size') ? rowEl.querySelector('.ce-add-size').value.trim() : '',
+          code: codeInput ? codeInput.value.trim() : '',
+          category: categoryInput ? categoryInput.value : '',
           description, quantity: qty, unit_price: price
         });
         await loadCostItemsForFurniture(ceSelectedFurnitureId);
@@ -2283,8 +2622,9 @@ function printCostEstimateReport(fi){
   const sectionHtml = (title, key)=>{
     const items = ceCostItems.filter(it=>it.section===key);
     if(!items.length) return '';
-    const rows = items.map(it=>`<tr><td>${escapeHtml(it.brand||'')}</td><td>${escapeHtml(it.size||'')}</td><td>${escapeHtml(it.description)}</td><td class="rnum">${it.quantity}</td><td class="rnum">${formatMoney(it.unit_price)}</td><td class="rnum">${formatMoney((Number(it.quantity)||0)*(Number(it.unit_price)||0))}</td></tr>`).join('');
-    return `<h3>${title}</h3><table><thead><tr><th>ბრენდი</th><th>ზომა</th><th>დასახელება</th><th>რაოდ.</th><th>ფასი</th><th>სულ</th></tr></thead><tbody>${rows}</tbody></table>`;
+    const isMaterial = key === 'material';
+    const rows = items.map(it=>`<tr><td>${escapeHtml(it.brand||'')}</td>${isMaterial ? `<td>${escapeHtml(it.code||'')}</td><td>${escapeHtml(it.category||'')}</td>` : ''}<td>${escapeHtml(it.size||'')}</td><td>${escapeHtml(it.description)}</td><td class="rnum">${it.quantity}</td><td class="rnum">${formatMoney(it.unit_price)}</td><td class="rnum">${formatMoney((Number(it.quantity)||0)*(Number(it.unit_price)||0))}</td></tr>`).join('');
+    return `<h3>${title}</h3><table><thead><tr><th>ბრენდი</th>${isMaterial ? '<th>კოდი</th><th>კატეგორია</th>' : ''}<th>ზომა</th><th>დასახელება</th><th>რაოდ.</th><th>ფასი</th><th>სულ</th></tr></thead><tbody>${rows}</tbody></table>`;
   };
 
   const html = `<!DOCTYPE html>
