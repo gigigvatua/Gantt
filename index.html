@@ -795,8 +795,8 @@ body{
 .paper-check:checked{background:#2f6b4f;border-color:#2f6b4f;}
 .paper-check:checked::after{content:"";position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
 .paper-main{flex:1;min-width:0;}
-.paper-title{font-size:14px;font-weight:600;line-height:1.3;cursor:pointer;overflow-wrap:anywhere;}
-.paper-title:hover{text-decoration:underline;}
+.paper-title[data-open-order]{cursor:pointer;}.paper-title[data-open-order]:hover{text-decoration:underline;}
+.paper-title{font-size:14px;font-weight:600;line-height:1.3;overflow-wrap:anywhere;}
 .paper-ico{display:inline-block;width:34px;height:34px;margin-right:6px;flex-shrink:0;}
 .paper-ico img{width:34px!important;height:34px!important;margin:0!important;}
 .paper-sub{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:11.5px;opacity:.75;margin-top:2px;}
@@ -817,6 +817,8 @@ body{
 .paper-recv>span{text-align:left;white-space:normal;line-height:1.25;}
 .paper-recv>.paper-recv-date{width:118px;min-width:0;padding:4px 3px;font-size:11.5px;box-sizing:border-box;justify-self:end;}
 .paper-recv>.paper-check{justify-self:end;}
+.need-date{outline:2px solid #e11d48 !important;outline-offset:1px;animation:needDateFade 1.8s ease-out forwards;}
+@keyframes needDateFade{0%,70%{outline-color:#e11d48}100%{outline-color:transparent}}
 .paper-recv-date{font:inherit;font-weight:400;font-size:12.5px;padding:4px 6px;border:1px solid rgba(60,55,45,.35);border-radius:6px;background:rgba(255,255,255,.55);}
 .paper-recv .paper-check{margin:0;}
 
@@ -824,13 +826,19 @@ body{
 .hstage{display:flex;align-items:flex-start;gap:18px;padding:14px 0;border-top:1px solid var(--line);}
 #stagesWrap > .hstage .hstage-label{color:#1F2937;}
 #stagesWrap > .hstage{padding:14px 14px;margin-top:8px;border-top:none;border-radius:12px;}
-#stagesWrap > .hstage:nth-child(1){background:#86E3CE;}
-#stagesWrap > .hstage:nth-child(2){background:#D0E6A5;}
-#stagesWrap > .hstage:nth-child(3){background:#FFDD94;}
-#stagesWrap > .hstage:nth-child(4){background:#FA897B;}
-#stagesWrap > .hstage:nth-child(5){background:#CCABD8;}
-#stagesWrap > .hstage:nth-child(6){background:#6C8CBF;}
-#stagesWrap > .hstage:nth-child(7){background:#BAC94A;}
+/* variant E: slim panel with a coloured icon rail */
+#stagesWrap > .hstage{--sc:#ccc;align-items:stretch;display:grid;grid-template-columns:104px minmax(0,1fr);gap:0;padding:0;overflow:hidden;margin-top:10px;}
+#stagesWrap > .hstage:nth-child(1){--sc:#86E3CE;}#stagesWrap > .hstage:nth-child(2){--sc:#D0E6A5;}#stagesWrap > .hstage:nth-child(3){--sc:#FFDD94;}#stagesWrap > .hstage:nth-child(4){--sc:#FA897B;}#stagesWrap > .hstage:nth-child(5){--sc:#CCABD8;}#stagesWrap > .hstage:nth-child(6){--sc:#6C8CBF;}#stagesWrap > .hstage:nth-child(7){--sc:#BAC94A;}
+#stagesWrap > .hstage{background:color-mix(in srgb,var(--sc) 38%,#fff);}
+#stagesWrap > .hstage > .hstage-label{flex:none;padding:14px 4px;background:var(--sc);display:flex;align-items:flex-start;justify-content:center;}
+#stagesWrap > .hstage > .hstage-label > div{display:flex;flex-direction:column;align-items:center;gap:4px;}
+#stagesWrap > .hstage > .hstage-label > div > div:last-child{order:-1;margin:0!important;position:relative;}
+#stagesWrap > .hstage > .hstage-label > div > div:first-child{display:inline;font-size:12px;}
+#stagesWrap > .hstage > .hstage-label > div > div:nth-child(2){font-size:12px!important;font-weight:800;white-space:normal!important;text-align:center;line-height:1.15;}
+#stagesWrap .hstage-label img,#stagesWrap .hstage-label svg{width:40px!important;height:40px!important;object-fit:contain;}
+#stagesWrap > .hstage > .hstage-body{padding:10px 14px;}
+.stg-bdg{position:absolute;right:-8px;top:-6px;width:20px;height:20px;border-radius:50%;border:2px solid #fff;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;line-height:1;}
+.stg-bdg.ok{background:#10b981;}.stg-bdg.wip{background:#0ea5e9;font-size:10px;}
 .hstage-label{flex:0 0 150px;font-weight:600;font-size:15px;color:#C98A1B;padding-top:22px;}
 .hstage-num{font-weight:700;margin-right:2px;}
 .hstage-body{flex:1;min-width:0;}
@@ -866,7 +874,7 @@ body{
     <p id="loginSubtitle">გაიარეთ ავტორიზაცია სამუშაოდ გასაგრძელებლად</p>
     <div class="field" id="loginNameWrap" style="display:none;">
       <label>სახელი</label>
-      <input type="text" id="loginName" placeholder="მაგ. Luka" autocomplete="name">
+      <input type="text" id="loginName" placeholder="მაგ. გიგი" autocomplete="name">
     </div>
     <div class="field">
       <label>ელფოსტა</label>
@@ -980,10 +988,6 @@ body{
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         <select id="wtStatusFilter" style="border:none;outline:none;background:transparent;font-family:'Noto Sans Georgian','Inter',sans-serif;font-size:13.5px;width:100%;color:var(--ink);cursor:pointer;"></select>
       </div>
-      <button class="btn btn-primary" id="btnNewWorkTask" style="display:none;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        ახალი დავალება
-      </button>
     </div>
     <div class="wt-list-wrap" id="wtListWrap"></div>
   </div>
@@ -1008,11 +1012,13 @@ const STAGES = [
   "სხვა"
 ];
 const STAGE_DEFAULT_EMPLOYEE = [
-  "Luka","Gigi","Gigi","Gigi","Giorgi D","Gocha","Kaxa","Gega","Giorgi Ts","Gigi"
+  "გიგი გ.","გიგი გ.","გიგი გ.","გიგი გ.","გიორგი დ.","გოჩა გ.","კახა მ.","გეგა ჩ.","გიორგი წ.","გიგი გ."
 ];
 let EMPLOYEES = [
-  "Luka","Gigi","Giorgi D","Gocha","Giorgi Ts","Lasha"
-]; /* fallback default — overwritten live from Supabase profiles.employee_name on login */
+  "გეგა ჩ.","გიგი გ.","გიორგი დ.","გიორგი წ.","გოჩა გ.","დოდო ა.","კახა მ.","ლაშა ჩ.","ქეთა"
+]; /* fallback default — overwritten live from Supabase profiles on login; only currently employed staff */
+let EMPLOYEES_ALL = EMPLOYEES.slice(); /* includes released staff (for filters / history) */
+let EMPLOYEE_POS = {}; /* employee_name -> position (job title) */
 const ORDER_STATUSES = ["მიმდინარე","შეჩერებული","დასრულებული"];
 const TASK_STATUSES  = ["დაგეგმილი","მიმდინარეობს","დასრულებული"];
 const STATUS_COLOR = {
@@ -1152,7 +1158,9 @@ function ribbonLayout(o, range, dayW){
 }
 /* Which of the 7 stages a project is "in" today: the unfinished stage whose dates contain today;
    if none does, the next upcoming unfinished stage. Returns a stage index 0..6 or -1. */
-function stageDone(t){ return t.status==='დასრულებული' || !!t._recv || (t.stage==='ნახაზი' && !!t.design_approved); }
+function asmStartShown(t){ return t.assembly_started_date || (t.assembly_started ? (t.start||'') : ''); }
+function stageDone(t){ return t.status==='დასრულებული' || !!t._recv || !!t.material_received || !!t.material_received_date || (t.stage==='ნახაზი' && !!t.design_approved) || (t.stage==='აზომვა' && t.attachmentCount>0); }
+function effStatus(t){ return stageDone(t) ? 'დასრულებული' : t.status; }
 function currentStageIdx(o){
   const today = toISO(todayLocal());
   const segs = realStageTasks(o).filter(t=>t.start && stageIdx(t) < 7 && !stageDone(t));
@@ -1251,7 +1259,6 @@ function applyRoleUI(){
   document.getElementById('btnNewOrder').style.display = canEdit() ? '' : 'none';
   document.getElementById('btnExport').style.display = isAdmin() ? '' : 'none';
   document.getElementById('btnNavFinance').style.display = isAdmin() ? '' : 'none';
-  document.getElementById('btnNewWorkTask').style.display = canEdit() ? '' : 'none';
   renderUserBadge();
 }
 
@@ -1352,13 +1359,23 @@ async function onSignedIn(session){
 
 async function loadEmployeeList(){
   try{
-    const { data, error } = await sb.from('profiles').select('employee_name');
-    if(error) throw error;
+    let { data, error } = await sb.from('profiles').select('employee_name, position, employment_status');
+    if(error){ /* columns may not exist yet — fall back to names only */
+      ({ data, error } = await sb.from('profiles').select('employee_name'));
+      if(error) throw error;
+    }
     console.log('profiles rows fetched for employee list:', data);
     const names = [...new Set((data||[]).map(r=>r.employee_name).filter(n=>n && n.trim()))]
       .sort((a,b)=> a.localeCompare(b, 'ka'));
     console.log('resolved EMPLOYEES list:', names);
-    if(names.length) EMPLOYEES = names;
+    if(names.length){
+      const released = new Set((data||[]).filter(r=>r.employment_status==='განთავისუფლებული').map(r=>r.employee_name));
+      EMPLOYEE_POS = {};
+      (data||[]).forEach(r=>{ if(r.employee_name && r.position) EMPLOYEE_POS[r.employee_name] = r.position; });
+      EMPLOYEES_ALL = names;
+      const active = names.filter(n=>!released.has(n));
+      EMPLOYEES = active.length ? active : names;
+    }
   }catch(e){
     console.error('Employee list load failed, using fallback list:', e);
   }
@@ -1377,7 +1394,7 @@ function rowToTask(t, attCount){
     id:t.id, title:t.title||'', stage:t.stage, start:t.start_date, end:t.end_date,
     color:t.color, status:t.status, employee:t.employee||'', notes:t.notes||'',
     quantity:t.quantity||'', contractor:t.contractor||'', furniture_unit:t.furniture_unit||'',
-    design_approved: !!t.design_approved, assembly_file_ready: !!t.assembly_file_ready, assembly_started: !!t.assembly_started, sent_for_cutting: !!t.sent_for_cutting, material_received: !!t.material_received, material_received_date: t.material_received_date || '',
+    design_approved: !!t.design_approved, assembly_file_ready: !!t.assembly_file_ready, assembly_started: !!t.assembly_started, sent_for_cutting: !!t.sent_for_cutting, assembly_started_date: t.assembly_started_date || '', material_received: !!t.material_received, material_received_date: t.material_received_date || '',
     attachmentCount: attCount || 0
   };
 }
@@ -1417,6 +1434,7 @@ async function loadData(){
     orders.forEach(o=>{ if(expanded[o.id] === undefined) expanded[o.id] = false; });
     updateStatusText(`დაკავშირებულია (${orders.length} შეკვეთა)`);
     render();
+    if(currentPageView === 'tasks' && typeof renderTasksPage === 'function'){ try{ renderTasksPage(); }catch(_){} }  /* keep the Tasks cards in step with project data */
   }catch(e){
     console.error(e);
     updateStatusText('მონაცემების ჩატვირთვა ვერ მოხერხდა: ' + (e.message||''));
@@ -1426,11 +1444,11 @@ async function loadData(){
 function subscribeRealtime(){
   if(realtimeChannel) sb.removeChannel(realtimeChannel);
   realtimeChannel = sb.channel('gantt-live')
-    .on('postgres_changes', { event:'*', schema:'public', table:'orders' }, ()=> loadData())
-    .on('postgres_changes', { event:'*', schema:'public', table:'tasks' }, ()=> loadData())
-    .on('postgres_changes', { event:'*', schema:'public', table:'task_attachments' }, ()=> loadData())
-    .on('postgres_changes', { event:'*', schema:'public', table:'order_attachments' }, ()=> loadData())
-    .on('postgres_changes', { event:'*', schema:'public', table:'order_furniture_items' }, ()=> loadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'orders' }, ()=> scheduleLoadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'tasks' }, ()=> scheduleLoadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'task_attachments' }, ()=> scheduleLoadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'order_attachments' }, ()=> scheduleLoadData())
+    .on('postgres_changes', { event:'*', schema:'public', table:'order_furniture_items' }, ()=> scheduleLoadData())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_finance' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'order_expenses' }, ()=> refreshFinanceIfVisible())
     .on('postgres_changes', { event:'*', schema:'public', table:'expense_categories' }, ()=> refreshFinanceIfVisible())
@@ -1440,12 +1458,19 @@ function subscribeRealtime(){
     .on('postgres_changes', { event:'*', schema:'public', table:'work_task_attachments' }, ()=> refreshTasksIfVisible())
     .subscribe();
 }
-async function refreshTasksIfVisible(){
-  if(currentPageView === 'tasks'){
-    await loadWorkTasks();
-    renderTasksPage();
-  }
+let _tasksRefreshTimer = null;
+function refreshTasksIfVisible(){
+  /* several DB events arrive for one click — merge them into a single refresh */
+  clearTimeout(_tasksRefreshTimer);
+  _tasksRefreshTimer = setTimeout(async ()=>{
+    if(currentPageView === 'tasks'){
+      try{ await loadWorkTasks(); renderTasksPage(); }catch(e){ console.warn(e); }
+    }
+  }, 350);
+  return Promise.resolve();
 }
+let _loadDataTimer = null;
+function scheduleLoadData(){ clearTimeout(_loadDataTimer); _loadDataTimer = setTimeout(()=>loadData(), 350); }
 async function refreshFinanceIfVisible(){
   if(currentPageView === 'finance' && isAdmin()){
     await loadFinanceData();
@@ -2528,7 +2553,7 @@ function populateWorkTaskFilters(){
   const empSel = document.getElementById('wtEmployeeFilter');
   const statSel = document.getElementById('wtStatusFilter');
   empSel.innerHTML = '<option value="all">ყველა თანამშრომელი</option>' +
-    EMPLOYEES.map(e=>`<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('');
+    EMPLOYEES_ALL.map(e=>`<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('');
   statSel.innerHTML = '<option value="all">ყველა სტატუსი</option>' +
     WORK_STATUSES.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
   empSel.onchange = ()=>{ wtEmployeeFilter = empSel.value; renderTasksPage(); };
@@ -2541,6 +2566,7 @@ function isOverdue(task){
   return parseISO(task.due_date) < todayLocal();
 }
 
+const _matAttCache = {};
 function renderTasksPage(){
   const wrap = document.getElementById('wtListWrap');
   if(!wrap) return;
@@ -2638,9 +2664,6 @@ function renderTasksPage(){
         </div>` : ''}
       </div>
       <div class="wt-actions">
-        <button class="btn-icon" data-wt-open="${t.id}" title="გახსნა">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        </button>
         ${isAdmin() ? `<button class="btn-icon danger" data-wt-delete="${t.id}" title="წაშლა">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-1 0v14H9V6"/></svg>
         </button>` : ''}
@@ -2680,7 +2703,7 @@ function renderTasksPage(){
     return `<div class="paper-line ${done?'done':''}" data-wt-id="${t.id}">
       ${(mm || isD || am || im) ? '' : `<input type="checkbox" class="paper-check" ${done?'checked':''} data-wt-done="${t.id}" ${canEditThis?'':'disabled'} title="დასრულებულია">`}
       <div class="paper-main">
-        <div class="paper-title" data-wt-open="${t.id}" title="გახსნა">${escapeHtml(heading)}</div>
+        <div class="paper-title" ${linkedOrder ? `data-open-order="${escapeHtml(String(linkedOrder.id))}" title="პროექტის გახსნა"` : ''}>${escapeHtml(heading)}</div>
         ${isD ? (()=>{ const dt = linkedOrder ? linkedOrder.tasks.find(x=>x.stage==='ნახაზი' && !(x.furniture_unit||'')) : null; return dt && dt.employee ? `<div class="paper-person">👤 ${escapeHtml(dt.employee)}</div>` : ''; })() : ''}
         ${am ? `${t.furniture_unit ? `<div class="paper-sub">🪑 ${escapeHtml(t.furniture_unit)}</div>` : ''}${(()=>{ const ct = linkedOrder ? findStageTask(linkedOrder, 'ფურნიტურა', t.furniture_unit||'') : null; return ct && ct.employee ? `<div class="paper-person">✏️ კონსტრუქტორი: ${escapeHtml(ct.employee)}</div>` : ''; })()}` : ''}
         ${im ? `${instTask && instTask.employee ? `<div class="paper-person">👤 ${escapeHtml(instTask.employee)}</div>` : ''}${instTask && instTask.start ? `<div class="paper-person">📅 მონტაჟის თარიღი: ${formatGeorgianDate(instTask.start)}</div>` : ''}${instTask ? `<div class="paper-recv"><span>მონტაჟის დასრულება</span><input type="date" class="paper-recv-date" data-asm-end="${escapeHtml(String(instTask.id))}" value="${instTask.status==='დასრულებული' ? (instTask.end||'') : ''}" ${canEdit()?'':'disabled'} title="მონტაჟის დასრულების თარიღი"></div>
@@ -2692,7 +2715,7 @@ function renderTasksPage(){
           ${matTask && matTask.end ? `<div class="paper-person">📅 გამზადების თარიღი: ${formatGeorgianDate(matTask.end)}</div>` : ''}
         ` : (isD || am || im) ? '' : ((person || extra.length) ? `<div class="paper-person">${person ? '👤 '+escapeHtml(person) : ''}${extra.length ? ` <span class="paper-extra">${person ? '· ' : ''}${extra.map(escapeHtml).join(' · ')}</span>` : ''}</div>` : '')}
         ${files}
-        ${am && asmTask ? `<div class="paper-recv"><span>აწყობის დაწყება</span><input type="date" class="paper-recv-date" data-asm-start="${escapeHtml(String(asmTask.id))}" value="${asmTask.start||''}" ${canEdit()?'':'disabled'} title="აწყობის დაწყების თარიღი"></div>
+        ${am && asmTask ? `<div class="paper-recv"><span>აწყობის დაწყება</span><input type="date" class="paper-recv-date" data-asm-start="${escapeHtml(String(asmTask.id))}" value="${asmStartShown(asmTask)}" ${canEdit()?'':'disabled'} title="აწყობის დაწყების თარიღი"></div>
         <div class="paper-recv"><span>ამწყობი</span><select class="paper-recv-date" data-asm-emp="${escapeHtml(String(asmTask.id))}" ${canEdit()?'':'disabled'} title="ამწყობი">${empOpt(asmTask.employee || '', true)}</select></div>
         <div class="paper-recv"><span>აწყობა დაწყებულია</span><input type="checkbox" class="paper-check" data-asm-flag="${escapeHtml(String(asmTask.id))}" ${asmTask.assembly_started?'checked':''} ${canEdit()?'':'disabled'} title="აწყობა დაწყებულია"></div>
         <div class="paper-recv"><span>აწყობის დასრულება</span><input type="date" class="paper-recv-date" data-asm-end="${escapeHtml(String(asmTask.id))}" value="${asmTask.status==='დასრულებული' ? (asmTask.end||'') : ''}" ${canEdit()?'':'disabled'} title="აწყობის დასრულების თარიღი"></div>
@@ -2705,7 +2728,7 @@ function renderTasksPage(){
     </div>`;
   }
   const paperTones = ['paper-white', 'paper-cream', 'paper-kraft'];
-  wrap.innerHTML = `<div class="paper-grid">` + groups.map((g,gi)=>{
+  const _html = `<div class="paper-grid">` + groups.map((g,gi)=>{
     const pad = Math.max(0, 7 - g.tasks.length);
     return `
     <div class="paper-card ${g.color ? '' : paperTones[gi % paperTones.length]}" ${g.color ? `style="background:${g.color};"` : ''}>
@@ -2719,6 +2742,8 @@ function renderTasksPage(){
       </div>
     </div>`;
   }).join('') + `</div>`;
+  /* unchanged markup is not rebuilt, so nothing flickers on repeated refreshes */
+  if(wrap._lastHtml !== _html || !wrap.firstElementChild){ wrap.innerHTML = _html; wrap._lastHtml = _html; }
 
   const wireFileChips = (root)=>{
     root.querySelectorAll('[data-file-path]').forEach(el=>{
@@ -2734,20 +2759,19 @@ function renderTasksPage(){
   };
   wireFileChips(wrap);
   const matBoxes = Array.from(wrap.querySelectorAll('[data-mat-files]'));
+  matBoxes.forEach(box=>{ const c = _matAttCache[box.getAttribute('data-mat-files')]; if(c !== undefined && box.innerHTML !== c){ box.innerHTML = c; wireFileChips(box); } });
   if(matBoxes.length){
     sb.from('task_attachments').select('*').in('task_id', matBoxes.map(x=>x.getAttribute('data-mat-files'))).order('created_at', { ascending:true })
       .then(({ data })=>{
         matBoxes.forEach(box=>{
           const id = box.getAttribute('data-mat-files');
           const list = (data||[]).filter(a=>String(a.task_id)===id);
-          box.innerHTML = list.map(a=>paperFileChip(a.file_name, ATTACHMENTS_BUCKET, a.file_path)).join('');
-          wireFileChips(box);
+          const html = list.map(a=>paperFileChip(a.file_name, ATTACHMENTS_BUCKET, a.file_path)).join('');
+          _matAttCache[id] = html;
+          if(box.innerHTML !== html){ box.innerHTML = html; wireFileChips(box); }
         });
       });
   }
-  wrap.querySelectorAll('[data-wt-open]').forEach(el=>{
-    el.onclick = ()=> openWorkTaskModal(el.getAttribute('data-wt-open'));
-  });
   wrap.querySelectorAll('[data-jump-to-order]').forEach(el=>{
     el.onclick = (e)=>{
       e.stopPropagation();
@@ -2779,7 +2803,11 @@ function renderTasksPage(){
       try{
         const row = { updated_at: new Date().toISOString() };
         const asm = (orders.flatMap(o=>o.tasks||[])).find(t=>String(t.id)===String(id)) || {};
-        if(isFlag) row.assembly_started = el.checked; else if(isEmp) row.employee = el.value;
+        if(isFlag){
+          row.assembly_started = el.checked;
+          if(el.checked){ const sEl = wrap.querySelector(`[data-asm-start="${id}"]`); row.assembly_started_date = (sEl && sEl.value) || null; }
+          else row.assembly_started_date = null;   /* unticking resets the date */
+        } else if(isEmp) row.employee = el.value;
         else if(isEnd){ row.end_date = el.value; if(asm.start && el.value < asm.start) row.start_date = el.value; }
         else if(isDone){
           row.status = el.checked ? 'დასრულებული' : ((asm.assembly_started) ? 'მიმდინარეობს' : 'დაგეგმილი');
@@ -2790,20 +2818,21 @@ function renderTasksPage(){
             if(asm.start && row.end_date < asm.start) row.end_date = asm.start;
           }
         }
-        else row.start_date = el.value;
+        else { row.start_date = el.value; row.assembly_started_date = el.value; }
         const { error } = await sb.from('tasks').update(row).eq('id', id);
         if(error) throw error;
         await loadData();
       }catch(err){ if(isFlag) el.checked = !el.checked; alert('შენახვა ვერ მოხერხდა: ' + (err.message||'')); }
     };
   });
+  wrap.querySelectorAll('[data-open-order]').forEach(el=>{
+    el.onclick = (e)=>{ e.stopPropagation(); openOrderModal(el.getAttribute('data-open-order')); };
+  });
   wrap.querySelectorAll('[data-recv-date]').forEach(el=>{
     el.onclick = (e)=> e.stopPropagation();
     el.onchange = async ()=>{
       try{
-        const { error } = await sb.from('tasks').update({ material_received_date: el.value || null, updated_at: new Date().toISOString() }).eq('id', el.getAttribute('data-recv-date'));
-        if(error) throw error;
-        await loadData();
+        await setMaterialReceived(el.getAttribute('data-recv-date'), !!el.value, el.value);
       }catch(err){ alert('შენახვა ვერ მოხერხდა (საჭიროა ბაზის განახლება add_material_received_date.sql): ' + (err.message||'')); }
     };
   });
@@ -2992,13 +3021,77 @@ function isOrphanWorkTask(t){
 }
 /* When the info card is completed, tick "მასალა მიღებულია" on the company card. */
 async function syncMaterialReceivedFromCard(notes, status){
-  if(status !== 'დასრულებული') return;
-  const m = /\[მასალა#([^\]]+)\]/.exec(notes || '');
-  if(!m) return;
+  notes = notes || '';
+  const done = status === 'დასრულებული';
   try{
-    const { error } = await sb.from('tasks').update({ material_received: true, updated_at: new Date().toISOString() }).eq('id', m[1]);
-    if(!error) await loadData();
+    let m = /\[მასალა#([^\]]+)\]/.exec(notes);
+    if(m){
+      if(done) await setMaterialReceived(m[1], true, '');
+      return;
+    }
+    m = /\[(აწყობა|მონტაჟი)#([^\]]+)\]/.exec(notes);
+    if(m){
+      /* the info card's completion mirrors the project stage status */
+      const tid = m[2];
+      let tk = null; for(const o of orders){ tk = (o.tasks||[]).find(x=>String(x.id)===String(tid)); if(tk) break; }
+      if(tk){
+        const upd = { updated_at: new Date().toISOString() };
+        if(done){ upd.status = 'დასრულებული'; const td = toISO(todayLocal()); upd.end_date = td >= (tk.start||td) ? td : tk.start; }
+        else if(tk.status === 'დასრულებული'){ upd.status = tk.assembly_started ? 'მიმდინარეობს' : 'დაგეგმილი'; }
+        if(upd.status){ const { error } = await sb.from('tasks').update(upd).eq('id', tid); if(!error) await loadData(); }
+      }
+      return;
+    }
+    m = /\[დიზაინი#([^\]]+)\]/.exec(notes);
+    if(m){
+      /* "განშლის გადაგზავნა" card done <-> every company of stage 4 is "გადაგზავნილია დასაჭრელად" */
+      const ord = orders.find(o=>String(o.id)===m[1]);
+      if(ord){
+        if(!done) return; /* un-ticking the card never removes company cards */
+        for(const t of ord.tasks.filter(x=>x.stage==='მასალა')){
+          if(t.sent_for_cutting) continue;
+          const { error } = await sb.from('tasks').update({ sent_for_cutting: done, updated_at: new Date().toISOString() }).eq('id', t.id);
+          if(error) throw error;
+          await createMaterialInfoCard(ord, Object.assign({}, t, { sent_for_cutting: true }));
+        }
+        await loadData();
+      }
+    }
   }catch(e){ /* silent: not allowed for this user */ }
+}
+/* project -> card: set the status of the Tasks-tab card carrying `marker` */
+async function setCardDoneByMarker(marker, done){
+  try{
+    const { error } = await sb.from('work_tasks').update({ status: done ? 'დასრულებული' : 'გასაკეთებელი', progress: done ? 100 : 0, updated_at: new Date().toISOString() }).like('notes', '%' + marker + '%');
+    if(error) console.warn('card status not synced', error);
+  }catch(e){ console.warn(e); }
+}
+async function syncDesignCardFromCutting(orderId){
+  const ord = orders.find(o=>String(o.id)===String(orderId)); if(!ord) return;
+  const comps = ord.tasks.filter(t=>t.stage==='მასალა');
+  await setCardDoneByMarker(designMarker(orderId), comps.length>0 && comps.every(t=>t.sent_for_cutting));
+}
+/* One source of truth for "material received": the project task flag + date and the
+   linked Tasks-tab card (status/progress) always change together, from either window. */
+async function setMaterialReceived(taskId, checked, dateVal){
+  const today = toISO(todayLocal());
+  const { error } = await sb.from('tasks').update({
+    material_received: !!checked,
+    material_received_date: checked ? (dateVal || today) : null,
+    updated_at: new Date().toISOString()
+  }).eq('id', taskId);
+  if(error) throw error;
+  try{
+    const marker = '[მასალა#' + taskId + ']';
+    const wt = (typeof workTasks !== 'undefined' ? workTasks : []).find(x=>(x.notes||'').includes(marker));
+    if(wt){
+      const st = checked ? 'დასრულებული' : 'გასაკეთებელი';
+      const { error: e2 } = await sb.from('work_tasks').update({ status: st, progress: checked ? 100 : 0, updated_at: new Date().toISOString() }).eq('id', wt.id);
+      if(e2) console.warn('tasks card not synced:', e2);
+    }
+  }catch(e){ console.warn('tasks card sync skipped:', e); }
+  await loadData();
+  try{ await loadWorkTasks(); if(typeof refreshTasksIfVisible === 'function') refreshTasksIfVisible(); }catch(e){}
 }
 async function deleteWorkTaskRemote(id){
   const { error } = await sb.from('work_tasks').delete().eq('id', id);
@@ -3035,176 +3128,7 @@ async function deleteWorkTaskAttachment(attId, path){
   if(error) throw error;
 }
 
-function openWorkTaskModal(existingId, prefillOrderId, prefillFurnitureUnit){
-  const existing = existingId ? workTasks.find(t=>t.id===existingId) : null;
-  const canFullEdit = canEdit();
-  const canSelfUpdate = existing && isMyWorkTask(existing);
-  const data = existing || {
-    title:'', task_type:TASK_TYPES[0], employee:EMPLOYEES[0], priority:'საშუალო',
-    due_date:'', status:WORK_STATUSES[0], progress:0, notes:'', comments:[], attachments:[],
-    order_id: prefillOrderId || '', furniture_unit: prefillFurnitureUnit || ''
-  };
-  const typeOptions = TASK_TYPES.concat(['სხვა (ხელით შეყვანა)']);
-  const isCustomType = existing && !TASK_TYPES.includes(existing.task_type);
-  const linkedOrder = data.order_id ? orders.find(o=>o.id===data.order_id) : null;
 
-  const readonly = !canFullEdit && !canSelfUpdate;
-
-  modalContent.innerHTML = `
-    <div class="modal-head"><h3>${existing?'დავალების დეტალები':'ახალი დავალება'}</h3>
-      <button class="btn-icon" id="mClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>დავალების დასახელება</label>
-        <input type="text" id="wtTitle" value="${escapeHtml(data.title)}" placeholder="მაგ. სამზარეულოს ტექნიკური ნახაზი" ${canFullEdit?'':'disabled'}>
-      </div>
-      <div class="field"><label>ტიპი</label>
-        <select id="wtType" ${canFullEdit?'':'disabled'}>${opt(typeOptions, isCustomType ? 'სხვა (ხელით შეყვანა)' : data.task_type)}</select>
-      </div>
-      <div class="field" id="wtCustomTypeWrap" style="display:${isCustomType?'block':'none'}">
-        <label>ტიპის სახელი (ხელით)</label>
-        <input type="text" id="wtTypeCustom" value="${escapeHtml(isCustomType?existing.task_type:'')}" ${canFullEdit?'':'disabled'}>
-      </div>
-      <div class="row2">
-        <div class="field"><label>დაკავშირებული შეკვეთა</label>
-          <select id="wtOrderLink" ${canFullEdit?'':'disabled'}>
-            <option value="">— არცერთი (დამოუკიდებელი) —</option>
-            ${orders.map(o=>`<option value="${o.id}" ${o.id===data.order_id?'selected':''}>${escapeHtml(o.name)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field" id="wtFurnitureLinkWrap" style="display:${linkedOrder && linkedOrder.furnitureItems && linkedOrder.furnitureItems.length ? 'block':'none'}">
-          <label>ავეჯის ერთეული</label>
-          <select id="wtFurnitureLink" ${canFullEdit?'':'disabled'}>
-            <option value="">— ერთეულის გარეშე —</option>
-            ${linkedOrder ? (linkedOrder.furnitureItems||[]).map(fi=>`<option value="${escapeHtml(fi.name)}" ${fi.name===data.furniture_unit?'selected':''}>${escapeHtml(fi.name)}</option>`).join('') : ''}
-          </select>
-        </div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>პასუხისმგებელი</label><select id="wtEmployee" ${canFullEdit?'':'disabled'}>${opt(EMPLOYEES, data.employee)}</select></div>
-        <div class="field"><label>პრიორიტეტი</label><select id="wtPriority" ${canFullEdit?'':'disabled'}>${opt(PRIORITIES, data.priority)}</select></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>ვადა</label><input type="date" id="wtDueDate" value="${data.due_date||''}" ${canFullEdit?'':'disabled'}></div>
-        <div class="field"><label>სტატუსი</label><select id="wtStatus" ${readonly?'disabled':''}>${opt(WORK_STATUSES, data.status)}</select></div>
-      </div>
-      <div class="field"><label>პროგრესი (%)</label>
-        <input type="number" min="0" max="100" id="wtProgress" value="${data.progress}" ${readonly?'disabled':''}>
-      </div>
-      <div class="field"><label>შენიშვნა</label>
-        <textarea id="wtNotes" placeholder="დამატებითი დეტალები" ${canFullEdit?'':'disabled'}>${escapeHtml(data.notes)}</textarea>
-      </div>
-      ${existing ? `
-      <div class="field">
-        <label>დანართები</label>
-        <div id="wtAttachmentsList" class="attachments-list"></div>
-        <input type="file" id="wtAttachmentInput" multiple style="display:none">
-        <button type="button" class="btn btn-ghost" id="btnAddWtAttachment" style="margin-top:8px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          ფაილის დამატება
-        </button>
-      </div>
-      <div class="field">
-        <label>კომენტარები</label>
-        <div id="wtCommentsList"></div>
-        <div class="expense-add-row" style="margin-top:8px;">
-          <div class="field"><input type="text" id="wtCommentInput" placeholder="დაწერეთ კომენტარი..."></div>
-          <button class="btn btn-ghost" id="btnAddWtComment" style="flex-shrink:0;">დამატება</button>
-        </div>
-      </div>` : `<div class="hint">დანართებისა და კომენტარების დამატება შესაძლებელია დავალების შენახვის შემდეგ.</div>`}
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" id="mCancel">დახურვა</button>
-      ${(canFullEdit || canSelfUpdate) ? `<button class="btn btn-primary" id="btnSaveWt">${existing?'შენახვა':'დამატება'}</button>` : ''}
-    </div>
-  `;
-  overlay.classList.add('open');
-  document.getElementById('mClose').onclick = closeModal;
-  document.getElementById('mCancel').onclick = closeModal;
-
-  if(canFullEdit){
-    const typeSel = document.getElementById('wtType');
-    typeSel.onchange = ()=>{
-      document.getElementById('wtCustomTypeWrap').style.display = (typeSel.value==='სხვა (ხელით შეყვანა)') ? 'block' : 'none';
-    };
-    const orderSel = document.getElementById('wtOrderLink');
-    orderSel.onchange = ()=>{
-      const selOrder = orders.find(o=>o.id===orderSel.value);
-      const wrap = document.getElementById('wtFurnitureLinkWrap');
-      const furnSel = document.getElementById('wtFurnitureLink');
-      if(selOrder && selOrder.furnitureItems && selOrder.furnitureItems.length){
-        furnSel.innerHTML = '<option value="">— ერთეულის გარეშე —</option>' +
-          selOrder.furnitureItems.map(fi=>`<option value="${escapeHtml(fi.name)}">${escapeHtml(fi.name)}</option>`).join('');
-        wrap.style.display = 'block';
-      } else {
-        furnSel.innerHTML = '<option value="">— ერთეულის გარეშე —</option>';
-        wrap.style.display = 'none';
-      }
-    };
-  }
-
-  if(existing){
-    renderWtAttachmentsList(existing.id);
-    renderWtCommentsList(existing.id);
-    const attBtn = document.getElementById('btnAddWtAttachment');
-    if(attBtn){
-      attBtn.onclick = ()=> document.getElementById('wtAttachmentInput').click();
-      document.getElementById('wtAttachmentInput').addEventListener('change', async (e)=>{
-        const files = Array.from(e.target.files||[]);
-        if(files.length){ await uploadWorkTaskAttachments(existing.id, files); await loadWorkTasks(); renderWtAttachmentsList(existing.id); renderTasksPage(); }
-        e.target.value = '';
-      });
-    }
-    document.getElementById('btnAddWtComment').onclick = async ()=>{
-      const text = document.getElementById('wtCommentInput').value.trim();
-      if(!text) return;
-      try{
-        await addWorkTaskComment(existing.id, text);
-        document.getElementById('wtCommentInput').value = '';
-        await loadWorkTasks();
-        renderWtCommentsList(existing.id);
-        renderTasksPage();
-      }catch(e){ alert('კომენტარის დამატება ვერ მოხერხდა: ' + (e.message||'')); }
-    };
-  }
-
-  const saveBtn = document.getElementById('btnSaveWt');
-  if(saveBtn){
-    saveBtn.onclick = async ()=>{
-      saveBtn.disabled = true; saveBtn.textContent = 'ინახება...';
-      try{
-        if(canFullEdit){
-          let typeVal = document.getElementById('wtType').value;
-          if(typeVal === 'სხვა (ხელით შეყვანა)') typeVal = document.getElementById('wtTypeCustom').value.trim() || 'დავალება';
-          const title = document.getElementById('wtTitle').value.trim() || typeVal;
-          const payload = {
-            title, task_type: typeVal,
-            employee: document.getElementById('wtEmployee').value,
-            priority: document.getElementById('wtPriority').value,
-            due_date: document.getElementById('wtDueDate').value,
-            status: document.getElementById('wtStatus').value,
-            progress: Math.max(0, Math.min(100, Number(document.getElementById('wtProgress').value)||0)),
-            notes: document.getElementById('wtNotes').value.trim(),
-            order_id: document.getElementById('wtOrderLink').value || '',
-            furniture_unit: document.getElementById('wtFurnitureLink') ? document.getElementById('wtFurnitureLink').value || '' : ''
-          };
-          await saveWorkTask(payload, existing ? existing.id : null);
-          await syncMaterialReceivedFromCard(payload.notes, payload.status);
-        } else if(canSelfUpdate){
-          const status = document.getElementById('wtStatus').value;
-          const progress = Math.max(0, Math.min(100, Number(document.getElementById('wtProgress').value)||0));
-          await updateWorkTaskStatusProgress(existing, status, progress);
-        }
-        await loadWorkTasks();
-        renderTasksPage();
-        closeModal();
-      }catch(e){
-        alert('შენახვა ვერ მოხერხდა: ' + (e.message||''));
-        saveBtn.disabled = false; saveBtn.textContent = existing?'შენახვა':'დამატება';
-      }
-    };
-  }
-}
 
 function renderWtAttachmentsList(taskId){
   const listEl = document.getElementById('wtAttachmentsList');
@@ -3468,7 +3392,7 @@ function renderOrderRow(o, range, dayW, num){
 
 function renderTaskRow(o, task, range, dayW, num){
   const {left, width} = barPos(task, range, dayW);
-  const statusColor = STATUS_COLOR[task.status] || '#9B968C';
+  const statusColor = STATUS_COLOR[effStatus(task)] || '#9B968C';
   const displayName = task.title || task.stage;
   return `<div class="row task-row" data-order="${o.id}" data-task="${task.id}">
     <div class="side" style="padding-left:10px;">
@@ -3477,7 +3401,7 @@ function renderTaskRow(o, task, range, dayW, num){
         <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
         <div class="sub">${escapeHtml(task.employee)}${task.stage === 'მასალა' && task.contractor ? ' · '+escapeHtml(task.contractor) : ''}${task.furniture_unit ? ' · '+escapeHtml(task.furniture_unit) : ''}</div>
       </div>
-      ${statusDot(task.status, statusColor)}
+      ${statusDot(effStatus(task), statusColor)}
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
       <div class="bar task-bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)};border-color:${stageColor(task)};">
@@ -3494,7 +3418,7 @@ function renderTaskRow(o, task, range, dayW, num){
    Shows the task as a top-level row with its parent order/client for context. */
 function renderFlatTaskRow(o, task, range, dayW, num){
   const {left, width} = barPos(task, range, dayW);
-  const statusColor = STATUS_COLOR[task.status] || '#9B968C';
+  const statusColor = STATUS_COLOR[effStatus(task)] || '#9B968C';
   const displayName = task.title || task.stage;
   return `<div class="row order-row" data-order="${o.id}" data-task="${task.id}">
     <div class="side">
@@ -3503,7 +3427,7 @@ function renderFlatTaskRow(o, task, range, dayW, num){
         <div class="nm" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}${task.notes ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+escapeHtml(task.notes)+'\">📝</span>' : ''}${task.attachmentCount>0 ? ' <span class=\"note-dot\" data-edit-task=\"'+o.id+'|'+task.id+'\" title=\"'+task.attachmentCount+' დანართი\">📎</span>' : ''}</div>
         <div class="sub">${escapeHtml(o.name)} · ${escapeHtml(o.client)}${task.furniture_unit ? ' · <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;"><rect x="3" y="3" width="18" height="16" rx="1"/><line x1="12" y1="3" x2="12" y2="19"/><line x1="9" y1="9" x2="9" y2="13"/><line x1="15" y1="9" x2="15" y2="13"/><line x1="5" y1="19" x2="5" y2="21"/><line x1="19" y1="19" x2="19" y2="21"/></svg> '+escapeHtml(task.furniture_unit) : ''} · ${escapeHtml(task.employee)}</div>
       </div>
-      ${statusDot(task.status, statusColor)}
+      ${statusDot(effStatus(task), statusColor)}
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
       <div class="bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)}">
@@ -3755,7 +3679,7 @@ function empOpt(selected, allowBlank){
   return blank + opt(list, selected);
 }
 function opt(list, selected){
-  return list.map(v=>`<option value="${escapeHtml(v)}" ${v===selected?'selected':''}>${escapeHtml(v)}</option>`).join('');
+  return list.map(v=>`<option value="${escapeHtml(v)}" ${v===selected?'selected':''}>${escapeHtml(v)}${EMPLOYEE_POS[v] ? ' — '+escapeHtml(EMPLOYEE_POS[v]) : ''}</option>`).join('');
 }
 
 /* The fixed production pipeline: two order-level steps up front, four
@@ -3821,7 +3745,11 @@ async function updateStageTask(orderId, stage, fu, fields, taskId){
   if(fields.contractor !== undefined) row.contractor = fields.contractor;
   if(fields.design_approved !== undefined) row.design_approved = fields.design_approved;
   if(fields.assembly_file_ready !== undefined) row.assembly_file_ready = fields.assembly_file_ready;
-  if(fields.assembly_started !== undefined) row.assembly_started = fields.assembly_started;
+  if(fields.assembly_started !== undefined){
+    row.assembly_started = fields.assembly_started;
+    if(!fields.assembly_started) row.assembly_started_date = null;   /* unticking resets the date */
+  }
+  if(fields.start !== undefined && task.stage === 'აწყობა') row.assembly_started_date = fields.start;
   if(fields.assembly_done !== undefined){
     row.status = fields.assembly_done ? 'დასრულებული' : ((row.assembly_started !== undefined ? row.assembly_started : task.assembly_started) ? 'მიმდინარეობს' : 'დაგეგმილი');
     if(fields.assembly_done && row.end_date === undefined){
@@ -3836,6 +3764,10 @@ async function updateStageTask(orderId, stage, fu, fields, taskId){
   }
   const { error } = await sb.from('tasks').update(row).eq('id', task.id);
   if(error) throw error;
+  if(row.status !== undefined && (task.stage === 'აწყობა' || task.stage === 'მონტაჟი')){
+    await setCardDoneByMarker((task.stage === 'აწყობა' ? asmMarker : instMarker)(task.id), row.status === 'დასრულებული');
+    if(typeof refreshTasksIfVisible === 'function') refreshTasksIfVisible();
+  }
   await loadData();
 }
 
@@ -3889,6 +3821,33 @@ function stageControlsHtml(order, stage, fu, parts, fileBtns, opts){
   return h + '</div>';
 }
 
+/* ✓ (done) / ◔ (in progress) badge on each stage's icon in the order window. */
+function setupStageBadges(orderId){
+  const wrap = document.getElementById('stagesWrap');
+  if(!wrap) return;
+  const panels = Array.from(wrap.querySelectorAll(':scope > .hstage'));
+  const STG = ['აზომვა','ნახაზი','დადასტურება','განშლის გადაგზავნა',null,'ტრანსპორტირება','მონტაჟი'];
+  function isDone(i){
+    const o = orders.find(x=>x.id===orderId); if(!o) return false;
+    if(i===3){ const m = o.tasks.filter(t=>t.stage==='მასალა'); return m.length>0 && m.every(t=>t.material_received || t.material_received_date); }
+    if(i===4){ const a = o.tasks.filter(t=>t.stage==='აწყობა'); return a.length>0 && a.every(t=>t.status==='დასრულებული'); }
+    const t = findStageTask(o, STG[i], ''); return !!t && stageDone(t);
+  }
+  function draw(){
+    const done = panels.map((_,i)=>isDone(i));
+    const cur = done.findIndex(d=>!d);
+    panels.forEach((pn,i)=>{
+      const host = pn.querySelector('.hstage-label > div > div:last-child'); if(!host) return;
+      host.querySelectorAll('.stg-bdg').forEach(b=>b.remove());
+      if(done[i]) host.insertAdjacentHTML('beforeend','<span class="stg-bdg ok">✓</span>');
+      else if(i===cur) host.insertAdjacentHTML('beforeend','<span class="stg-bdg wip">◔</span>');
+    });
+  }
+  draw();
+  wrap.addEventListener('change', ()=> setTimeout(draw, 700));
+  wrap.addEventListener('click', ()=> setTimeout(draw, 900));
+}
+
 function wireInlineStages(orderId){
   document.querySelectorAll('[data-sr]').forEach(sr=>{
     const stage = sr.getAttribute('data-stage');
@@ -3918,12 +3877,15 @@ function wireInlineStages(orderId){
     sr.querySelectorAll('[data-sf]').forEach(cb=>{
       cb.addEventListener('change', ()=>{
         const sfKey = cb.getAttribute('data-sf');
-        const sfFields = { [sfKey === 'install_started' ? 'assembly_started' : sfKey === 'install_done' ? 'assembly_done' : sfKey]: cb.checked };
-        if(cb.getAttribute('data-sf') === 'assembly_done' || cb.getAttribute('data-sf') === 'install_done'){
+        const sfFields = { [sfKey === 'install_started' ? 'assembly_started' : (sfKey === 'install_done' || sfKey === 'stage_done') ? 'assembly_done' : sfKey]: cb.checked };
+        if(cb.getAttribute('data-sf') === 'assembly_done' || cb.getAttribute('data-sf') === 'install_done' || cb.getAttribute('data-sf') === 'stage_done'){
           const endInp = sr.querySelector('[data-f="end"]');
+          const stInp = sr.querySelector('[data-f="start"]');
           if(cb.checked && endInp && endInp.value) sfFields.end = endInp.value;
+          else if(cb.checked && single && stInp && stInp.value) sfFields.end = stInp.value;
         }
         updateStageTask(orderId, stage, fu, sfFields).then(async ()=>{
+          if(cb.getAttribute('data-sf') === 'assembly_started' && !cb.checked){ const stI = sr.querySelector('[data-f="start"]'); if(stI) stI.value = ''; }
           if(cb.getAttribute('data-sf') === 'assembly_file_ready'){
             const ord = orders.find(o=>o.id===orderId);
             if(ord){ await syncAssemblyReadyCard(ord, findStageTask(ord, stage, fu), cb.checked); if(typeof refreshTasksIfVisible === 'function') refreshTasksIfVisible(); }
@@ -3984,7 +3946,7 @@ function renderFurnCardHtml(order, item){
     </div>
     <div class="hsub">
       <div class="hsub-label" style="padding-top:12px;">აწყობის ინსტრუქცია</div>
-      ${(()=>{ const at = findStageTask(order, 'აწყობა', fu) || {}; const cb = (k,label)=>`<label class="hcheck" style="align-self:flex-end;height:38px;padding:0;margin:0;"><input type="checkbox" data-sf="${k}" ${(k==='assembly_done' ? at.status==='დასრულებული' : at[k])?'checked':''}> ${label}</label>`; const emp = `<div class="field hfield"><label>ამწყობი</label><select data-f="employee">${empOpt(at.employee || '', true)}</select></div>`; return stageControlsHtml(order, 'აწყობა', fu, [], ['ფაილის დამატება'], { trailHtml: cb('assembly_file_ready','ასაწყობი ფაილი მზადაა'), afterHtml: `<div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;width:100%;margin-top:4px;">${cb('assembly_started','აწყობა დაწყებულია')}<div class="field hfield"><label>აწყობის დაწყება</label><input type="date" data-f="start" value="${at.start||''}"></div>${emp}</div><div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;width:100%;margin-top:4px;">${cb('assembly_done','აწყობა დასრულებულია')}<div class="field hfield"><label>აწყობის დასრულება</label><input type="date" data-f="end" value="${at.status==='დასრულებული' ? (at.end||'') : ''}"></div></div>` }); })()}
+      ${(()=>{ const at = findStageTask(order, 'აწყობა', fu) || {}; const cb = (k,label)=>`<label class="hcheck" style="align-self:flex-end;height:38px;padding:0;margin:0;"><input type="checkbox" data-sf="${k}" ${(k==='assembly_done' ? at.status==='დასრულებული' : at[k])?'checked':''}> ${label}</label>`; const emp = `<div class="field hfield"><label>ამწყობი</label><select data-f="employee">${empOpt(at.employee || '', true)}</select></div>`; return stageControlsHtml(order, 'აწყობა', fu, [], ['ფაილის დამატება'], { trailHtml: cb('assembly_file_ready','ასაწყობი ფაილი მზადაა'), afterHtml: `<div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;width:100%;margin-top:4px;">${cb('assembly_started','აწყობა დაწყებულია')}<div class="field hfield"><label>აწყობის დაწყება</label><input type="date" data-f="start" value="${asmStartShown(at)}"></div>${emp}</div><div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;width:100%;margin-top:4px;">${cb('assembly_done','აწყობა დასრულებულია')}<div class="field hfield"><label>აწყობის დასრულება</label><input type="date" data-f="end" value="${at.status==='დასრულებული' ? (at.end||'') : ''}"></div></div>` }); })()}
     </div>
   </div>`;
 }
@@ -4129,8 +4091,8 @@ function openOrderModal(existingId){
     ? stageControlsHtml(existing,'ნახაზი','',['start','end','employee'],['ფაილის დამატება'],{trailHtml:`<label class="hcheck" style="align-self:flex-end;height:38px;padding:0;margin:0;"><input type="checkbox" data-sf="design_approved" ${(findStageTask(existing,'ნახაზი','')||{}).design_approved?'checked':''}> დიზაინი შეთანხმებულია</label>`})
     : `<div class="hstage-sr">${dfld('დაწყების თარიღი', `<input type="date" id="fDesignDate" value="${toISO(addDays(t,3))}">`)}${dfld('დასრულების თარიღი', `<input type="date" id="fDesignEnd" value="${toISO(addDays(t,6))}">`)}${dfld('პასუხისმგებელი', `<select id="fDesignEmp">${empOpt('', true)}</select>`)}${draftFile}</div>`;
   const s3 = existing
-    ? stageControlsHtml(existing,'დადასტურება','',['start'],['+ სრული ბიუჯეტის ფაილი','+ სრული პროექტის ფაილი'],{startLabel:'შეთანხმების თარიღი', single:true})
-    : `<div class="hstage-sr">${draftFile.replace('ფაილის დამატება','+ სრული ბიუჯეტის ფაილი')}${draftFile.replace('ფაილის დამატება','+ სრული პროექტის ფაილი')}${dfld('შეთანხმების თარიღი', `<input type="date" id="fAgreeDate" value="">`)}</div>`;
+    ? stageControlsHtml(existing,'დადასტურება','',['start','employee'],['+ სრული ბიუჯეტის ფაილი','+ სრული პროექტის ფაილი'],{startLabel:'შეთანხმების თარიღი', single:true, trailHtml:`<label class="hcheck" style="align-self:flex-end;height:38px;padding:0;margin:0;"><input type="checkbox" data-sf="stage_done" ${(findStageTask(existing,'დადასტურება','')||{}).status==='დასრულებული'?'checked':''}> შეთანხმებულია</label>`})
+    : `<div class="hstage-sr">${draftFile.replace('ფაილის დამატება','+ სრული ბიუჯეტის ფაილი')}${draftFile.replace('ფაილის დამატება','+ სრული პროექტის ფაილი')}${dfld('შეთანხმების თარიღი', `<input type="date" id="fAgreeDate" value="">`)}${dfld('პასუხისმგებელი', `<select id="fAgreeEmp">${empOpt('', true)}</select>`)}</div>`;
 
   const s3b = existing
     ? (()=>{
@@ -4173,7 +4135,8 @@ function openOrderModal(existingId){
             <div class="hsub">
               <div class="hsub-label" style="padding-top:12px;">გამზადების თარიღი</div>
               <div class="hstage-sr" style="flex:1;"><div class="field hfield"><input type="date" data-cf="end" value="${t.end||''}"></div>
-                <label class="hcheck"><input type="checkbox" data-cb="material_received" ${t.material_received?'checked':''}> მასალა მიღებულია</label></div>
+                <label class="hcheck"><input type="checkbox" data-cb="material_received" ${t.material_received?'checked':''}> მასალა მიღებულია</label>
+                <div class="field hfield"><label>მიღების თარიღი</label><input type="date" data-cf="material_received_date" value="${t.material_received_date||''}"></div></div>
             </div>
           </div>`;
         }).join('');
@@ -4205,7 +4168,7 @@ function openOrderModal(existingId){
 
   /* ---- stages 5 & 6 side by side ---- */
   const s5 = existing
-    ? stageControlsHtml(existing,'ტრანსპორტირება','',['start','end'],[],{startLabel:'ტრანსპორტირების დაწყება', endLabel:'ტრანსპორტირების დასრულება'})
+    ? stageControlsHtml(existing,'ტრანსპორტირება','',['start','end'],[],{startLabel:'ტრანსპორტირების დაწყება', endLabel:'ტრანსპორტირების დასრულება', trailHtml:`<label class="hcheck" style="align-self:flex-end;height:38px;padding:0;margin:0;"><input type="checkbox" data-sf="stage_done" ${(findStageTask(existing,'ტრანსპორტირება','')||{}).status==='დასრულებული'?'checked':''}> ტრანსპორტირება დასრულებულია</label>`})
     : `<div class="hstage-sr">${dfld('ტრანსპორტირების დაწყება', `<input type="date" id="fTransportDate" value="">`)}</div>`;
   const s6 = existing
     ? (()=>{ const it = findStageTask(existing,'მონტაჟი','') || {}; const done = it.status==='დასრულებული'; const cb=(k,label,on)=>`<label class="hcheck" style="align-self:flex-end;height:38px;padding:0;margin:0;"><input type="checkbox" data-sf="${k}" ${on?'checked':''}> ${label}</label>`; return stageControlsHtml(existing,'მონტაჟი','',['start','employee'],[],{startLabel:'მონტაჟი — თარიღი', trailHtml:cb('install_started','მონტაჟი დაწყებულია',it.assembly_started), afterHtml:`<div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;width:100%;margin-top:4px;"><div class="field hfield"><label>მონტაჟის დასრულება</label><input type="date" data-f="end" value="${done ? (it.end||'') : ''}"></div>${cb('install_done','მონტაჟი დასრულებულია',done)}</div>`}); })()
@@ -4319,6 +4282,7 @@ function openOrderModal(existingId){
     });
     wireFurnitureColumn(existing.id);
     wireInlineStages(existing.id);
+    setupStageBadges(existing.id);
     document.querySelectorAll('[data-comp-card]').forEach(card=>{
       const tid = card.getAttribute('data-task-id');
       const fu = card.getAttribute('data-furn') || '';
@@ -4326,6 +4290,12 @@ function openOrderModal(existingId){
         inp.addEventListener('change', ()=>{
           const f = inp.getAttribute('data-cf');
           if((f === 'start' || f === 'end' || f === 'employee') && !inp.value) return;
+          if(f === 'material_received_date'){
+            setMaterialReceived(tid, !!inp.value, inp.value).then(()=>{
+              const cbx = card.querySelector('[data-cb="material_received"]'); if(cbx) cbx.checked = !!inp.value;
+            }).catch(e=>alert('შენახვა ვერ მოხერხდა: ' + (e.message||'')));
+            return;
+          }
           updateStageTask(existing.id, 'მასალა', fu, { [f]: f === 'contractor' ? inp.value.trim() : inp.value }, tid)
             .catch(e=>alert('შენახვა ვერ მოხერხდა: ' + (e.message||'')));
         });
@@ -4333,6 +4303,14 @@ function openOrderModal(existingId){
       card.querySelectorAll('[data-cb]').forEach(cb=>{
         cb.addEventListener('change', async ()=>{
           const col = cb.getAttribute('data-cb');
+          if(col === 'material_received'){
+            try{
+              const dEl = card.querySelector('[data-cf="material_received_date"]');
+              await setMaterialReceived(tid, cb.checked, dEl && dEl.value);
+              if(dEl) dEl.value = cb.checked ? (dEl.value || toISO(todayLocal())) : '';
+            }catch(e){ cb.checked = !cb.checked; alert('შენახვა ვერ მოხერხდა: ' + (e.message||'')); }
+            return;
+          }
           try{
             const { error } = await sb.from('tasks').update({ [col]: cb.checked, updated_at: new Date().toISOString() }).eq('id', tid);
             if(error) throw error;
@@ -4346,6 +4324,7 @@ function openOrderModal(existingId){
               }
             }
             await loadData();
+            if(col === 'sent_for_cutting'){ await syncDesignCardFromCutting(existing.id); if(typeof refreshTasksIfVisible === 'function') refreshTasksIfVisible(); }
           }catch(e){
             cb.checked = !cb.checked;
             alert('შენახვა ვერ მოხერხდა (საჭიროა ბაზის განახლება add_task_cutting_flags.sql): ' + (e.message||''));
@@ -4486,7 +4465,7 @@ function openOrderModal(existingId){
         const orderStages = [
           { stage:'აზომვა', dateId:'fMeasureDate', endId:null, empId:'fMeasureEmp' },
           { stage:'ნახაზი', dateId:'fDesignDate', endId:'fDesignEnd', empId:'fDesignEmp' },
-          { stage:'დადასტურება', dateId:'fAgreeDate', endId:null, empId:null },
+          { stage:'დადასტურება', dateId:'fAgreeDate', endId:null, empId:'fAgreeEmp' },
           { stage:'ტრანსპორტირება', dateId:'fTransportDate', endId:null, empId:null },
           { stage:'მონტაჟი', dateId:'fInstallDate', endId:null, empId:'fInstallEmp' }
         ];
@@ -4525,6 +4504,45 @@ function openOrderModal(existingId){
   };
 }
 
+/* Rule: a "done / received / started" checkbox can only be ticked after its own date is set.
+   Works for the Tasks cards and for the order window; an empty date is highlighted instead. */
+(function(){
+  function dateFor(cb){
+    const line = cb.closest('.paper-line');
+    if(line){
+      if(cb.hasAttribute('data-asm-flag')) return line.querySelector('[data-asm-start]');
+      if(cb.hasAttribute('data-asm-done')) return line.querySelector('[data-asm-end]');
+      if(cb.hasAttribute('data-wt-done')) return line.querySelector('[data-recv-date]');
+      return null;
+    }
+    const card = cb.closest('[data-comp-card]');
+    if(card){
+      const c = cb.getAttribute('data-cb');
+      if(c === 'material_received') return card.querySelector('[data-cf="material_received_date"]');
+      if(c === 'sent_for_cutting') return card.querySelector('[data-cf="start"]');
+    }
+    const sf = cb.getAttribute('data-sf'), sr = cb.closest('[data-sr]');
+    if(sf && sr){
+      const q = k => sr.querySelector('[data-f="'+k+'"]');
+      if(sf === 'install_started' || sf === 'assembly_started') return q('start');
+      if(sf === 'install_done' || sf === 'assembly_done' || sf === 'design_approved') return q('end');
+      if(sf === 'stage_done') return sr.getAttribute('data-stage') === 'ტრანსპორტირება' ? q('end') : q('start');
+    }
+    return null;
+  }
+  document.addEventListener('change', e=>{
+    const cb = e.target;
+    if(!(cb instanceof HTMLInputElement) || cb.type !== 'checkbox' || !cb.checked) return;
+    const d = dateFor(cb);
+    if(!d || d.value) return;
+    e.stopImmediatePropagation();
+    cb.checked = false;
+    d.classList.remove('need-date'); void d.offsetWidth; d.classList.add('need-date');
+    d.title = 'ჯერ მიუთითეთ თარიღი';
+    try{ d.focus(); }catch(_){}
+  }, true);
+})();
+
 /* Instantly creates a task from the inline "ეტაპის კატეგორია" dropdown —
    no modal, sensible defaults (today → +3 days, default employee for that
    stage, color inherited from the order). Edit it afterwards if needed. */
@@ -4561,7 +4579,6 @@ function buildSwatches(colorInput){
 }
 
 document.getElementById('btnNewOrder').onclick = ()=> openOrderModal(null);
-document.getElementById('btnNewWorkTask').onclick = ()=> openWorkTaskModal(null);
 document.getElementById('searchInput').addEventListener('input', render);
 
 document.getElementById('tabActive').classList.add('active');
