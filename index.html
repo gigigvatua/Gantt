@@ -3641,7 +3641,11 @@ function closePreview(){
 document.getElementById('previewOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'previewOverlay') closePreview();
 });
-overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+/* close on outside click only if the press AND the release both happened on the dark backdrop —
+   otherwise selecting text inside a field and letting go outside the window would close it */
+let _overlayDownOnBackdrop = false;
+overlay.addEventListener('mousedown', (e)=>{ _overlayDownOnBackdrop = (e.target === overlay); });
+overlay.addEventListener('click', (e)=>{ if(e.target===overlay && _overlayDownOnBackdrop) closeModal(); _overlayDownOnBackdrop = false; });
 
 /* ---------- drag-to-resize Gantt bars (order + task) ----------
    Delegated on document since #ganttInner's content is fully replaced
