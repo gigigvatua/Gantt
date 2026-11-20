@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- კაბინეტი Gantt — version 2.0 (2026-11-20) -->
 <html lang="ka">
 <head>
 <meta charset="UTF-8">
@@ -932,6 +931,7 @@ body{
   </div>
 
   <div id="financePage" style="display:none;flex:1 1 auto;min-height:0;overflow-y:auto;">
+    <div style="text-align:right;margin:0 2px 6px;"><button type="button" class="stage-chip-clear" id="btnResetFinCols" title="სვეტების სიგანის დაბრუნება საწყისზე">სვეტების გადატვირთვა</button></div>
     <div class="finance-table-wrap">
       <table class="finance-table">
         <colgroup>
@@ -1319,6 +1319,7 @@ function wireAuthUI(){
   };
   document.getElementById('btnNavTasks').onclick = ()=> switchPage('tasks');
   document.getElementById('btnNavFinance').onclick = ()=> switchPage('finance');
+  document.getElementById('btnResetFinCols').onclick = resetFinanceColWidths;
 }
 
 async function initAuth(){
@@ -2088,6 +2089,15 @@ function renderFinancePage(){
    რომ უკვე დადებული სიგანეები და handle-ები ყოველ რენდერზე ინარჩუნებენ თავს. */
 /* საწყისი სიგანეები % -ში, # ვიწროდ და შეკვეთა ფართოდ რომ იყოს ყოველთვის,
    მონაცემების ჩატვირთვის დროის მიუხედავად (არ ეყრდნობა offsetWidth-ის გაზომვას). */
+const FINANCE_COLS_KEY = 'kabineti.financeColWidths.v1';
+function saveFinanceColWidths(cols){
+  try{ localStorage.setItem(FINANCE_COLS_KEY, JSON.stringify(cols.map(c=>Math.round(parseFloat(c.style.width)*100)/100))); }catch(e){}
+}
+function resetFinanceColWidths(){
+  try{ localStorage.removeItem(FINANCE_COLS_KEY); }catch(e){}
+  const cols = Array.from(document.querySelectorAll('.finance-table colgroup col'));
+  cols.forEach((col, idx)=>{ col.style.width = FINANCE_COL_DEFAULT_WIDTHS[idx] || col.style.width; });
+}
 const FINANCE_COL_DEFAULT_WIDTHS = ['4%','22%','14%','10%','10%','14%','10%','10%','6%'];
 /* ცხრილი ყოველთვის ეკრანს (finance-table-wrap-ის სიგანეს) ემთხვევა ზუსტად —
    არასდროს სქროლავს გვერდულად და არ გადის ეკრანის ფარგლებს გარეთ. სვეტების
@@ -2107,6 +2117,14 @@ function initFinanceColumnResize(){
     table.style.tableLayout = 'fixed';
     table.style.width = '100%';
     cols.forEach((col, idx)=>{ col.style.width = FINANCE_COL_DEFAULT_WIDTHS[idx] || col.style.width; });
+    /* restore the widths this person saved earlier in this browser */
+    try{
+      const saved = JSON.parse(localStorage.getItem(FINANCE_COLS_KEY) || 'null');
+      if(Array.isArray(saved) && saved.length === cols.length && saved.every(w=>typeof w==='number' && w>0)){
+        const sum = saved.reduce((a,b)=>a+b,0);
+        if(sum > 95 && sum < 105) cols.forEach((col, idx)=>{ col.style.width = saved[idx] + '%'; });
+      }
+    }catch(e){}
     table.dataset.resizeInit = '1';
   }
 
@@ -2144,6 +2162,7 @@ function initFinanceColumnResize(){
         handle.classList.remove('resizing');
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
+        saveFinanceColWidths(cols);
       }
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
