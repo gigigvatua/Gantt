@@ -1180,9 +1180,9 @@ function renderStageChips(base){
   const box = document.getElementById('stageChips');
   if(!box) return;
   const counts = new Array(7).fill(0);
-  base.forEach(o=>{ const i = currentStageIdx(o); if(i>=0) counts[i]++; });
+  base.forEach(o=>{ realStageTasks(o).forEach(t=>{ const i = stageIdx(t); if(i>=0 && i<7) counts[i]++; }); });
   box.className = 'stage-chips' + (stageChipSel.size ? ' has-on' : '');
-  box.innerHTML = CHIP_STAGES.map((n,i)=>`<button type="button" class="stage-chip-btn ${stageChipSel.has(i)?'on':''}" data-chip="${i}" style="--sc:${STAGE_PALETTE[i]};" title="${escapeHtml(n)} — ახლა ამ ეტაპზეა: ${counts[i]}"><span class="sc-n" style="background:${STAGE_PALETTE[i]};">${i+1}</span>${escapeHtml(n)} <span class="sc-c">${counts[i]}</span></button>`).join('') + (stageChipSel.size ? `<button type="button" class="stage-chip-clear" data-chip-clear>გასუფთავება</button>` : '');
+  box.innerHTML = CHIP_STAGES.map((n,i)=>`<button type="button" class="stage-chip-btn ${stageChipSel.has(i)?'on':''}" data-chip="${i}" style="--sc:${STAGE_PALETTE[i]};" title="${escapeHtml(n)} — ყველა მიმდინარე პროექტის „${escapeHtml(n)}“: ${counts[i]}"><span class="sc-n" style="background:${STAGE_PALETTE[i]};">${i+1}</span>${escapeHtml(n)} <span class="sc-c">${counts[i]}</span></button>`).join('') + (stageChipSel.size ? `<button type="button" class="stage-chip-clear" data-chip-clear>გასუფთავება</button>` : '');
   box.querySelectorAll('[data-chip]').forEach(b=> b.onclick = ()=>{ const i = +b.getAttribute('data-chip'); if(stageChipSel.has(i)) stageChipSel.delete(i); else stageChipSel.add(i); _isFirstRender = true; render(); });
   const c = box.querySelector('[data-chip-clear]'); if(c) c.onclick = ()=>{ stageChipSel.clear(); _isFirstRender = true; render(); };
 }
@@ -3267,7 +3267,9 @@ function render(){
     return matchesQuery && matchesView;
   });
   renderStageChips(baseList);
-  const filtered = stageChipSel.size ? baseList.filter(o=> stageChipSel.has(currentStageIdx(o))) : baseList;
+  const filtered = baseList;
+  const chipRows = [];
+  if(stageChipSel.size){ baseList.forEach(o=> realStageTasks(o).forEach(tk=>{ if(stageChipSel.has(stageIdx(tk))) chipRows.push({o, tk}); })); chipRows.sort((a,b)=> (a.tk.start||'') < (b.tk.start||'') ? -1 : (a.tk.start||'') > (b.tk.start||'') ? 1 : 0); }
 
   const range = computeRange();
   const dayW = getDayWidth();
@@ -3288,6 +3290,13 @@ function render(){
   let rowsHtml = '';
   let rowCount = 0;
     let orderNum = 0;
+    if(stageChipSel.size){
+      chipRows.forEach((r,i)=>{
+        let h = renderStageFilterRow(r.o, r.tk, range, dayW, i+1);
+        if((i+1)%2===0) h = h.replace('class="row ','class="row zebra ');
+        rowsHtml += h; rowCount++;
+      });
+    } else
     filtered.forEach(o=>{
       orderNum++;
       const zb = (orderNum % 2 === 0) ? (h=>h.replace('class="row ','class="row zebra ')) : (h=>h);
@@ -3305,7 +3314,7 @@ function render(){
   if(rowCount === 0){
     let emptyMsg;
     if(query) emptyMsg = 'შედეგი ვერ მოიძებნა';
-    else if(stageChipSel.size) emptyMsg = 'ამ ეტაპზე ახლა არცერთი პროექტი არ არის';
+    else if(stageChipSel.size) emptyMsg = 'ამ ეტაპის ამოცანა არცერთ პროექტში არ არის';
     else emptyMsg = (currentView === 'completed' ? 'დასრულებული პროექტი ჯერ არ არის' : currentView === 'paused' ? 'შეჩერებული პროექტი ჯერ არ არის' : 'მიმდინარე შეკვეთა არ არის');
     html += `<div class="empty-state">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v3M16 4v3"/></svg>
@@ -3464,6 +3473,32 @@ function renderFlatTaskRow(o, task, range, dayW, num){
         <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor}"></div>
         <div class="lbl">${escapeHtml(displayName)}</div>
+        <div class="bar-resize-handle right" data-resize="right"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+/* Row used when stage chips are selected: one row per matching stage task, labelled with its project. */
+function renderStageFilterRow(o, task, range, dayW, num){
+  const {left, width} = barPos(task, range, dayW);
+  const statusColor = STATUS_COLOR[effStatus(task)] || '#9B968C';
+  const done = stageDone(task);
+  return `<div class="row order-row" data-order="${o.id}" data-task="${task.id}">
+    <div class="side">
+      <div class="stage-chip" style="background:${stageColor(task)}" title="${escapeHtml(task.stage)}">${stageNum(task)}</div>
+      <div class="name-block" data-edit-order="${o.id}" style="cursor:pointer;">
+        <div class="nm" title="${escapeHtml(o.name)}">${escapeHtml(o.name)}${task.attachmentCount>0 ? ' <span class="note-dot" title="'+task.attachmentCount+' დანართი">📎</span>' : ''}</div>
+        <div class="sub" style="font-weight:600;color:${o.color};">${escapeHtml(o.client)}${task.employee ? ' · '+escapeHtml(task.employee) : ''}${task.start ? ' · '+escapeHtml(task.start.slice(5).replace('-','/')) : ''}</div>
+      </div>
+      ${statusDot(effStatus(task), statusColor)}
+    </div>
+    <div class="timeline" style="width:${range.days*dayW}px">
+      <div class="bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)}">
+        <div class="bar-resize-handle left" data-resize="left"></div>
+        <div class="edge" style="background:${statusColor}"></div>
+        <div class="lbl">${escapeHtml(task.title || task.stage)}${done ? ' ✓' : ''}</div>
         <div class="bar-resize-handle right" data-resize="right"></div>
       </div>
     </div>
