@@ -428,6 +428,7 @@ body.sw-drag,body.sw-drag *{cursor:col-resize!important;user-select:none!importa
 .stage-chip-clear{border:none;background:none;color:var(--ink-soft);font:500 12px 'Noto Sans Georgian','Inter',sans-serif;cursor:pointer;text-decoration:underline;padding:4px 6px;}
 .rib-seg{position:absolute;top:15px;height:26px;border-radius:13px;display:flex;align-items:center;gap:5px;padding:0 10px;
   font-size:12px;font-weight:700;color:#1F2937;white-space:nowrap;overflow:hidden;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.7);}
+.open-end{border-right:3px dashed rgba(31,41,55,.55)!important;}
 .rib-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;}
 .rib-ok{margin-left:auto;font-weight:800;}
 .rib-ov{position:absolute;top:15px;height:26px;border-radius:6px;z-index:2;pointer-events:none;}
@@ -1113,12 +1114,21 @@ function stageNum(task){ const i = stageIdx(task); return i === 99 ? '•' : Str
    მასალა → only when "sent for cutting" is ticked (send date → preparation date); ფურნიტურა → never;
    აწყობა → only when assembly is started (from the start date until transport, if any). */
 const REAL_DATE_STAGES = ['აზომვა','ნახაზი','დადასტურება','ტრანსპორტირება','მონტაჟი'];
+const OPEN_END_STAGES = ['აზომვა','ნახაზი','დადასტურება','ტრანსპორტირება','მონტაჟი'];
+/* A stage whose end date is not set runs up to today (until it is done or an end date is entered). */
+function withOpenEnd(t){
+  if(!t.end_open || !t.start) return t;
+  const today = toISO(todayLocal());
+  if(stageDone(t)) return Object.assign({}, t, { _open:true });
+  const end = today >= t.start ? today : t.start;
+  return Object.assign({}, t, { end, _open:true });
+}
 function realStageTasks(o){
   const all = o.tasks || [];
   const transports = all.filter(t=>t.stage==='ტრანსპორტირება').map(t=>t.start).sort();
   const out = [];
   all.forEach(t=>{
-    if(REAL_DATE_STAGES.includes(t.stage)) out.push(t);
+    if(REAL_DATE_STAGES.includes(t.stage)) out.push(withOpenEnd(t));
     else if(t.stage === 'ფურნიტურა') return;
     else if(t.stage === 'მასალა'){
       if((t.sent_for_cutting || t.material_received_date) && t.start){
@@ -1194,7 +1204,7 @@ function ribbonHtml(o, range, dayW, lay){
     const tip = `${t.stage}${t.furniture_unit ? ' · '+t.furniture_unit : ''}${t.contractor ? ' · '+t.contractor : ''} — ${t.start} → ${t.end}${t.employee ? ' · '+t.employee : ''}${t._recv ? ' · ✓ მასალა მიღებულია '+t._recv : ''}`;
     const top = multi ? (9 + sg.lane*21) : 15;
     const h = multi ? 18 : 26;
-    html += `<div class="rib-seg" data-edit-task="${o.id}|${t.id}" title="${escapeHtml(tip)}" style="left:${sg.left+1}px;width:${sg.width}px;top:${top}px;height:${h}px;border-radius:${h/2}px;background:${sg.color};">${sg.width >= 44 ? stageNum(t) : ''}${sg.width >= 120 ? ' <span class="rib-name">'+escapeHtml(t.stage)+'</span>' : ''}${(t.stage!=='მონტაჟი' && (t._recv || t.status==='დასრულებული' || (t.stage==='ნახაზი' && t.design_approved)) && sg.width >= 50) ? ' <span class="rib-ok">✓</span>' : ''}${t.stage==='მონტაჟი' && t.status==='დასრულებული' && sg.width >= 60 ? ' <span class="rib-ok" title="მონტაჟი დასრულებულია">$</span>' : ''}</div>`;
+    html += `<div class="rib-seg${t._open?' open-end':''}" data-edit-task="${o.id}|${t.id}" title="${escapeHtml(tip + (t._open ? ' · დასრულების თარიღი არ არის მითითებული — ნაჩვენებია დღემდე' : ''))}" style="left:${sg.left+1}px;width:${sg.width}px;top:${top}px;height:${h}px;border-radius:${h/2}px;background:${sg.color};">${sg.width >= 44 ? stageNum(t) : ''}${sg.width >= 120 ? ' <span class="rib-name">'+escapeHtml(t.stage)+'</span>' : ''}${(t.stage!=='მონტაჟი' && (t._recv || t.status==='დასრულებული' || (t.stage==='ნახაზი' && t.design_approved)) && sg.width >= 50) ? ' <span class="rib-ok">✓</span>' : ''}${t.stage==='მონტაჟი' && t.status==='დასრულებული' && sg.width >= 60 ? ' <span class="rib-ok" title="მონტაჟი დასრულებულია">$</span>' : ''}</div>`;
   });
   return `<div class="rib-bg"></div>${html}`;
 }
@@ -1401,7 +1411,7 @@ function rowToTask(t, attCount){
     id:t.id, title:t.title||'', stage:t.stage, start:t.start_date, end:t.end_date,
     color:t.color, status:t.status, employee:t.employee||'', notes:t.notes||'',
     quantity:t.quantity||'', contractor:t.contractor||'', furniture_unit:t.furniture_unit||'',
-    design_approved: !!t.design_approved, assembly_file_ready: !!t.assembly_file_ready, assembly_started: !!t.assembly_started, sent_for_cutting: !!t.sent_for_cutting, assembly_started_date: t.assembly_started_date || '', material_received: !!t.material_received, material_received_date: t.material_received_date || '',
+    design_approved: !!t.design_approved, assembly_file_ready: !!t.assembly_file_ready, assembly_started: !!t.assembly_started, sent_for_cutting: !!t.sent_for_cutting, assembly_started_date: t.assembly_started_date || '', end_open: !!t.end_open, material_received: !!t.material_received, material_received_date: t.material_received_date || '',
     attachmentCount: attCount || 0
   };
 }
@@ -1521,6 +1531,7 @@ async function saveTask(orderId, payload, existingId){
     quantity: payload.quantity, contractor: payload.contractor, furniture_unit: payload.furniture_unit || null,
     updated_at: new Date().toISOString()
   };
+  row.end_open = payload.endOpen !== undefined ? !!payload.endOpen : false;
   if(existingId){
     const { error } = await sb.from('tasks').update(row).eq('id', existingId);
     if(error) throw error;
@@ -3443,7 +3454,7 @@ function renderTaskRow(o, task, range, dayW, num){
       ${statusDot(effStatus(task), statusColor)}
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
-      <div class="bar task-bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)};border-color:${stageColor(task)};">
+      <div class="bar task-bar${task._open?' open-end':''}" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)};border-color:${stageColor(task)};">
         <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor};height:3px;"></div>
         <div class="lbl">${escapeHtml(displayName)}</div>
@@ -3469,7 +3480,7 @@ function renderFlatTaskRow(o, task, range, dayW, num){
       ${statusDot(effStatus(task), statusColor)}
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
-      <div class="bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)}">
+      <div class="bar${task._open?' open-end':''}" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)}">
         <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor}"></div>
         <div class="lbl">${escapeHtml(displayName)}</div>
@@ -3495,7 +3506,7 @@ function renderStageFilterRow(o, task, range, dayW, num){
       ${statusDot(effStatus(task), statusColor)}
     </div>
     <div class="timeline" style="width:${range.days*dayW}px">
-      <div class="bar" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)}">
+      <div class="bar${task._open?' open-end':''}" data-edit-task="${o.id}|${task.id}" data-resize-task="${o.id}|${task.id}" style="left:${left}px;width:${width}px;background:${stageColor(task)}">
         <div class="bar-resize-handle left" data-resize="left"></div>
         <div class="edge" style="background:${statusColor}"></div>
         <div class="lbl">${escapeHtml(task.title || task.stage)}${done ? ' ✓' : ''}</div>
@@ -3788,12 +3799,13 @@ async function ensureStageTask(orderId, stage, fu, fields){
   const t0 = todayLocal();
   const idx = STAGES.indexOf(stage);
   let start = f.start || toISO(t0);
-  let end = f.end || f.start || toISO(addDays(t0,3));
+  const openEnd = !f.end && OPEN_END_STAGES.includes(stage);
+  let end = f.end || f.start || (openEnd ? start : toISO(addDays(t0,3)));
   if(parseISO(end) < parseISO(start)) start = end;
   await saveTask(orderId, {
     title: stage, stage, start, end, color: order.color, status: TASK_STATUSES[0],
     employee: f.employee || ((stage === 'აწყობა' || stage === 'ფურნიტურა') ? '' : (idx > -1 ? defEmp(stage) : EMPLOYEES[0])),
-    quantity:'', contractor: f.contractor || '', furniture_unit: fu || '', notes:''
+    quantity:'', contractor: f.contractor || '', furniture_unit: fu || '', notes:'', endOpen: openEnd
   }, null);
   await loadData();
   order = orders.find(o=>o.id===orderId);
@@ -3808,7 +3820,8 @@ async function updateStageTask(orderId, stage, fu, fields, taskId){
   }
   const row = { updated_at: new Date().toISOString() };
   if(fields.start !== undefined) row.start_date = fields.start;
-  if(fields.end !== undefined) row.end_date = fields.end;
+  if(fields.end !== undefined){ row.end_date = fields.end; row.end_open = false; }
+  if(fields.end_open !== undefined) row.end_open = fields.end_open;
   if(fields.employee !== undefined) row.employee = fields.employee;
   if(fields.contractor !== undefined) row.contractor = fields.contractor;
   if(fields.design_approved !== undefined) row.design_approved = fields.design_approved;
@@ -3825,6 +3838,11 @@ async function updateStageTask(orderId, stage, fu, fields, taskId){
       row.end_date = today >= (task.start || today) ? today : task.start;
     }
   }
+  if((fields.design_approved === true || fields.assembly_done === true) && task.end_open && row.end_date === undefined){
+    const today = toISO(todayLocal());
+    row.end_date = today >= (task.start || today) ? today : task.start; row.end_open = false;
+  }
+  if(fields.assembly_done === true && row.end_date !== undefined) row.end_open = false;
   { /* keep end >= start */
     const st = row.start_date !== undefined ? row.start_date : task.start;
     const en = row.end_date !== undefined ? row.end_date : task.end;
@@ -3872,7 +3890,7 @@ function stageControlsHtml(order, stage, fu, parts, fileBtns, opts){
   const fld = (label, html)=>`<div class="field hfield"><label>${label}</label>${html}</div>`;
   let h = `<div class="hstage-sr" data-sr data-stage="${escapeHtml(stage)}" data-furn="${escapeHtml(fu||'')}" data-single="${opts.single?1:0}" data-list="${listId}" data-task-id="${opts.taskId ? escapeHtml(String(opts.taskId)) : ''}">`;
   if(parts.includes('start')) h += fld(opts.startLabel || 'დაწყების თარიღი', `<input type="date" data-f="start" value="${task?task.start:''}">`);
-  const endHtml = (parts.includes('end') || (opts.extraParts||[]).includes('end')) ? fld(opts.endLabel || 'დასრულების თარიღი', `<input type="date" data-f="end" value="${task?task.end:''}">`) : '';
+  const endHtml = (parts.includes('end') || (opts.extraParts||[]).includes('end')) ? fld(opts.endLabel || 'დასრულების თარიღი', `<input type="date" data-f="end" value="${task&&!task.end_open?task.end:''}">`) : '';
   if(!opts.endLast) h += endHtml;
   if(parts.includes('contractor')) h += fld(opts.contractorLabel || 'კომპანია', `<input type="text" data-f="contractor" value="${escapeHtml(task?task.contractor||'':'')}">`);
   if(parts.includes('employee')) h += fld(opts.employeeLabel || 'პასუხისმგებელი', `<select data-f="employee">${empOpt(task ? task.employee : '', true)}</select>`);
@@ -3933,11 +3951,13 @@ function wireInlineStages(orderId){
         else fields[f] = inp.value;
         if(f === 'start'){
           const endInp = sr.querySelector('[data-f="end"]');
-          if(stage === 'მონტაჟი'){ const cur = endInp && endInp.value; if(cur && cur < inp.value){ endInp.value = inp.value; fields.end = inp.value; } else if(!cur) fields.end = inp.value; }
+          if(stage === 'მონტაჟი'){ const cur = endInp && endInp.value; if(cur && cur < inp.value){ endInp.value = inp.value; fields.end = inp.value; } else if(!cur){ fields.end = inp.value; fields.end_open = true; } }
           else if(single) fields.end = inp.value;
-          else if(endInp && (!endInp.value || parseISO(endInp.value) < parseISO(inp.value))){ endInp.value = inp.value; fields.end = inp.value; }
+          else if(endInp && !endInp.value){ fields.end = inp.value; fields.end_open = true; }
+          else if(endInp && parseISO(endInp.value) < parseISO(inp.value)){ endInp.value = inp.value; fields.end = inp.value; }
         }
-        if((f === 'start' || f === 'end' || f === 'employee') && !inp.value) return;
+        if(f === 'end' && !inp.value){ delete fields.end; fields.end_open = true; }
+        else if((f === 'start' || f === 'end' || f === 'employee') && !inp.value) return;
         updateStageTask(orderId, stage, fu, fields, fixedTaskId).catch(fail);
       });
     });
