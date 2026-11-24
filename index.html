@@ -333,6 +333,11 @@ body{
   display:flex;align-items:center;gap:8px;padding:0 10px;
 }
 .side.head{z-index:6;}
+.side::after{content:"";position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:7;}
+.side:not(.head)::after{display:block;}
+body.sw-drag,body.sw-drag *{cursor:col-resize!important;user-select:none!important;}
+.side.head:hover::after,body.sw-drag .side::after{background:rgba(67,56,202,.18);}
+
 
 .timeline{position:relative;flex-shrink:0;}
 
@@ -366,6 +371,7 @@ body{
   font-size:14px;font-weight:700;color:var(--mdf-dark);text-transform:uppercase;letter-spacing:.03em;
 }
 .order-row .timeline{height:56px;}
+.row.zebra,.row.zebra .side,.order-row.zebra .side{background:#F1F2F4;}
 .task-row .timeline{height:44px;}
 
 .chev{
@@ -3284,13 +3290,14 @@ function render(){
     let orderNum = 0;
     filtered.forEach(o=>{
       orderNum++;
-      rowsHtml += renderOrderRow(o, range, dayW, orderNum);
+      const zb = (orderNum % 2 === 0) ? (h=>h.replace('class="row ','class="row zebra ')) : (h=>h);
+      rowsHtml += zb(renderOrderRow(o, range, dayW, orderNum));
       rowCount++;
       if(expanded[o.id]){
         let taskNum = 0;
         sortedStageTasks(realStageTasks(o)).forEach(task=>{
           taskNum++;
-          rowsHtml += renderTaskRow(o, task, range, dayW, `${orderNum}.${taskNum}`);
+          rowsHtml += zb(renderTaskRow(o, task, range, dayW, `${orderNum}.${taskNum}`));
           rowCount++;
         });
       }
@@ -4674,6 +4681,36 @@ function openOrderModal(existingId){
   window.addEventListener('scroll', e=>{ if(pop && !pop.contains(e.target)) close(); }, true);
   new MutationObserver(ms=> ms.forEach(m=> m.addedNodes.forEach(scan))).observe(document.body, { childList:true, subtree:true });
   scan(document.body);
+})();
+
+
+/* Draggable sidebar width: grab the vertical line right of the name column */
+(function(){
+  const KEY='gantt_sidebar_w', root=document.documentElement;
+  try{ const v=parseInt(localStorage.getItem(KEY)); if(v>=140&&v<=700) root.style.setProperty('--sidebar-w', v+'px'); }catch(e){}
+  let drag=null;
+  function start(e){
+    const side=e.target.closest && e.target.closest('.side'); if(!side) return;
+    const r=side.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX);
+    if(x < r.right-8 || x > r.right+5) return;
+    drag={x0:x,w0:r.width}; document.body.classList.add('sw-drag'); e.preventDefault(); e.stopPropagation();
+  }
+  function move(e){
+    if(!drag) return; const x=(e.touches?e.touches[0].clientX:e.clientX);
+    const w=Math.max(140,Math.min(700,Math.round(drag.w0+x-drag.x0)));
+    root.style.setProperty('--sidebar-w', w+'px'); drag.w=w; e.preventDefault();
+  }
+  function end(){
+    if(!drag) return; document.body.classList.remove('sw-drag');
+    try{ if(drag.w) localStorage.setItem(KEY, drag.w); }catch(e){}
+    drag=null;
+  }
+  document.addEventListener('mousedown',start,true);
+  document.addEventListener('touchstart',start,{capture:true,passive:false});
+  document.addEventListener('mousemove',move,true);
+  document.addEventListener('touchmove',move,{capture:true,passive:false});
+  document.addEventListener('mouseup',end,true);
+  document.addEventListener('touchend',end,true);
 })();
 
 /* Instantly creates a task from the inline "ეტაპის კატეგორია" dropdown —
